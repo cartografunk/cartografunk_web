@@ -580,6 +580,86 @@ section { padding:7rem 4rem; }
   color:var(--purple-bright);
   font-weight:700;
 }
+.project-expand {
+  border:1px solid var(--purple-dim);
+  background:var(--purple-glow);
+  color:var(--white);
+  font-family:var(--font-mono);
+  font-size:0.62rem;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  padding:0.75rem 0.9rem;
+  cursor:pointer;
+  margin:0 0 1.2rem;
+}
+.project-expand:hover { border-color:var(--purple); }
+.project-modal {
+  position:fixed;
+  inset:0;
+  z-index:2000;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:2rem;
+  background:rgba(3,3,8,0.78);
+  backdrop-filter:blur(10px);
+}
+.project-modal.open { display:flex; }
+.project-modal-panel {
+  width:min(1080px,100%);
+  max-height:86vh;
+  overflow:auto;
+  border:1px solid var(--purple-dim);
+  background:#10101b;
+  padding:2.2rem;
+  box-shadow:0 24px 80px rgba(0,0,0,0.45);
+}
+.project-modal-top {
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:1rem;
+  margin-bottom:1.4rem;
+}
+.project-modal-close {
+  border:1px solid var(--border);
+  background:transparent;
+  color:var(--white);
+  font-family:var(--font-mono);
+  width:36px;
+  height:36px;
+  cursor:pointer;
+  flex:0 0 auto;
+}
+.project-modal-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:1.5rem;
+}
+.project-modal-list {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:0.65rem;
+  margin-top:1rem;
+}
+.project-modal-list span {
+  border:1px solid rgba(180,79,255,0.22);
+  background:rgba(255,255,255,0.025);
+  color:var(--white);
+  font-family:var(--font-mono);
+  font-size:0.68rem;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  padding:0.75rem;
+  line-height:1.45;
+}
+.atlas-card {
+  grid-column:1/-1;
+}
+.atlas-card .proy-desc,
+.atlas-card .atlas-munis {
+  max-width:980px;
+}
 
 .proyecto-card.coming {
   display:flex; align-items:center; justify-content:center;
@@ -727,6 +807,10 @@ footer {
   .case-metrics{grid-template-columns:1fr}
   .case-flow{grid-template-columns:1fr}
   .project-visual{grid-template-columns:1fr}
+  .project-modal{padding:1rem}
+  .project-modal-panel{padding:1.4rem}
+  .project-modal-grid{grid-template-columns:1fr}
+  .project-modal-list{grid-template-columns:1fr}
   .sobre-grid{grid-template-columns:1fr;gap:2rem}
   .dron-inner{grid-template-columns:1fr;gap:2rem}
   footer{flex-direction:column;gap:1rem;text-align:center}
@@ -1123,11 +1207,12 @@ footer {
       </div>
     </div>
 
-    <div class="proyecto-card">
+    <div class="proyecto-card atlas-card">
       <p class="proy-type">Data Science · Protección Civil</p>
       <h3 class="proy-name">ATLAS DE<br><em>RIESGOS</em> MUNICIPALES</h3>
       <p class="proy-desc">Diagnóstico geoespacial para priorizar municipios con exposición territorial, vulnerabilidad e indicadores de presión urbana/ambiental. La lógica del proyecto fue pasar de tablas dispersas a una lectura de riesgo accionable.</p>
       <p class="atlas-munis"><strong>Municipios:</strong> Chicoloapan, Estado de México · Puebla, Puebla · Santa Catarina, Nuevo León · El Marqués, Querétaro</p>
+      <button class="project-expand" type="button" data-project-modal="atlasModal" onclick="document.getElementById('atlasModal').className='project-modal open';document.getElementById('atlasModal').setAttribute('aria-hidden','false')">Ver ficha completa</button>
       <div class="proy-result">→ Output: priorización municipal, capas de amenaza y tablero de lectura territorial</div>
       <div class="proy-stack">
         <span class="chip">Python</span><span class="chip">GeoPandas</span>
@@ -1138,6 +1223,38 @@ footer {
 
   </div>
 </section>
+
+<div class="project-modal" id="atlasModal" aria-hidden="true">
+  <div class="project-modal-panel" role="dialog" aria-modal="true" aria-labelledby="atlasModalTitle">
+    <div class="project-modal-top">
+      <div>
+        <p class="proy-type">Data Science · Protección Civil</p>
+        <h3 class="proy-name hero-case" id="atlasModalTitle">ATLAS DE<br><em>RIESGOS</em> MUNICIPALES</h3>
+      </div>
+      <button class="project-modal-close" type="button" data-close-modal onclick="document.getElementById('atlasModal').className='project-modal';document.getElementById('atlasModal').setAttribute('aria-hidden','true')" aria-label="Cerrar ficha">×</button>
+    </div>
+    <div class="project-modal-grid">
+      <div>
+        <p class="proy-desc">Diagnóstico geoespacial para priorizar municipios con exposición territorial, vulnerabilidad e indicadores de presión urbana/ambiental. La lógica del proyecto fue pasar de tablas dispersas a una lectura de riesgo accionable.</p>
+        <div class="proy-result">→ Output: priorización municipal, capas de amenaza y tablero de lectura territorial</div>
+        <div class="proy-stack">
+          <span class="chip">Python</span><span class="chip">GeoPandas</span>
+          <span class="chip">QGIS</span><span class="chip">INEGI</span>
+          <span class="chip">Riesgo</span><span class="chip">Municipios</span>
+        </div>
+      </div>
+      <div>
+        <p class="case-panel-title">Municipios de trabajo</p>
+        <div class="project-modal-list">
+          <span>Chicoloapan, Estado de México</span>
+          <span>Puebla, Puebla</span>
+          <span>Santa Catarina, Nuevo León</span>
+          <span>El Marqués, Querétaro</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- NOSOTROS -->
 <section id="nosotros">
@@ -1393,6 +1510,40 @@ document.querySelectorAll('[data-aicom-map]').forEach(el=>{
       btn.classList.toggle('active', btn === el);
     });
   });
+});
+
+window.openProjectModal = function(id){
+  const modal = document.getElementById(id);
+  if(!modal) return;
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden','false');
+};
+
+window.closeProjectModals = function(){
+  document.querySelectorAll('.project-modal.open').forEach(modal=>{
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden','true');
+  });
+};
+
+document.querySelectorAll('[data-project-modal]').forEach(btn=>{
+  btn.addEventListener('click', () => {
+    window.openProjectModal(btn.dataset.projectModal);
+  });
+});
+
+document.querySelectorAll('[data-close-modal]').forEach(btn=>{
+  btn.addEventListener('click', window.closeProjectModals);
+});
+
+document.querySelectorAll('.project-modal').forEach(modal=>{
+  modal.addEventListener('click', e => {
+    if(e.target === modal) window.closeProjectModals();
+  });
+});
+
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape') window.closeProjectModals();
 });
 
   // Formspree AJAX submit
