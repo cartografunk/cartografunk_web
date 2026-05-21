@@ -567,6 +567,22 @@ section { padding:7rem 4rem; }
   text-transform:uppercase;
   line-height:1.5;
 }
+.municipio-list {
+  display:flex;
+  flex-wrap:wrap;
+  gap:0.45rem;
+  margin:0.4rem 0 1.3rem;
+}
+.municipio-pill {
+  border:1px solid rgba(180,79,255,0.22);
+  color:var(--muted);
+  font-family:var(--font-mono);
+  font-size:0.58rem;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  padding:0.45rem 0.55rem;
+  background:rgba(255,255,255,0.02);
+}
 
 .proyecto-card.coming {
   display:flex; align-items:center; justify-content:center;
@@ -1111,24 +1127,29 @@ footer {
     </div>
 
     <div class="proyecto-card">
-      <p class="proy-type">Fotogrametría · Dron</p>
-      <h3 class="proy-name">LEVANTAMIENTO<br><em>TOPOGRÁFICO</em> URBANO</h3>
-      <p class="proy-desc">Ortomosaico de alta resolución y modelo digital de elevación de zona de desarrollo urbano en Querétaro. Área de 45 ha en 2 vuelos.</p>
-      <div class="proy-result">→ Resolución GSD 2.1 cm/px · Precisión vertical ±3 cm</div>
-      <div class="proy-stack">
-        <span class="chip">Mavic 3E</span><span class="chip">Agisoft</span>
-        <span class="chip">QGIS</span><span class="chip">AutoCAD</span>
+      <p class="proy-type">Data Science · Protección Civil</p>
+      <h3 class="proy-name">ATLAS DE<br><em>RIESGOS</em> MUNICIPALES</h3>
+      <p class="proy-desc">Diagnóstico geoespacial para priorizar municipios con exposición territorial, vulnerabilidad e indicadores de presión urbana/ambiental. La lógica del proyecto fue pasar de tablas dispersas a una lectura de riesgo accionable.</p>
+      <p class="case-panel-title">Municipios priorizados</p>
+      <div class="municipio-list">
+        <span class="municipio-pill">López</span>
+        <span class="municipio-pill">García</span>
+        <span class="municipio-pill">Tula</span>
+        <span class="municipio-pill">León</span>
+        <span class="municipio-pill">Lázaro Cárdenas</span>
+        <span class="municipio-pill">González</span>
+        <span class="municipio-pill">Benito Juárez</span>
+        <span class="municipio-pill">Fresnillo</span>
+        <span class="municipio-pill">Aquila</span>
+        <span class="municipio-pill">Coyuca de Catalán</span>
+        <span class="municipio-pill">Eduardo Neri</span>
+        <span class="municipio-pill">Tijuana</span>
       </div>
-    </div>
-
-    <div class="proyecto-card">
-      <p class="proy-type">Data Science · Cartografía</p>
-      <h3 class="proy-name">ATLAS DE<br>CRECIMIENTO <em>URBANO</em></h3>
-      <p class="proy-desc">Análisis geoespacial del crecimiento de las ciudades mexicanas 2000–2023. Visualizaciones virales en Instagram.</p>
-      <div class="proy-result">→ 1.2M vistas · Citado por medios nacionales</div>
+      <div class="proy-result">→ Output: priorización municipal, capas de amenaza y tablero de lectura territorial</div>
       <div class="proy-stack">
         <span class="chip">Python</span><span class="chip">GeoPandas</span>
-        <span class="chip">Matplotlib</span><span class="chip">INEGI</span>
+        <span class="chip">QGIS</span><span class="chip">INEGI</span>
+        <span class="chip">Riesgo</span><span class="chip">Municipios</span>
       </div>
     </div>
 
