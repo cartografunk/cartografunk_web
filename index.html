@@ -515,6 +515,58 @@ section { padding:7rem 4rem; }
   border-color:rgba(180,79,255,0.32);
   background:rgba(180,79,255,0.055);
 }
+.project-visual {
+  display:grid;
+  grid-template-columns:minmax(0,0.9fr) minmax(280px,1.1fr);
+  gap:1.5rem;
+  align-items:start;
+}
+.aicom-tabs {
+  display:flex;
+  flex-wrap:wrap;
+  gap:0.45rem;
+  margin:1rem 0;
+}
+.aicom-tab {
+  border:1px solid var(--border);
+  background:rgba(255,255,255,0.025);
+  color:var(--muted);
+  font-family:var(--font-mono);
+  font-size:0.58rem;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  padding:0.55rem 0.65rem;
+  cursor:pointer;
+}
+.aicom-tab:hover,
+.aicom-tab.active {
+  border-color:var(--purple);
+  color:var(--white);
+  background:var(--purple-glow);
+}
+.aicom-media {
+  border:1px solid var(--border);
+  background:#07070c;
+  min-height:230px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+.aicom-media img {
+  width:100%;
+  height:auto;
+  display:block;
+}
+.aicom-caption {
+  font-family:var(--font-mono);
+  font-size:0.58rem;
+  color:rgba(180,79,255,0.55);
+  margin-top:0.75rem;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  line-height:1.5;
+}
 
 .proyecto-card.coming {
   display:flex; align-items:center; justify-content:center;
@@ -661,6 +713,7 @@ footer {
   .proyecto-hero{grid-template-columns:1fr;gap:1.5rem}
   .case-metrics{grid-template-columns:1fr}
   .case-flow{grid-template-columns:1fr}
+  .project-visual{grid-template-columns:1fr}
   .sobre-grid{grid-template-columns:1fr;gap:2rem}
   .dron-inner{grid-template-columns:1fr;gap:2rem}
   footer{flex-direction:column;gap:1rem;text-align:center}
@@ -1024,17 +1077,36 @@ footer {
       </div>
     </div>
 
-    <div class="proyecto-card">
-      <p class="proy-type">Investigación territorial · Minería · Riesgo</p>
-      <h3 class="proy-name">MINERÍA,<br><em>MERCURIO</em> Y CRIMEN ORGANIZADO</h3>
-      <p class="proy-desc">Sistematización longitudinal 2021–2025 sobre minería de mercurio, gobernanza ambiental y factores de riesgo asociados al crimen organizado. El trabajo integró revisión documental, matriz de indicadores y seguimiento de entregables para convertir fuentes dispersas en lectura estratégica.</p>
-      <div class="proy-result">→ 32 fuentes técnicas sistematizadas · 2 entregables: diagnóstico longitudinal + monitoreo de indicadores</div>
-      <div class="proy-result" style="border-color:var(--purple-dim)">→ Output: base de evidencia para análisis de política pública, riesgos ambientales y trazabilidad institucional</div>
-      <div class="proy-stack">
-        <span class="chip">Python</span><span class="chip">Pandas</span>
-        <span class="chip">Excel</span><span class="chip">Indicadores</span>
-        <span class="chip">Minamata</span><span class="chip">Revisión documental</span>
-        <span class="chip">Riesgo territorial</span>
+    <div class="proyecto-card project-visual" id="aicom-case">
+      <div>
+        <p class="proy-type">Investigación territorial · Minería · Riesgo</p>
+        <h3 class="proy-name">MINERÍA,<br><em>MERCURIO</em> Y CRIMEN ORGANIZADO</h3>
+        <p class="proy-desc">Línea base AICOM sobre crimen organizado, minería y riesgos ambientales. El trabajo convirtió registros por estado y municipio, yacimientos, MOAPEs y presencia de organizaciones en cartografía analítica para lectura territorial.</p>
+        <div class="proy-result">→ 14 mapas temáticos · lectura por organización, delito, yacimiento y zona minera</div>
+        <div class="proy-result" style="border-color:var(--purple-dim)">→ Output: repositorio cartográfico y evidencia para diagnóstico de riesgo territorial</div>
+        <div class="proy-stack">
+          <span class="chip">ArcGIS</span><span class="chip">CSV</span>
+          <span class="chip">Cartografía temática</span><span class="chip">Indicadores</span>
+          <span class="chip">AICOM</span><span class="chip">Riesgo territorial</span>
+          <span class="chip">Minería</span>
+        </div>
+      </div>
+      <div>
+        <p class="case-panel-title">Explorador de mapas · AICOM</p>
+        <div class="aicom-tabs" aria-label="Mapas del proyecto AICOM">
+          <button class="aicom-tab active" type="button" data-aicom-map="yacimientos">Yacimientos</button>
+          <button class="aicom-tab" type="button" data-aicom-map="moapes">MOAPEs</button>
+          <button class="aicom-tab" type="button" data-aicom-map="delitos">Delitos</button>
+          <button class="aicom-tab" type="button" data-aicom-map="cjng">CJNG</button>
+          <button class="aicom-tab" type="button" data-aicom-map="cds">CDS</button>
+          <button class="aicom-tab" type="button" data-aicom-map="cdg">CDG</button>
+          <button class="aicom-tab" type="button" data-aicom-map="cdn">CDN</button>
+          <button class="aicom-tab" type="button" data-aicom-map="lnfm">LNFM</button>
+        </div>
+        <div class="aicom-media">
+          <img id="aicomImage" src="assets/img/aicom/yacimientos.png" alt="Mapa de yacimientos del proyecto AICOM">
+        </div>
+        <p class="aicom-caption" id="aicomCaption">Yacimientos mineros · capa de contexto territorial</p>
       </div>
     </div>
 
@@ -1258,6 +1330,64 @@ document.querySelectorAll('[data-lirio-view]').forEach(el=>{
   el.addEventListener('click', () => {
     lirioView = el.dataset.lirioView;
     updateLirioExplorer();
+  });
+});
+
+const aicomData = {
+  yacimientos: {
+    src:'assets/img/aicom/yacimientos.png',
+    caption:'Yacimientos mineros · capa de contexto territorial',
+    alt:'Mapa de yacimientos del proyecto AICOM'
+  },
+  moapes: {
+    src:'assets/img/aicom/moapes.png',
+    caption:'MOAPEs · minería de oro artesanal y de pequeña escala',
+    alt:'Mapa de MOAPEs del proyecto AICOM'
+  },
+  delitos: {
+    src:'assets/img/aicom/delitos-narcotrafico.png',
+    caption:'Delitos contra la salud y narcotráfico · distribución territorial',
+    alt:'Mapa de delitos de narcotráfico del proyecto AICOM'
+  },
+  cjng: {
+    src:'assets/img/aicom/reg-cjng.png',
+    caption:'CJNG · municipios registrados en la línea base',
+    alt:'Mapa de presencia municipal CJNG'
+  },
+  cds: {
+    src:'assets/img/aicom/reg-cds.png',
+    caption:'CDS · municipios registrados en la línea base',
+    alt:'Mapa de presencia municipal CDS'
+  },
+  cdg: {
+    src:'assets/img/aicom/reg-cdg.png',
+    caption:'CDG · municipios registrados en la línea base',
+    alt:'Mapa de presencia municipal CDG'
+  },
+  cdn: {
+    src:'assets/img/aicom/reg-cdn.png',
+    caption:'CDN · municipios registrados en la línea base',
+    alt:'Mapa de presencia municipal CDN'
+  },
+  lnfm: {
+    src:'assets/img/aicom/reg-lnfm.png',
+    caption:'LNFM · municipios registrados en la línea base',
+    alt:'Mapa de presencia municipal LNFM'
+  }
+};
+
+const aicomImage = document.getElementById('aicomImage');
+const aicomCaption = document.getElementById('aicomCaption');
+document.querySelectorAll('[data-aicom-map]').forEach(el=>{
+  el.addEventListener('click', () => {
+    const item = aicomData[el.dataset.aicomMap];
+    if(!item || !aicomImage) return;
+    aicomImage.src = item.src;
+    aicomImage.alt = item.alt;
+    if(aicomCaption) aicomCaption.textContent = item.caption;
+    document.querySelectorAll('[data-aicom-map]').forEach(btn=>{
+      btn.classList.toggle('active', btn === el);
+    });
   });
 });
 
