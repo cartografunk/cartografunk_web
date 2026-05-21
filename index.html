@@ -567,21 +567,18 @@ section { padding:7rem 4rem; }
   text-transform:uppercase;
   line-height:1.5;
 }
-.mini-list {
-  display:flex;
-  flex-wrap:wrap;
-  gap:0.4rem;
-  margin:0 0 1.1rem;
-}
-.mini-pill {
-  border:1px solid rgba(180,79,255,0.2);
-  color:var(--muted);
+.atlas-munis {
   font-family:var(--font-mono);
-  font-size:0.56rem;
+  color:var(--muted);
+  font-size:0.64rem;
   letter-spacing:1px;
+  line-height:1.7;
   text-transform:uppercase;
-  padding:0.42rem 0.52rem;
-  background:rgba(255,255,255,0.018);
+  margin:0 0 1.2rem;
+}
+.atlas-munis strong {
+  color:var(--purple-bright);
+  font-weight:700;
 }
 
 .proyecto-card.coming {
@@ -1130,12 +1127,7 @@ footer {
       <p class="proy-type">Data Science · Protección Civil</p>
       <h3 class="proy-name">ATLAS DE<br><em>RIESGOS</em> MUNICIPALES</h3>
       <p class="proy-desc">Diagnóstico geoespacial para priorizar municipios con exposición territorial, vulnerabilidad e indicadores de presión urbana/ambiental. La lógica del proyecto fue pasar de tablas dispersas a una lectura de riesgo accionable.</p>
-      <div class="mini-list" aria-label="Municipios del Atlas de Riesgos">
-        <span class="mini-pill">Chicoloapan, Estado de México</span>
-        <span class="mini-pill">Puebla, Puebla</span>
-        <span class="mini-pill">Santa Catarina, Nuevo León</span>
-        <span class="mini-pill">El Marqués, Querétaro</span>
-      </div>
+      <p class="atlas-munis"><strong>Municipios:</strong> Chicoloapan, Estado de México · Puebla, Puebla · Santa Catarina, Nuevo León · El Marqués, Querétaro</p>
       <div class="proy-result">→ Output: priorización municipal, capas de amenaza y tablero de lectura territorial</div>
       <div class="proy-stack">
         <span class="chip">Python</span><span class="chip">GeoPandas</span>
