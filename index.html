@@ -312,6 +312,209 @@ section { padding:7rem 4rem; }
   letter-spacing:1px;
 }
 .proy-stack { display:flex; gap:0.4rem; flex-wrap:wrap; }
+.proyecto-hero {
+  grid-column:1/-1;
+  display:grid;
+  grid-template-columns:minmax(0,1.05fr) minmax(320px,0.95fr);
+  gap:2rem;
+  align-items:start;
+  border-color:rgba(180,79,255,0.35);
+  background:linear-gradient(135deg,#12121f 60%,rgba(140,40,255,0.07));
+}
+.proy-name.hero-case { font-size:2.2rem; }
+.case-metrics {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:0.7rem;
+  margin:1.4rem 0;
+}
+.case-metric {
+  border:1px solid var(--border);
+  background:rgba(255,255,255,0.025);
+  padding:1rem;
+}
+.case-metric strong {
+  display:block;
+  font-family:var(--font-mono);
+  color:var(--white);
+  font-size:1.15rem;
+  margin-bottom:0.25rem;
+}
+.case-metric span {
+  display:block;
+  font-family:var(--font-mono);
+  color:var(--muted);
+  font-size:0.58rem;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  line-height:1.45;
+}
+.case-flow {
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:1px;
+  margin:1rem 0 1.4rem;
+  border:1px solid var(--border);
+  background:var(--border);
+}
+.case-step {
+  background:rgba(255,255,255,0.025);
+  padding:0.9rem;
+  min-height:82px;
+}
+.case-step b {
+  display:block;
+  font-family:var(--font-mono);
+  color:var(--purple-bright);
+  font-size:0.62rem;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  margin-bottom:0.45rem;
+}
+.case-step span {
+  display:block;
+  font-family:var(--font-serif);
+  color:var(--muted);
+  font-size:0.82rem;
+  line-height:1.45;
+}
+.case-panel {
+  border:1px solid rgba(180,79,255,0.24);
+  background:rgba(7,7,12,0.42);
+  padding:1.4rem;
+}
+.case-panel-title {
+  font-family:var(--font-mono);
+  font-size:0.6rem;
+  color:var(--purple);
+  letter-spacing:3px;
+  text-transform:uppercase;
+  margin-bottom:1rem;
+}
+.coverage-bars { display:flex; flex-direction:column; gap:0.6rem; }
+.coverage-row {
+  display:grid;
+  grid-template-columns:72px minmax(0,1fr) 52px;
+  align-items:center;
+  gap:0.8rem;
+}
+.coverage-date {
+  font-family:var(--font-mono);
+  font-size:0.6rem;
+  color:var(--muted);
+}
+.coverage-date.accent { color:var(--purple); }
+.coverage-track {
+  background:rgba(180,79,255,0.15);
+  border:1px solid var(--border);
+  height:22px;
+  position:relative;
+  overflow:hidden;
+}
+.coverage-fill {
+  position:absolute;
+  left:0;
+  top:0;
+  bottom:0;
+}
+.coverage-value {
+  font-family:var(--font-mono);
+  font-size:0.65rem;
+  color:var(--purple-bright);
+  text-align:right;
+}
+.case-note {
+  font-family:var(--font-mono);
+  font-size:0.58rem;
+  color:rgba(180,79,255,0.55);
+  margin-top:1rem;
+  letter-spacing:1px;
+  line-height:1.5;
+}
+.lirio-toolbar {
+  display:flex;
+  flex-wrap:wrap;
+  gap:0.45rem;
+  margin:0 0 1rem;
+}
+.lirio-tab {
+  border:1px solid var(--border);
+  background:rgba(255,255,255,0.025);
+  color:var(--muted);
+  font-family:var(--font-mono);
+  font-size:0.62rem;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  padding:0.6rem 0.7rem;
+  cursor:pointer;
+  transition:border-color 0.2s, color 0.2s, background 0.2s;
+}
+.lirio-tab:hover,
+.lirio-tab.active {
+  border-color:var(--purple);
+  color:var(--white);
+  background:var(--purple-glow);
+}
+.lirio-view-switch {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:1px;
+  margin-bottom:1rem;
+  background:var(--border);
+  border:1px solid var(--border);
+}
+.lirio-view-switch button {
+  border:0;
+  background:#0d0d15;
+  color:var(--muted);
+  font-family:var(--font-mono);
+  font-size:0.62rem;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  padding:0.7rem;
+  cursor:pointer;
+}
+.lirio-view-switch button.active {
+  background:rgba(180,79,255,0.14);
+  color:var(--purple-bright);
+}
+.lirio-media {
+  border:1px solid var(--border);
+  background:#07070c;
+  min-height:260px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+.lirio-media img {
+  width:100%;
+  height:auto;
+  display:block;
+}
+.lirio-caption {
+  display:flex;
+  justify-content:space-between;
+  gap:1rem;
+  color:var(--muted);
+  font-family:var(--font-mono);
+  font-size:0.58rem;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  margin-top:0.75rem;
+  line-height:1.5;
+}
+.coverage-row.clickable {
+  cursor:pointer;
+  padding:0.25rem;
+  margin:-0.25rem;
+  border:1px solid transparent;
+}
+.coverage-row.clickable:hover,
+.coverage-row.clickable.active {
+  border-color:rgba(180,79,255,0.32);
+  background:rgba(180,79,255,0.055);
+}
 
 .proyecto-card.coming {
   display:flex; align-items:center; justify-content:center;
@@ -455,6 +658,9 @@ footer {
   section{padding:4rem 1.5rem}
   .servicios-grid{grid-template-columns:1fr}
   .proyectos-grid{grid-template-columns:1fr}
+  .proyecto-hero{grid-template-columns:1fr;gap:1.5rem}
+  .case-metrics{grid-template-columns:1fr}
+  .case-flow{grid-template-columns:1fr}
   .sobre-grid{grid-template-columns:1fr;gap:2rem}
   .dron-inner{grid-template-columns:1fr;gap:2rem}
   footer{flex-direction:column;gap:1rem;text-align:center}
@@ -728,13 +934,27 @@ footer {
   <div class="proyectos-grid">
 
     <!-- LIRIO — HERO PROJECT spanning full width -->
-    <div class="proyecto-card" style="grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:start;border-color:rgba(180,79,255,0.35);background:linear-gradient(135deg,#12121f 60%,rgba(140,40,255,0.07));">
+    <div class="proyecto-card proyecto-hero" id="lirio-case">
       <div>
-        <p class="proy-type">Percepción Remota · ML · Drones · Mayo 2026</p>
-        <h3 class="proy-name" style="font-size:2.2rem">MONITOREO DE<br><em>LIRIO ACUÁTICO</em><br>BORDO BENITO JUÁREZ</h3>
-        <p class="proy-desc">Estimación multitemporal de la cobertura de <em>Eichhornia crassipes</em> en el Parque Querétaro 2000 mediante análisis del índice reNDVI (Sentinel-2) y validación independiente con vuelo DJI Mavic 3 Multispectral. El objetivo fue verificar cuantitativamente la efectividad de las acciones de remoción mecánica ordenadas por fallo judicial.</p>
-        <div class="proy-result" style="margin-bottom:0.8rem">→ Reducción documentada de 100% → 5.88% de cobertura en 3 meses</div>
-        <div class="proy-result" style="margin-bottom:1.5rem;border-color:var(--purple-dim)">→ Doble validación: Sentinel-2 (12.25%) + Mavic 3 Multispectral (5.88% · GSD 6.84 cm/px)</div>
+        <p class="proy-type">Percepción remota · ML · Drones · Mayo 2026</p>
+        <h3 class="proy-name hero-case">MONITOREO DE<br><em>LIRIO ACUÁTICO</em><br>BORDO BENITO JUÁREZ</h3>
+        <p class="proy-desc">Caso de estudio para estimar la cobertura de <em>Eichhornia crassipes</em> con Sentinel-2, reNDVI y validación independiente con DJI Mavic 3 Multispectral. El flujo combina Google Earth Engine, Python, clasificación por umbral automático y cartografía lista para decisión pública.</p>
+
+        <div class="case-metrics" aria-label="Métricas clave del proyecto de lirio acuático">
+          <div class="case-metric"><strong>10.71 ha</strong><span>Área total del AOI</span></div>
+          <div class="case-metric"><strong>13.63%</strong><span>Sentinel-2 · 8 May</span></div>
+          <div class="case-metric"><strong>7.88%</strong><span>Mavic 3 MS · Validación</span></div>
+        </div>
+
+        <div class="case-flow">
+          <div class="case-step"><b>01 · AOI</b><span>Polígono Benito Juárez en GeoPackage.</span></div>
+          <div class="case-step"><b>02 · Índice</b><span>reNDVI con NIR y Red Edge.</span></div>
+          <div class="case-step"><b>03 · Modelo</b><span>Umbral KDE/Otsu para máscara binaria.</span></div>
+          <div class="case-step"><b>04 · Validación</b><span>Ortofoto Mavic 3 Multispectral.</span></div>
+        </div>
+
+        <div class="proy-result" style="margin-bottom:0.8rem">→ Resultado: cuantificación reproducible de cobertura, área libre y avance de remoción.</div>
+        <div class="proy-result" style="margin-bottom:1.5rem;border-color:var(--purple-dim)">→ Doble lectura: Sentinel-2 para serie temporal + dron multiespectral para validación fina.</div>
         <div class="proy-stack">
           <span class="chip">Python</span><span class="chip">Sentinel-2</span>
           <span class="chip">reNDVI</span><span class="chip">Otsu / KDE</span>
@@ -742,62 +962,65 @@ footer {
           <span class="chip">QGIS</span><span class="chip">Google Earth Engine</span>
         </div>
       </div>
-      <div>
-        <p style="font-family:var(--font-mono);font-size:0.6rem;color:var(--purple);letter-spacing:3px;text-transform:uppercase;margin-bottom:1rem;">Cobertura de lirio — Serie temporal</p>
-        <!-- Mini timeline chart -->
-        <div style="display:flex;flex-direction:column;gap:0.6rem;">
-          <!-- bars -->
-          <div style="display:flex;align-items:center;gap:0.8rem">
-            <span style="font-family:var(--font-mono);font-size:0.6rem;color:var(--muted);width:72px;flex-shrink:0">Inicio</span>
-            <div style="flex:1;background:rgba(180,79,255,0.15);border:1px solid var(--border);height:22px;position:relative;overflow:hidden">
-              <div style="position:absolute;left:0;top:0;bottom:0;width:100%;background:rgba(34,180,100,0.7)"></div>
-            </div>
-            <span style="font-family:var(--font-mono);font-size:0.65rem;color:#22b464;width:40px;text-align:right;flex-shrink:0">100%</span>
+      <div class="case-panel">
+        <p class="case-panel-title">Explorador interactivo · Lirio acuático</p>
+
+        <div class="lirio-toolbar" aria-label="Fechas de análisis">
+          <button class="lirio-tab active" type="button" data-lirio-date="20260217">17 Feb</button>
+          <button class="lirio-tab" type="button" data-lirio-date="20260222">22 Feb</button>
+          <button class="lirio-tab" type="button" data-lirio-date="20260319">19 Mar</button>
+          <button class="lirio-tab" type="button" data-lirio-date="20260418">18 Abr</button>
+          <button class="lirio-tab" type="button" data-lirio-date="20260508">8 May</button>
+          <button class="lirio-tab" type="button" data-lirio-date="20260508m">Dron</button>
+        </div>
+
+        <div class="lirio-view-switch" aria-label="Tipo de visualización">
+          <button class="active" type="button" data-lirio-view="map">Mapa</button>
+          <button type="button" data-lirio-view="hist">Histograma</button>
+        </div>
+
+        <div class="lirio-media">
+          <img id="lirioImage" src="assets/img/lirio/map-rendvi-20260217.png" alt="Mapa reNDVI del 17 de febrero de 2026">
+        </div>
+        <div class="lirio-caption">
+          <span id="lirioCaption">Sentinel-2 · 17 Feb 2026 · reNDVI 2 m</span>
+          <span id="lirioMetric">Cobertura estimada: 97.5%</span>
+        </div>
+
+        <p class="case-panel-title" style="margin-top:1.4rem">Cobertura de lirio · serie temporal</p>
+        <div class="coverage-bars">
+          <div class="coverage-row clickable active" data-lirio-date="20260217">
+            <span class="coverage-date">17 Feb</span>
+            <div class="coverage-track"><div class="coverage-fill" style="width:97.5%;background:rgba(34,180,100,0.65)"></div></div>
+            <span class="coverage-value" style="color:#22b464">97.5%</span>
           </div>
-          <div style="display:flex;align-items:center;gap:0.8rem">
-            <span style="font-family:var(--font-mono);font-size:0.6rem;color:var(--muted);width:72px;flex-shrink:0">17 Feb</span>
-            <div style="flex:1;background:rgba(180,79,255,0.15);border:1px solid var(--border);height:22px;position:relative;overflow:hidden">
-              <div style="position:absolute;left:0;top:0;bottom:0;width:97.5%;background:rgba(34,180,100,0.65)"></div>
-            </div>
-            <span style="font-family:var(--font-mono);font-size:0.65rem;color:#22b464;width:40px;text-align:right;flex-shrink:0">97.5%</span>
+          <div class="coverage-row clickable" data-lirio-date="20260222">
+            <span class="coverage-date">22 Feb</span>
+            <div class="coverage-track"><div class="coverage-fill" style="width:82.8%;background:rgba(180,160,40,0.65)"></div></div>
+            <span class="coverage-value" style="color:#b4a028">82.8%</span>
           </div>
-          <div style="display:flex;align-items:center;gap:0.8rem">
-            <span style="font-family:var(--font-mono);font-size:0.6rem;color:var(--muted);width:72px;flex-shrink:0">22 Feb</span>
-            <div style="flex:1;background:rgba(180,79,255,0.15);border:1px solid var(--border);height:22px;position:relative;overflow:hidden">
-              <div style="position:absolute;left:0;top:0;bottom:0;width:82.8%;background:rgba(180,160,40,0.65)"></div>
-            </div>
-            <span style="font-family:var(--font-mono);font-size:0.65rem;color:#b4a028;width:40px;text-align:right;flex-shrink:0">82.8%</span>
+          <div class="coverage-row clickable" data-lirio-date="20260319">
+            <span class="coverage-date">19 Mar</span>
+            <div class="coverage-track"><div class="coverage-fill" style="width:55.1%;background:rgba(200,130,30,0.65)"></div></div>
+            <span class="coverage-value" style="color:#c8821e">55.1%</span>
           </div>
-          <div style="display:flex;align-items:center;gap:0.8rem">
-            <span style="font-family:var(--font-mono);font-size:0.6rem;color:var(--muted);width:72px;flex-shrink:0">19 Mar</span>
-            <div style="flex:1;background:rgba(180,79,255,0.15);border:1px solid var(--border);height:22px;position:relative;overflow:hidden">
-              <div style="position:absolute;left:0;top:0;bottom:0;width:55%;background:rgba(200,130,30,0.65)"></div>
-            </div>
-            <span style="font-family:var(--font-mono);font-size:0.65rem;color:#c8821e;width:40px;text-align:right;flex-shrink:0">55.1%</span>
+          <div class="coverage-row clickable" data-lirio-date="20260418">
+            <span class="coverage-date">18 Abr</span>
+            <div class="coverage-track"><div class="coverage-fill" style="width:41.7%;background:rgba(200,90,30,0.65)"></div></div>
+            <span class="coverage-value" style="color:#c85a1e">41.7%</span>
           </div>
-          <div style="display:flex;align-items:center;gap:0.8rem">
-            <span style="font-family:var(--font-mono);font-size:0.6rem;color:var(--muted);width:72px;flex-shrink:0">18 Abr</span>
-            <div style="flex:1;background:rgba(180,79,255,0.15);border:1px solid var(--border);height:22px;position:relative;overflow:hidden">
-              <div style="position:absolute;left:0;top:0;bottom:0;width:41.7%;background:rgba(200,90,30,0.65)"></div>
-            </div>
-            <span style="font-family:var(--font-mono);font-size:0.65rem;color:#c85a1e;width:40px;text-align:right;flex-shrink:0">41.7%</span>
+          <div class="coverage-row clickable" data-lirio-date="20260508">
+            <span class="coverage-date">8 May</span>
+            <div class="coverage-track"><div class="coverage-fill" style="width:13.63%;background:rgba(180,79,255,0.85)"></div></div>
+            <span class="coverage-value">13.63%</span>
           </div>
-          <div style="display:flex;align-items:center;gap:0.8rem">
-            <span style="font-family:var(--font-mono);font-size:0.6rem;color:var(--muted);width:72px;flex-shrink:0">8 May</span>
-            <div style="flex:1;background:rgba(180,79,255,0.15);border:1px solid var(--border);height:22px;position:relative;overflow:hidden">
-              <div style="position:absolute;left:0;top:0;bottom:0;width:12.25%;background:rgba(180,79,255,0.9)"></div>
-            </div>
-            <span style="font-family:var(--font-mono);font-size:0.65rem;color:var(--purple-bright);width:40px;text-align:right;flex-shrink:0">12.3%</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:0.8rem">
-            <span style="font-family:var(--font-mono);font-size:0.6rem;color:var(--purple);width:72px;flex-shrink:0">🚁 Dron</span>
-            <div style="flex:1;background:rgba(180,79,255,0.15);border:1px solid rgba(180,79,255,0.5);height:22px;position:relative;overflow:hidden">
-              <div style="position:absolute;left:0;top:0;bottom:0;width:5.88%;background:var(--purple)"></div>
-            </div>
-            <span style="font-family:var(--font-mono);font-size:0.65rem;color:var(--purple-bright);width:40px;text-align:right;flex-shrink:0;font-weight:700">5.88%</span>
+          <div class="coverage-row clickable" data-lirio-date="20260508m">
+            <span class="coverage-date accent">Dron</span>
+            <div class="coverage-track" style="border-color:rgba(180,79,255,0.5)"><div class="coverage-fill" style="width:7.88%;background:var(--purple)"></div></div>
+            <span class="coverage-value" style="font-weight:700">7.88%</span>
           </div>
         </div>
-        <p style="font-family:var(--font-mono);font-size:0.58rem;color:rgba(180,79,255,0.4);margin-top:1rem;letter-spacing:1px">Área total: 11.38 ha · Fuente: Sentinel-2 + Mavic 3 Multispectral</p>
+        <p class="case-note">Área total: 10.71 ha · Fuente: Sentinel-2 MSI L2A + DJI Mavic 3 Multispectral · reNDVI = (NIR - Red Edge) / (NIR + Red Edge)</p>
       </div>
     </div>
 
@@ -942,6 +1165,86 @@ document.querySelectorAll('.servicio-card,.proyecto-card,.stat,.spec-item,.team-
   el.style.transform='translateY(20px)';
   el.style.transition='opacity 0.55s ease, transform 0.55s ease';
   io.observe(el);
+});
+
+const lirioData = {
+  '20260217': {
+    label:'Sentinel-2 · 17 Feb 2026 · reNDVI 2 m',
+    metric:'Cobertura estimada: 97.5%',
+    map:'assets/img/lirio/map-rendvi-20260217.png',
+    hist:'assets/img/lirio/hist-rendvi-20260217.png',
+    alt:'Mapa reNDVI del 17 de febrero de 2026'
+  },
+  '20260222': {
+    label:'Sentinel-2 · 22 Feb 2026 · reNDVI 2 m',
+    metric:'Cobertura estimada: 82.8%',
+    map:'assets/img/lirio/map-rendvi-20260222.png',
+    hist:'assets/img/lirio/hist-rendvi-20260222.png',
+    alt:'Mapa reNDVI del 22 de febrero de 2026'
+  },
+  '20260319': {
+    label:'Sentinel-2 · 19 Mar 2026 · reNDVI 2 m',
+    metric:'Cobertura estimada: 55.1%',
+    map:'assets/img/lirio/map-rendvi-20260319.png',
+    hist:'assets/img/lirio/hist-rendvi-20260319.png',
+    alt:'Mapa reNDVI del 19 de marzo de 2026'
+  },
+  '20260418': {
+    label:'Sentinel-2 · 18 Abr 2026 · reNDVI 2 m',
+    metric:'Cobertura estimada: 41.7%',
+    map:'assets/img/lirio/map-rendvi-20260418.png',
+    hist:'assets/img/lirio/hist-rendvi-20260418.png',
+    alt:'Mapa reNDVI del 18 de abril de 2026'
+  },
+  '20260508': {
+    label:'Sentinel-2 · 8 May 2026 · reNDVI 2 m',
+    metric:'Cobertura estimada: 13.63%',
+    map:'assets/img/lirio/map-rendvi-20260508.png',
+    hist:'assets/img/lirio/hist-rendvi-20260508.png',
+    alt:'Mapa reNDVI del 8 de mayo de 2026'
+  },
+  '20260508m': {
+    label:'DJI Mavic 3 Multispectral · 8 May 2026',
+    metric:'Cobertura validada: 7.88% · 0.8439 ha',
+    map:'assets/img/lirio/map-rendvi-20260508-mavic.png',
+    hist:'assets/img/lirio/hist-rendvi-comparativo.png',
+    alt:'Mapa reNDVI con validación Mavic 3 Multispectral del 8 de mayo de 2026'
+  }
+};
+
+let lirioDate = '20260217';
+let lirioView = 'map';
+const lirioImage = document.getElementById('lirioImage');
+const lirioCaption = document.getElementById('lirioCaption');
+const lirioMetric = document.getElementById('lirioMetric');
+
+function updateLirioExplorer(){
+  if(!lirioImage || !lirioData[lirioDate]) return;
+  const item = lirioData[lirioDate];
+  lirioImage.src = item[lirioView];
+  lirioImage.alt = lirioView === 'map' ? item.alt : `Histograma reNDVI para ${item.label}`;
+  lirioCaption.textContent = item.label;
+  lirioMetric.textContent = item.metric;
+  document.querySelectorAll('[data-lirio-date]').forEach(el=>{
+    el.classList.toggle('active', el.dataset.lirioDate === lirioDate);
+  });
+  document.querySelectorAll('[data-lirio-view]').forEach(el=>{
+    el.classList.toggle('active', el.dataset.lirioView === lirioView);
+  });
+}
+
+document.querySelectorAll('[data-lirio-date]').forEach(el=>{
+  el.addEventListener('click', () => {
+    lirioDate = el.dataset.lirioDate;
+    updateLirioExplorer();
+  });
+});
+
+document.querySelectorAll('[data-lirio-view]').forEach(el=>{
+  el.addEventListener('click', () => {
+    lirioView = el.dataset.lirioView;
+    updateLirioExplorer();
+  });
 });
 
   // Formspree AJAX submit
