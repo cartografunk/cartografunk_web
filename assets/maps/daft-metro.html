@@ -499,9 +499,9 @@ body {
   font-size: 0.75rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  background: transparent;
+  background: var(--purple);
   border: 1px solid var(--purple-hi);
-  color: var(--purple-hi);
+  color: var(--text);
   padding: 0.75rem 2.5rem;
   cursor: pointer;
   border-radius: 2px;
@@ -513,7 +513,7 @@ body {
   content: '';
   position: absolute;
   inset: 0;
-  background: var(--purple-glow);
+  background: rgba(255,255,255,0.12);
   opacity: 0;
   transition: opacity 0.2s;
 }
@@ -583,7 +583,7 @@ body {
   <div class="section-label">Explorador interactivo · Red ferroviaria · Île-de-France</div>
   <h2 class="section-title">DAFT <em>METRO</em></h2>
   <p class="section-desc">
-    Monitoreo en tiempo real de la red de transporte de la Île-de-France.
+    Mapa interactivo de house francés.
     Cada tren que llega dispara un sample de audio y un destello en el mapa.
     Datos vía PRIM · RATP/SNCF.
   </p>
@@ -670,12 +670,7 @@ body {
   <!-- OVERLAY START -->
   <div id="start-overlay">
     <img class="overlay-icon" src="../img/cartofunk-blank.png" alt="Cartografunk">
-    <div class="overlay-title">DAFT <em>METRO</em></div>
-    <div class="overlay-sub">
-      Mapa interactivo de house francés
-    </div>
-    <div class="overlay-meta">Leaflet.js · Web Audio API · GeoJSON</div>
-    <button class="start-btn" id="start-btn">INICIAR</button>
+    <button class="start-btn" id="start-btn">▶ INICIAR</button>
   </div>
 
 </div><!-- /map-card -->
@@ -1062,15 +1057,19 @@ function buildLegend(geojson) {
 function buildLegendFallback() {
   const list = document.getElementById('legend-list');
   list.innerHTML = '';
-  const lines = [
-    ['M1','#FFD700'],['M4','#BE418D'],['M6','#6ECA97'],['M14','#62259D'],
-    ['RER A','#E2001A'],['RER B','#007DC5'],['RER C','#FFD400'],
-    ['RER D','#008F5D'],['RER E','#C04191'],
-  ];
+  const seen = new Set();
+  const lines = STATE.stations
+    .filter(station => {
+      if (!station.line || seen.has(station.line)) return false;
+      seen.add(station.line);
+      return true;
+    })
+    .map(station => [station.line, station.color || CONFIG.LINE_COLORS[station.line] || CONFIG.LINE_COLORS.DEFAULT]);
+
   lines.forEach(([id, color]) => {
     list.innerHTML += `
       <div class="legend-item">
-        <div class="legend-line" style="background:${color};box-shadow:0 0 6px ${color}"></div>
+        <div class="legend-line" style="width:8px;height:8px;border-radius:50%;background:${color};box-shadow:0 0 6px ${color}"></div>
         <span>${id}</span>
       </div>`;
   });
