@@ -547,42 +547,6 @@ body {
 }
 .leaflet-tooltip::before { display: none !important; }
 
-/* ─── CHIP API KEY ────────────────────────────────────────── */
-.apikey-form {
-  display: flex;
-  gap: 4px;
-}
-.apikey-input {
-  font-family: var(--mono);
-  font-size: 0.6rem;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  color: var(--text-dim);
-  padding: 3px 6px;
-  border-radius: 2px;
-  width: 100%;
-  min-width: 0;
-  transition: border-color 0.15s;
-}
-.apikey-input:focus {
-  outline: none;
-  border-color: var(--purple);
-  color: var(--text);
-}
-.apikey-btn {
-  font-family: var(--mono);
-  font-size: 0.55rem;
-  background: transparent;
-  border: 1px solid var(--purple);
-  color: var(--purple-hi);
-  padding: 3px 7px;
-  border-radius: 2px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.15s;
-}
-.apikey-btn:hover { background: var(--purple-glow); }
-
 /* ─── SCAN LINES ──────────────────────────────────────────── */
 .map-card::after {
   content: '';
@@ -657,15 +621,6 @@ body {
     <!-- PANEL LATERAL -->
     <div class="side-panel">
 
-      <!-- API Key -->
-      <div class="panel-block">
-        <div class="panel-label">API Key · PRIM</div>
-        <div class="apikey-form">
-          <input class="apikey-input" id="apikey-input" type="password" placeholder="Tu clave PRIM…" autocomplete="off"/>
-          <button class="apikey-btn" id="apikey-save">SET</button>
-        </div>
-      </div>
-
       <!-- Capas -->
       <div class="panel-block">
         <div class="panel-label">Capas</div>
@@ -708,7 +663,7 @@ body {
     <div class="footer-coord">
       48.8566°N 2.3522°E · <span id="zoom-label">ZOOM 12</span>
     </div>
-    <div class="footer-brand"><em>CARTOGRAFUNK</em> · DAFT METRO · PRIM API</div>
+    <div class="footer-brand"><em>CARTOGRAFUNK</em> · DAFT METRO · WEB AUDIO</div>
   </div>
 
   <!-- OVERLAY START -->
@@ -719,7 +674,7 @@ body {
       Monitoreo audiovisual de la red ferroviaria de París.
       Cada llegada de tren dispara un sample y un glow en el mapa.
     </div>
-    <div class="overlay-meta">Leaflet.js · Web Audio API · PRIM/IDFM</div>
+    <div class="overlay-meta">Leaflet.js · Web Audio API · GeoJSON</div>
     <button class="start-btn" id="start-btn">▶ INICIAR EXPERIENCIA</button>
   </div>
 
@@ -736,8 +691,8 @@ body {
 const CONFIG = {
   // ─── API PRIM ──────────────────────────────────────
   // Obtén tu clave gratuita en: https://prim.iledefrance-mobilites.fr
-  // Puedes pegarla en el input del panel o directo aquí:
-  PRIM_API_KEY: '',          // ← tu clave aquí (o déjala vacía y úsala via panel)
+  // Si quieres activar datos reales, pon la clave aquí o inyecta CONFIG.PRIM_API_KEY.
+  PRIM_API_KEY: '',
   PRIM_BASE:    'https://prim.iledefrance-mobilites.fr/marketplace',
 
   // ─── DATOS LOCALES ─────────────────────────────────
@@ -798,8 +753,10 @@ const STATE = {
   audioCtx:    null,
   audioBuffers:new Map(),
   audioQueue:  [],
-  audioRandomSide: 0,
+  audioRandomPairQueue: [],
   audioNextTime: 0,
+  audioSources:new Set(),
+  wasRunningBeforeHidden:false,
   map:         null,
   layerLines:  null,
   layerStations: null,
@@ -826,7 +783,7 @@ async function initAudio() {
     ...CONFIG.AUDIO_INTRO,
     ...CONFIG.AUDIO_PAIRS.flatMap(pair => pair),
   ];
-  STATE.audioRandomSide = 0;
+  STATE.audioRandomPairQueue = [];
   STATE.audioNextTime = 0;
 
   const loadBuffer = async (file) => {
@@ -870,10 +827,11 @@ function makeSyntheticTone(ctx, dur) {
 function getNextAudioFile() {
   if (STATE.audioQueue.length > 0) return STATE.audioQueue.shift();
 
-  const side = STATE.audioRandomSide;
-  STATE.audioRandomSide = STATE.audioRandomSide === 0 ? 1 : 0;
-  const pool = CONFIG.AUDIO_PAIRS.map(pair => pair[side]);
-  return pool[Math.floor(Math.random() * pool.length)];
+  if (STATE.audioRandomPairQueue.length === 0) {
+    const pair = CONFIG.AUDIO_PAIRS[Math.floor(Math.random() * CONFIG.AUDIO_PAIRS.length)];
+    STATE.audioRandomPairQueue = [...pair];
+  }
+  return STATE.audioRandomPairQueue.shift();
 }
 
 function playNextSample() {
@@ -902,6 +860,8 @@ function playNextSample() {
 
   src.connect(gain);
   gain.connect(STATE.audioCtx.destination);
+  STATE.audioSources.add(src);
+  src.onended = () => STATE.audioSources.delete(src);
   src.start(startAt);
 }
 
@@ -1233,6 +1193,35 @@ function stopMock() {
   setStatus(STATE.apiKey ? 'offline' : 'offline');
 }
 
+function stopAudioPlayback() {
+  STATE.audioSources.forEach(src => {
+    try { src.stop(); } catch(e) {}
+  });
+  STATE.audioSources.clear();
+  if (STATE.audioCtx) {
+    STATE.audioNextTime = STATE.audioCtx.currentTime;
+    if (STATE.audioCtx.state === 'running') STATE.audioCtx.suspend();
+  }
+}
+
+function pauseExperience() {
+  STATE.wasRunningBeforeHidden = !!STATE.mockTimer || !!STATE.pollTimer;
+  stopMock();
+  stopPolling();
+  stopAudioPlayback();
+  setStatus('offline');
+}
+
+async function resumeExperience() {
+  if (!STATE.wasRunningBeforeHidden) return;
+  if (STATE.audioCtx && STATE.audioCtx.state === 'suspended') {
+    await STATE.audioCtx.resume();
+    STATE.audioNextTime = STATE.audioCtx.currentTime;
+  }
+  if (STATE.mockActive) startMock();
+  else if (STATE.apiKey) startPolling();
+}
+
 /* ───────────────────────────────────────────────────────────
    API REAL — PRIM / IDFM
    
@@ -1359,19 +1348,6 @@ document.getElementById('mock-toggle').addEventListener('click', function() {
 });
 
 /* ───────────────────────────────────────────────────────────
-   API KEY INPUT
-   ─────────────────────────────────────────────────────────── */
-document.getElementById('apikey-save').addEventListener('click', () => {
-  const val = document.getElementById('apikey-input').value.trim();
-  if (!val) return;
-  STATE.apiKey = val;
-  CONFIG.PRIM_API_KEY = val;
-  console.log('[PRIM] API Key configurada');
-  stopPolling();
-  startPolling();
-});
-
-/* ───────────────────────────────────────────────────────────
    BOTÓN START — inicializa AudioContext + arranca todo
    ─────────────────────────────────────────────────────────── */
 document.getElementById('start-btn').addEventListener('click', async () => {
@@ -1407,11 +1383,15 @@ document.getElementById('start-btn').addEventListener('click', async () => {
   // 6. Si hay API key en config, arrancar polling
   if (STATE.apiKey) startPolling();
 
-  // 7. Precargar key en input si ya estaba en CONFIG
-  if (CONFIG.PRIM_API_KEY) {
-    document.getElementById('apikey-input').value = CONFIG.PRIM_API_KEY;
-  }
 });
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) pauseExperience();
+  else resumeExperience();
+});
+
+window.addEventListener('pagehide', pauseExperience);
+window.addEventListener('beforeunload', pauseExperience);
 
 /* ───────────────────────────────────────────────────────────
    NOTA PARA INCRUSTAR EN CARTOGRAFUNK
