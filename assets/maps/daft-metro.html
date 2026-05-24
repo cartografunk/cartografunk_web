@@ -45,18 +45,20 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--mono);
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 2rem 1rem 3rem;
+  padding: 1rem;
+  overflow: hidden;
 }
 
 /* ─── CABECERA DE SECCIÓN ─────────────────────────────────── */
 .section-header {
   width: 100%;
-  max-width: 1100px;
-  margin-bottom: 1.5rem;
+  max-width: none;
+  margin-bottom: 1rem;
+  flex: 0 0 auto;
 }
 .section-label {
   font-family: var(--mono);
@@ -90,12 +92,16 @@ body {
 /* ─── CARD CONTENEDOR ─────────────────────────────────────── */
 .map-card {
   width: 100%;
-  max-width: 1100px;
+  max-width: none;
+  flex: 1 1 auto;
+  min-height: 0;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
   position: relative;
+  display: flex;
+  flex-direction: column;
   box-shadow:
     0 0 0 1px var(--border),
     0 0 40px rgba(124,58,237,0.08),
@@ -216,17 +222,19 @@ body {
 .map-body {
   display: grid;
   grid-template-columns: 1fr 240px;
-  height: 560px;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 @media (max-width: 768px) {
-  .map-body { grid-template-columns: 1fr; grid-template-rows: 1fr auto; height: auto; }
+  body { height: auto; min-height: 100vh; overflow: auto; }
+  .map-body { grid-template-columns: 1fr; grid-template-rows: minmax(520px, 1fr) auto; min-height: 720px; }
 }
 
 /* ─── MAPA ────────────────────────────────────────────────── */
 #map {
   width: 100%;
   height: 100%;
-  min-height: 400px;
+  min-height: 0;
   background: var(--bg);
   z-index: 1;
 }
@@ -621,25 +629,6 @@ body {
 
     <!-- PANEL LATERAL -->
     <div class="side-panel">
-
-      <!-- Capas -->
-      <div class="panel-block">
-        <div class="panel-label">Capas</div>
-        <div class="chip-group">
-          <button class="chip active" id="chip-stations" onclick="toggleLayer('stations')">
-            <div class="chip-dot" style="background:var(--purple-hi)"></div>
-            ESTACIONES
-          </button>
-          <button class="chip active" id="chip-lines" onclick="toggleLayer('lines')">
-            <div class="chip-dot" style="background:var(--cyan)"></div>
-            LÍNEAS / VÍAS
-          </button>
-          <button class="chip active" id="chip-pulses" onclick="toggleLayer('pulses')">
-            <div class="chip-dot" style="background:var(--green)"></div>
-            PULSOS ACTIVOS
-          </button>
-        </div>
-      </div>
 
       <!-- Leyenda de líneas (se llena dinámicamente) -->
       <div class="panel-block">
