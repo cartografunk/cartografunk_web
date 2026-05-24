@@ -763,8 +763,9 @@ const CONFIG = {
 
   // ─── POLLING ───────────────────────────────────────
   POLL_INTERVAL_MS: 15000,     // cada cuántos ms consultar la API real
-  MOCK_INTERVAL_MS: 2800,      // cada cuántos ms simular llegada en modo MOCK
+  MOCK_INTERVAL_MS: 620,       // ritmo demo: cada pulso avanza un sample
   MOCK_ACTIVE: true,           // demo activa mientras llegan los GeoJSON/samples reales
+  AUDIO_OVERLAP_SEC: 0.055,    // pequeño empalme para que la frase no suene cortada
 
   // ─── MAPA ──────────────────────────────────────────
   MAP_CENTER: [48.8566, 2.3522],
@@ -798,6 +799,7 @@ const STATE = {
   audioBuffers:new Map(),
   audioQueue:  [],
   audioRandomSide: 0,
+  audioNextTime: 0,
   map:         null,
   layerLines:  null,
   layerStations: null,
@@ -825,6 +827,7 @@ async function initAudio() {
     ...CONFIG.AUDIO_PAIRS.flatMap(pair => pair),
   ];
   STATE.audioRandomSide = 0;
+  STATE.audioNextTime = 0;
 
   const loadBuffer = async (file) => {
     try {
@@ -884,15 +887,22 @@ function playNextSample() {
   const src = STATE.audioCtx.createBufferSource();
   src.buffer = buf;
 
-  // Gain node para volumen controlado
+  const now = STATE.audioCtx.currentTime;
+  const startAt = Math.max(now, STATE.audioNextTime - CONFIG.AUDIO_OVERLAP_SEC);
+  STATE.audioNextTime = startAt + buf.duration;
+
+  // Gain node para volumen controlado sin recortar el sample
   const gain = STATE.audioCtx.createGain();
-  const fadeOut = Math.max(0.08, Math.min(buf.duration, 1.2));
-  gain.gain.setValueAtTime(0.6, STATE.audioCtx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.001, STATE.audioCtx.currentTime + fadeOut);
+  const attack = Math.min(0.012, buf.duration / 4);
+  const release = Math.min(0.018, buf.duration / 4);
+  gain.gain.setValueAtTime(0.001, startAt);
+  gain.gain.linearRampToValueAtTime(0.78, startAt + attack);
+  gain.gain.setValueAtTime(0.78, Math.max(startAt + attack, startAt + buf.duration - release));
+  gain.gain.linearRampToValueAtTime(0.001, startAt + buf.duration);
 
   src.connect(gain);
   gain.connect(STATE.audioCtx.destination);
-  src.start();
+  src.start(startAt);
 }
 
 /* ───────────────────────────────────────────────────────────
