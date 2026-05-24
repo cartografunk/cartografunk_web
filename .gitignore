@@ -1,6 +1,5 @@
 assets/private/
 samples/
-assets/audio/*.mp3
 *.local
 .env
 .env.*
