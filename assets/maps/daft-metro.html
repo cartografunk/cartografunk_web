@@ -462,9 +462,10 @@ body {
   padding: 2rem;
 }
 .overlay-icon {
-  font-size: 3rem;
-  line-height: 1;
-  opacity: 0.7;
+  width: min(220px, 60vw);
+  height: auto;
+  filter: drop-shadow(0 0 18px var(--purple-glow));
+  opacity: 0.92;
 }
 .overlay-title {
   font-family: var(--display);
@@ -668,14 +669,14 @@ body {
 
   <!-- OVERLAY START -->
   <div id="start-overlay">
-    <div class="overlay-icon">🚂</div>
+    <img class="overlay-icon" src="../img/cartofunk-blank.png" alt="Cartografunk">
     <div class="overlay-title">DAFT <em>METRO</em></div>
     <div class="overlay-sub">
       Monitoreo audiovisual de la red ferroviaria de París.
       Cada llegada de tren dispara un sample y un glow en el mapa.
     </div>
     <div class="overlay-meta">Leaflet.js · Web Audio API · GeoJSON</div>
-    <button class="start-btn" id="start-btn">▶ INICIAR EXPERIENCIA</button>
+    <button class="start-btn" id="start-btn">INICIAR</button>
   </div>
 
 </div><!-- /map-card -->
