@@ -270,6 +270,61 @@ section { padding:7rem 4rem; }
   letter-spacing:1px; text-transform:uppercase;
 }
 
+/* ── CURSOS ── */
+.curso-wrap {
+  display:grid;
+  grid-template-columns:minmax(0,0.85fr) minmax(320px,1.15fr);
+  gap:2rem;
+  align-items:start;
+}
+.curso-lead {
+  font-family:var(--font-serif);
+  color:var(--muted);
+  font-size:1rem;
+  line-height:1.8;
+  margin-bottom:1.5rem;
+}
+.curso-meta {
+  display:flex;
+  flex-wrap:wrap;
+  gap:0.45rem;
+}
+.curso-sesiones {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:1px;
+  background:var(--border);
+  border:1px solid var(--border);
+}
+.curso-sesion {
+  background:var(--card);
+  padding:1.5rem;
+  min-height:340px;
+}
+.curso-sesion h3 {
+  color:var(--white);
+  font-size:1.35rem;
+  margin-bottom:1rem;
+}
+.curso-sesion ul {
+  list-style:none;
+  display:flex;
+  flex-direction:column;
+  gap:0.65rem;
+}
+.curso-sesion li {
+  font-family:var(--font-serif);
+  color:var(--muted);
+  font-size:0.9rem;
+  line-height:1.45;
+}
+.curso-sesion li::before {
+  content:'→';
+  color:var(--purple-bright);
+  font-family:var(--font-mono);
+  margin-right:0.45rem;
+}
+
 /* ── PROYECTOS ── */
 .proyectos-grid {
   display:grid; grid-template-columns:1fr 1fr;
@@ -830,6 +885,9 @@ footer {
   .stat{padding:1.5rem}
   section{padding:4rem 1.5rem}
   .servicios-grid{grid-template-columns:1fr}
+  .curso-wrap{grid-template-columns:1fr}
+  .curso-sesiones{grid-template-columns:1fr}
+  .curso-sesion{min-height:auto}
   .proyectos-grid{grid-template-columns:1fr}
   .proyecto-hero{grid-template-columns:1fr;gap:1.5rem}
   .case-metrics{grid-template-columns:1fr}
@@ -885,6 +943,7 @@ footer {
   <a href="#" class="nav-logo">CARTOGRAFUNK</a>
   <ul class="nav-links">
     <li><a href="#servicios">Servicios</a></li>
+    <li><a href="#cursos">Cursos</a></li>
     <li><a href="#proyectos">Proyectos</a></li>
     <li><a href="#nosotros">Nosotros</a></li>
     <li><a href="#contacto">Contacto</a></li>
@@ -1081,6 +1140,58 @@ footer {
       </div>
     </div>
 
+  </div>
+</section>
+
+<!-- CURSOS -->
+<section id="cursos">
+  <p class="s-tag">Formación</p>
+  <h2 class="s-title">CURSOS</h2>
+  <div class="curso-wrap">
+    <div>
+      <p class="proy-type">Taller · Cartografía · Visualización</p>
+      <h3 class="proy-name hero-case">TALLER DE<br><em>CARTOGRAFÍA</em><br>CREATIVA</h3>
+      <p class="curso-lead">Un taller para pensar, diseñar y presentar mapas con intención. Va de fundamentos cartográficos a sistemas de información geográfica, narrativa visual y composición final.</p>
+      <div class="curso-meta">
+        <span class="chip">3 sesiones</span>
+        <span class="chip">GIS</span>
+        <span class="chip">Diseño cartográfico</span>
+        <span class="chip">Narrativa de datos</span>
+        <span class="chip">Mapas</span>
+      </div>
+    </div>
+    <div class="curso-sesiones">
+      <div class="curso-sesion">
+        <h3>Sesión 1</h3>
+        <ul>
+          <li>Fundamentos de la cartografía</li>
+          <li>Estructura del conocimiento</li>
+          <li>Modelos y representaciones</li>
+          <li>¿Los mapas mienten?</li>
+          <li>Tarea 1</li>
+        </ul>
+      </div>
+      <div class="curso-sesion">
+        <h3>Sesión 2</h3>
+        <ul>
+          <li>Tipos y componentes de un mapa</li>
+          <li>(Re)Introducción a los sistemas de información geográfica</li>
+          <li>Sistemas de coordenadas e información espacial</li>
+          <li>Simbología y lenguaje gráfico</li>
+          <li>Spatial join, table join y summary table</li>
+          <li>Principios teleológicos aplicados a la visualización de datos</li>
+        </ul>
+      </div>
+      <div class="curso-sesion">
+        <h3>Sesión 3</h3>
+        <ul>
+          <li>Construcción de narrativas con datos</li>
+          <li>Diseño y composición cartográfica</li>
+          <li>Escala, grid y rosa de los vientos</li>
+          <li>Presentación de los mapas</li>
+        </ul>
+      </div>
+    </div>
   </div>
 </section>
 
