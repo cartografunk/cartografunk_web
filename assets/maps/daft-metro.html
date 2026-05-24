@@ -747,14 +747,18 @@ const CONFIG = {
   GEOJSON_STATIONS: '../data/daft-metro/stations.geojson',
 
   // ─── AUDIO ─────────────────────────────────────────
-  // Rutas de tus samples en /assets/audio/
-  // Añade o quita nombres según tus archivos .mp3
-  AUDIO_FILES: [
-    '../audio/sample_01.mp3',
-    '../audio/sample_02.mp3',
-    '../audio/sample_03.mp3',
-    '../audio/sample_04.mp3',
-    '../audio/sample_05.mp3',
+  // Samples vocales en /assets/audio/
+  AUDIO_BASE: '../audio/',
+  AUDIO_INTRO: ['Harder.mp3', 'Better.mp3', 'Faster.mp3', 'Stronger.mp3'],
+  AUDIO_PAIRS: [
+    ['Work_it.mp3', 'Harder.mp3'],
+    ['Make_it.mp3', 'Better.mp3'],
+    ['Do_it.mp3', 'Faster.mp3'],
+    ['Make_us.mp3', 'Stronger.mp3'],
+    ['More_than.mp3', 'Ever.mp3'],
+    ['Hour.mp3', 'After.mp3'],
+    ['Our.mp3', 'Work_is.mp3'],
+    ['Never.mp3', 'Over.mp3'],
   ],
 
   // ─── POLLING ───────────────────────────────────────
@@ -791,7 +795,9 @@ const CONFIG = {
    ─────────────────────────────────────────────────────────── */
 const STATE = {
   audioCtx:    null,
-  audioBuffers:[],
+  audioBuffers:new Map(),
+  audioQueue:  [],
+  audioRandomSide: 0,
   map:         null,
   layerLines:  null,
   layerStations: null,
@@ -814,9 +820,15 @@ const STATE = {
    ─────────────────────────────────────────────────────────── */
 async function initAudio() {
   STATE.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  STATE.audioQueue = [
+    ...CONFIG.AUDIO_INTRO,
+    ...CONFIG.AUDIO_PAIRS.flatMap(pair => pair),
+  ];
+  STATE.audioRandomSide = 0;
 
-  const loadBuffer = async (url) => {
+  const loadBuffer = async (file) => {
     try {
+      const url = `${CONFIG.AUDIO_BASE}${file}`;
       const res = await fetch(url);
       if (!res.ok) throw new Error('404');
       const ab  = await res.arrayBuffer();
@@ -827,8 +839,13 @@ async function initAudio() {
     }
   };
 
-  STATE.audioBuffers = await Promise.all(CONFIG.AUDIO_FILES.map(loadBuffer));
-  console.log(`[AUDIO] ${STATE.audioBuffers.length} buffers listos`);
+  const files = new Set([
+    ...CONFIG.AUDIO_INTRO,
+    ...CONFIG.AUDIO_PAIRS.flatMap(pair => pair),
+  ]);
+  const loaded = await Promise.all([...files].map(async file => [file, await loadBuffer(file)]));
+  STATE.audioBuffers = new Map(loaded);
+  console.log(`[AUDIO] ${STATE.audioBuffers.size} buffers listos`);
 }
 
 /** Genera un buffer sintético (ping/blip) cuando no hay MP3 local */
@@ -847,18 +864,31 @@ function makeSyntheticTone(ctx, dur) {
   return buf;
 }
 
-function playRandomSample() {
-  if (!STATE.audioCtx || STATE.audioBuffers.length === 0) return;
+function getNextAudioFile() {
+  if (STATE.audioQueue.length > 0) return STATE.audioQueue.shift();
+
+  const side = STATE.audioRandomSide;
+  STATE.audioRandomSide = STATE.audioRandomSide === 0 ? 1 : 0;
+  const pool = CONFIG.AUDIO_PAIRS.map(pair => pair[side]);
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function playNextSample() {
+  if (!STATE.audioCtx || STATE.audioBuffers.size === 0) return;
   if (STATE.audioCtx.state === 'suspended') STATE.audioCtx.resume();
 
-  const buf = STATE.audioBuffers[Math.floor(Math.random() * STATE.audioBuffers.length)];
+  const file = getNextAudioFile();
+  const buf = STATE.audioBuffers.get(file);
+  if (!buf) return;
+
   const src = STATE.audioCtx.createBufferSource();
   src.buffer = buf;
 
   // Gain node para volumen controlado
   const gain = STATE.audioCtx.createGain();
+  const fadeOut = Math.max(0.08, Math.min(buf.duration, 1.2));
   gain.gain.setValueAtTime(0.6, STATE.audioCtx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.001, STATE.audioCtx.currentTime + 1.2);
+  gain.gain.exponentialRampToValueAtTime(0.001, STATE.audioCtx.currentTime + fadeOut);
 
   src.connect(gain);
   gain.connect(STATE.audioCtx.destination);
@@ -1091,7 +1121,7 @@ function triggerArrival(station, tripId) {
   }
 
   // ── Audio ──────────────────────────────────────────────
-  playRandomSample();
+  playNextSample();
 
   // ── Flash visual en el mapa ────────────────────────────
   flashStation(station);
