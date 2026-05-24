@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daft Metro · Cartografunk</title>
+
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+<style>
+/* ─── TOKENS ──────────────────────────────────────────────── */
+:root {
+  --bg:        #07080f;
+  --bg-card:   #0d0f1c;
+  --bg-panel:  #111328;
+  --border:    #1e2140;
+  --border-hi: #2d3160;
+  --purple:    #7c3aed;
+  --purple-hi: #a855f7;
+  --purple-glow: rgba(124,58,237,0.35);
+  --cyan:      #06b6d4;
+  --cyan-glow: rgba(6,182,212,0.3);
+  --green:     #10b981;
+  --amber:     #f59e0b;
+  --red:       #ef4444;
+  --text:      #e2e8f0;
+  --text-dim:  #64748b;
+  --text-muted:#334155;
+  --mono:      'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  --serif:     'EB Garamond', 'Palatino Linotype', Georgia, serif;
+  --display:   'Bebas Neue', 'Impact', sans-serif;
+  --radius:    4px;
+}
+
+/* ─── RESET ───────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ─── GOOGLE FONTS ────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;700&display=swap');
+
+/* ─── WRAPPER EXTERNO (para incrustar en cartografunk) ──────── */
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 1rem 3rem;
+}
+
+/* ─── CABECERA DE SECCIÓN ─────────────────────────────────── */
+.section-header {
+  width: 100%;
+  max-width: 1100px;
+  margin-bottom: 1.5rem;
+}
+.section-label {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--purple-hi);
+  margin-bottom: 0.5rem;
+}
+.section-title {
+  font-family: var(--display);
+  font-size: clamp(2.2rem, 5vw, 3.8rem);
+  letter-spacing: 0.06em;
+  line-height: 0.95;
+  color: var(--text);
+}
+.section-title em {
+  font-style: italic;
+  font-family: var(--serif);
+  color: var(--purple-hi);
+}
+.section-desc {
+  font-family: var(--serif);
+  font-size: 0.95rem;
+  color: var(--text-dim);
+  margin-top: 0.75rem;
+  max-width: 580px;
+  line-height: 1.6;
+}
+
+/* ─── CARD CONTENEDOR ─────────────────────────────────────── */
+.map-card {
+  width: 100%;
+  max-width: 1100px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  position: relative;
+  box-shadow:
+    0 0 0 1px var(--border),
+    0 0 40px rgba(124,58,237,0.08),
+    0 20px 60px rgba(0,0,0,0.5);
+}
+
+/* ─── TOPBAR ──────────────────────────────────────────────── */
+.map-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-panel);
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.dot-cluster { display: flex; gap: 4px; }
+.dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+}
+.dot-r { background: #ef4444; }
+.dot-y { background: #f59e0b; }
+.dot-g { background: #10b981; }
+.topbar-title {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* Status pill */
+.status-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 2px;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1px solid;
+}
+.status-pill.live {
+  border-color: var(--green);
+  color: var(--green);
+}
+.status-pill.mock {
+  border-color: var(--amber);
+  color: var(--amber);
+}
+.status-pill.offline {
+  border-color: var(--text-muted);
+  color: var(--text-muted);
+}
+.status-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: blink 1.4s ease-in-out infinite;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+
+/* Mode toggle */
+.mode-btn {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: transparent;
+  border: 1px solid var(--border-hi);
+  color: var(--text-dim);
+  padding: 3px 8px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.mode-btn:hover {
+  border-color: var(--purple);
+  color: var(--purple-hi);
+}
+.mode-btn.active {
+  border-color: var(--amber);
+  color: var(--amber);
+  background: rgba(245,158,11,0.08);
+}
+
+/* Contador en vivo */
+.event-counter {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+}
+.event-counter span {
+  color: var(--purple-hi);
+  font-weight: 700;
+}
+
+/* ─── LAYOUT PRINCIPAL ────────────────────────────────────── */
+.map-body {
+  display: grid;
+  grid-template-columns: 1fr 240px;
+  height: 560px;
+}
+@media (max-width: 768px) {
+  .map-body { grid-template-columns: 1fr; grid-template-rows: 1fr auto; height: auto; }
+}
+
+/* ─── MAPA ────────────────────────────────────────────────── */
+#map {
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+  background: var(--bg);
+  z-index: 1;
+}
+
+/* Override Leaflet UI */
+.leaflet-control-zoom {
+  border: 1px solid var(--border-hi) !important;
+  background: var(--bg-panel) !important;
+  border-radius: 2px !important;
+}
+.leaflet-control-zoom a {
+  background: var(--bg-panel) !important;
+  color: var(--text-dim) !important;
+  border-color: var(--border) !important;
+  font-family: var(--mono) !important;
+  line-height: 26px !important;
+  width: 26px !important;
+  height: 26px !important;
+}
+.leaflet-control-zoom a:hover {
+  color: var(--purple-hi) !important;
+  background: var(--bg-card) !important;
+}
+.leaflet-control-attribution {
+  background: rgba(7,8,15,0.85) !important;
+  color: var(--text-muted) !important;
+  font-family: var(--mono) !important;
+  font-size: 8px !important;
+}
+.leaflet-control-attribution a { color: var(--border-hi) !important; }
+
+/* Popup custom */
+.leaflet-popup-content-wrapper {
+  background: var(--bg-panel) !important;
+  border: 1px solid var(--border-hi) !important;
+  border-radius: 2px !important;
+  box-shadow: 0 0 20px var(--purple-glow) !important;
+  color: var(--text) !important;
+}
+.leaflet-popup-tip { background: var(--bg-panel) !important; }
+.leaflet-popup-content {
+  font-family: var(--mono) !important;
+  font-size: 0.7rem !important;
+  color: var(--text) !important;
+  margin: 8px 12px !important;
+}
+.popup-name {
+  font-size: 0.85rem;
+  color: var(--purple-hi);
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+.popup-meta { color: var(--text-dim); font-size: 0.65rem; }
+
+/* ─── PANEL LATERAL ───────────────────────────────────────── */
+.side-panel {
+  border-left: 1px solid var(--border);
+  background: var(--bg-panel);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.panel-block {
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+.panel-label {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+/* Layer chips */
+.chip-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  background: transparent;
+  border: 1px solid var(--border);
+  padding: 4px 8px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: left;
+  width: 100%;
+}
+.chip:hover { border-color: var(--border-hi); color: var(--text); }
+.chip.active {
+  border-color: var(--purple);
+  color: var(--purple-hi);
+  background: rgba(124,58,237,0.08);
+}
+.chip-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Leyenda de líneas */
+.legend-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 160px;
+  overflow-y: auto;
+}
+.legend-list::-webkit-scrollbar { width: 3px; }
+.legend-list::-webkit-scrollbar-track { background: transparent; }
+.legend-list::-webkit-scrollbar-thumb { background: var(--border-hi); }
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.62rem;
+  color: var(--text-dim);
+  letter-spacing: 0.04em;
+}
+.legend-line {
+  width: 18px; height: 3px;
+  border-radius: 1px;
+  flex-shrink: 0;
+}
+
+/* Feed de eventos */
+.event-feed {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.event-feed::-webkit-scrollbar { width: 3px; }
+.event-feed::-webkit-scrollbar-track { background: transparent; }
+.event-feed::-webkit-scrollbar-thumb { background: var(--border-hi); }
+
+.event-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 5px 7px;
+  border-left: 2px solid var(--purple);
+  background: rgba(124,58,237,0.06);
+  border-radius: 0 2px 2px 0;
+  animation: slideIn 0.3s ease;
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.event-station {
+  font-size: 0.65rem;
+  color: var(--text);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.event-meta {
+  font-size: 0.56rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+.event-feed-label {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 0.5rem 0.75rem 0.25rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+/* ─── BARRA DE ESTADO INFERIOR ────────────────────────────── */
+.map-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.45rem 1rem;
+  border-top: 1px solid var(--border);
+  background: var(--bg-panel);
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.footer-coord {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+}
+.footer-coord span { color: var(--text-dim); }
+.footer-brand {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+.footer-brand em {
+  color: var(--purple-hi);
+  font-style: normal;
+}
+
+/* ─── OVERLAY START ───────────────────────────────────────── */
+#start-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(7,8,15,0.93);
+  backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  text-align: center;
+  padding: 2rem;
+}
+.overlay-icon {
+  font-size: 3rem;
+  line-height: 1;
+  opacity: 0.7;
+}
+.overlay-title {
+  font-family: var(--display);
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  letter-spacing: 0.1em;
+  color: var(--text);
+  line-height: 1;
+}
+.overlay-title em {
+  font-style: italic;
+  font-family: var(--serif);
+  color: var(--purple-hi);
+}
+.overlay-sub {
+  font-family: var(--serif);
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  max-width: 320px;
+  line-height: 1.6;
+}
+.overlay-meta {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.start-btn {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  background: transparent;
+  border: 1px solid var(--purple-hi);
+  color: var(--purple-hi);
+  padding: 0.75rem 2.5rem;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.start-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--purple-glow);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.start-btn:hover::before { opacity: 1; }
+.start-btn:hover {
+  box-shadow: 0 0 20px var(--purple-glow), 0 0 40px var(--purple-glow);
+}
+
+/* ─── GLOW ANIMACIÓN EN MARCADORES ───────────────────────── */
+.pulse-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  animation: pulseOut 1s ease-out forwards;
+  pointer-events: none;
+}
+@keyframes pulseOut {
+  0%   { transform: scale(1); opacity: 0.9; }
+  100% { transform: scale(3.5); opacity: 0; }
+}
+
+/* Estilo tooltip Leaflet */
+.leaflet-tooltip {
+  background: var(--bg-panel) !important;
+  border: 1px solid var(--border-hi) !important;
+  color: var(--text-dim) !important;
+  font-family: var(--mono) !important;
+  font-size: 0.62rem !important;
+  border-radius: 2px !important;
+  box-shadow: 0 0 10px var(--purple-glow) !important;
+  padding: 3px 7px !important;
+}
+.leaflet-tooltip::before { display: none !important; }
+
+/* ─── CHIP API KEY ────────────────────────────────────────── */
+.apikey-form {
+  display: flex;
+  gap: 4px;
+}
+.apikey-input {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 3px 6px;
+  border-radius: 2px;
+  width: 100%;
+  min-width: 0;
+  transition: border-color 0.15s;
+}
+.apikey-input:focus {
+  outline: none;
+  border-color: var(--purple);
+  color: var(--text);
+}
+.apikey-btn {
+  font-family: var(--mono);
+  font-size: 0.55rem;
+  background: transparent;
+  border: 1px solid var(--purple);
+  color: var(--purple-hi);
+  padding: 3px 7px;
+  border-radius: 2px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.apikey-btn:hover { background: var(--purple-glow); }
+
+/* ─── SCAN LINES ──────────────────────────────────────────── */
+.map-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.03) 2px,
+    rgba(0,0,0,0.03) 4px
+  );
+  pointer-events: none;
+  z-index: 9000;
+}
+
+/* ─── LOADING BAR ─────────────────────────────────────────── */
+#loading-bar {
+  height: 2px;
+  background: linear-gradient(90deg, var(--purple), var(--cyan));
+  width: 0%;
+  transition: width 0.4s ease;
+  position: absolute;
+  top: 0; left: 0;
+  z-index: 10000;
+}
+</style>
+</head>
+<body>
+
+<!-- ─── CABECERA EDITORIAL ──────────────────────────────── -->
+<div class="section-header">
+  <div class="section-label">Explorador interactivo · Red ferroviaria · Île-de-France</div>
+  <h2 class="section-title">DAFT <em>METRO</em></h2>
+  <p class="section-desc">
+    Monitoreo en tiempo real de la red de transporte de la Île-de-France.
+    Cada tren que llega dispara un sample de audio y un destello en el mapa.
+    Datos vía PRIM · RATP/SNCF.
+  </p>
+</div>
+
+<!-- ─── CARD MAPA ──────────────────────────────────────── -->
+<div class="map-card">
+  <div id="loading-bar"></div>
+
+  <!-- TOPBAR -->
+  <div class="map-topbar">
+    <div class="topbar-left">
+      <div class="dot-cluster">
+        <div class="dot dot-r"></div>
+        <div class="dot dot-y"></div>
+        <div class="dot dot-g"></div>
+      </div>
+      <div class="topbar-title">PARIS · METRO / RER / TRANSILIEN</div>
+    </div>
+    <div class="topbar-right">
+      <div class="event-counter">EVENTOS: <span id="event-count">0</span></div>
+      <div id="status-pill" class="status-pill offline">
+        <div class="status-dot"></div>
+        <span id="status-text">OFFLINE</span>
+      </div>
+      <button class="mode-btn" id="mock-toggle" title="Activar simulación de trenes">
+        MOCK OFF
+      </button>
+    </div>
+  </div>
+
+  <!-- CUERPO: mapa + panel -->
+  <div class="map-body">
+    <div id="map"></div>
+
+    <!-- PANEL LATERAL -->
+    <div class="side-panel">
+
+      <!-- API Key -->
+      <div class="panel-block">
+        <div class="panel-label">API Key · PRIM</div>
+        <div class="apikey-form">
+          <input class="apikey-input" id="apikey-input" type="password" placeholder="Tu clave PRIM…" autocomplete="off"/>
+          <button class="apikey-btn" id="apikey-save">SET</button>
+        </div>
+      </div>
+
+      <!-- Capas -->
+      <div class="panel-block">
+        <div class="panel-label">Capas</div>
+        <div class="chip-group">
+          <button class="chip active" id="chip-stations" onclick="toggleLayer('stations')">
+            <div class="chip-dot" style="background:var(--purple-hi)"></div>
+            ESTACIONES
+          </button>
+          <button class="chip active" id="chip-lines" onclick="toggleLayer('lines')">
+            <div class="chip-dot" style="background:var(--cyan)"></div>
+            LÍNEAS / VÍAS
+          </button>
+          <button class="chip active" id="chip-pulses" onclick="toggleLayer('pulses')">
+            <div class="chip-dot" style="background:var(--green)"></div>
+            PULSOS ACTIVOS
+          </button>
+        </div>
+      </div>
+
+      <!-- Leyenda de líneas (se llena dinámicamente) -->
+      <div class="panel-block">
+        <div class="panel-label">Leyenda de red</div>
+        <div class="legend-list" id="legend-list">
+          <!-- generado por JS -->
+        </div>
+      </div>
+
+      <!-- Feed de eventos -->
+      <div class="event-feed-label">▶ LLEGADAS RECIENTES</div>
+      <div class="event-feed" id="event-feed">
+        <div style="color:var(--text-muted);font-size:0.62rem;padding:0.5rem 0;text-align:center;">
+          Esperando inicio de experiencia…
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="map-footer">
+    <div class="footer-coord">
+      48.8566°N 2.3522°E · <span id="zoom-label">ZOOM 12</span>
+    </div>
+    <div class="footer-brand"><em>CARTOGRAFUNK</em> · DAFT METRO · PRIM API</div>
+  </div>
+
+  <!-- OVERLAY START -->
+  <div id="start-overlay">
+    <div class="overlay-icon">🚂</div>
+    <div class="overlay-title">DAFT <em>METRO</em></div>
+    <div class="overlay-sub">
+      Monitoreo audiovisual de la red ferroviaria de París.
+      Cada llegada de tren dispara un sample y un glow en el mapa.
+    </div>
+    <div class="overlay-meta">Leaflet.js · Web Audio API · PRIM/IDFM</div>
+    <button class="start-btn" id="start-btn">▶ INICIAR EXPERIENCIA</button>
+  </div>
+
+</div><!-- /map-card -->
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     JAVASCRIPT MODULAR
+═══════════════════════════════════════════════════════════ -->
+<script>
+/* ───────────────────────────────────────────────────────────
+   CONFIGURACIÓN GLOBAL
+   ─────────────────────────────────────────────────────────── */
+const CONFIG = {
+  // ─── API PRIM ──────────────────────────────────────
+  // Obtén tu clave gratuita en: https://prim.iledefrance-mobilites.fr
+  // Puedes pegarla en el input del panel o directo aquí:
+  PRIM_API_KEY: '',          // ← tu clave aquí (o déjala vacía y úsala via panel)
+  PRIM_BASE:    'https://prim.iledefrance-mobilites.fr/marketplace',
+
+  // ─── DATOS LOCALES ─────────────────────────────────
+  // Rutas relativas a tu sitio. Si no tienes los archivos aún,
+  // el modo MOCK genera estaciones sintéticas.
+  GEOJSON_LINES:    '../data/daft-metro/lines.geojson',
+  GEOJSON_STATIONS: '../data/daft-metro/stations.geojson',
+
+  // ─── AUDIO ─────────────────────────────────────────
+  // Rutas de tus samples en /assets/audio/
+  // Añade o quita nombres según tus archivos .mp3
+  AUDIO_FILES: [
+    '../audio/sample_01.mp3',
+    '../audio/sample_02.mp3',
+    '../audio/sample_03.mp3',
+    '../audio/sample_04.mp3',
+    '../audio/sample_05.mp3',
+  ],
+
+  // ─── POLLING ───────────────────────────────────────
+  POLL_INTERVAL_MS: 15000,     // cada cuántos ms consultar la API real
+  MOCK_INTERVAL_MS: 2800,      // cada cuántos ms simular llegada en modo MOCK
+  MOCK_ACTIVE: true,           // demo activa mientras llegan los GeoJSON/samples reales
+
+  // ─── MAPA ──────────────────────────────────────────
+  MAP_CENTER: [48.8566, 2.3522],
+  MAP_ZOOM: 12,
+
+  // ─── NEÓN COLORS por tipo de línea ─────────────────
+  LINE_COLORS: {
+    'M1': '#FFD700', 'M2': '#003CA6', 'M3': '#9F9825',
+    'M3B': '#6EC4E8','M4': '#BE418D', 'M5': '#FF7E2E',
+    'M6': '#6ECA97', 'M7': '#FA9ABA', 'M7B':'#6ECA97',
+    'M8': '#E19BDF', 'M9': '#B5BD00', 'M10':'#C9910D',
+    'M11':'#704B1C', 'M12':'#007852', 'M13':'#6EC4E8',
+    'M14':'#62259D', 'M15':'#B90845', 'M16':'#F3A4BA',
+    'M17':'#D5C900', 'M18':'#00814F',
+    'RER A': '#E2001A', 'RER B': '#007DC5', 'RER C': '#FFD400',
+    'RER D': '#008F5D', 'RER E': '#C04191',
+    'T1':'#00BCB4', 'T2':'#0064A8', 'T3A':'#00BB77',
+    'T3B':'#00BB77', 'T4':'#D4890A', 'T5':'#8C368C',
+    'T6':'#7BA2D6', 'T7':'#9A9631', 'T8':'#4C9BE8',
+    'T9':'#B25800', 'T10':'#E8572A', 'T11':'#9F2D87',
+    'T12':'#E95B00', 'T13':'#92c855',
+    'DEFAULT': '#7c3aed',
+  },
+};
+
+/* ───────────────────────────────────────────────────────────
+   ESTADO GLOBAL
+   ─────────────────────────────────────────────────────────── */
+const STATE = {
+  audioCtx:    null,
+  audioBuffers:[],
+  map:         null,
+  layerLines:  null,
+  layerStations: null,
+  layerPulses: L.layerGroup(),
+  mockTimer:   null,
+  pollTimer:   null,
+  mockActive:  CONFIG.MOCK_ACTIVE,
+  eventCount:  0,
+  // Anti-loop: registra tripId+stopId ya disparados
+  fired: new Set(),
+  // Estaciones cargadas del GeoJSON: [{id, name, lat, lng, line}]
+  stations: [],
+  // Capas visibles
+  visibleLayers: { stations: true, lines: true, pulses: true },
+  apiKey: CONFIG.PRIM_API_KEY,
+};
+
+/* ───────────────────────────────────────────────────────────
+   AUDIO ENGINE
+   ─────────────────────────────────────────────────────────── */
+async function initAudio() {
+  STATE.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+  const loadBuffer = async (url) => {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('404');
+      const ab  = await res.arrayBuffer();
+      return await STATE.audioCtx.decodeAudioData(ab);
+    } catch(e) {
+      // Si no existe el archivo, creamos un tono sintético de relleno
+      return makeSyntheticTone(STATE.audioCtx, 0.15 + Math.random() * 0.2);
+    }
+  };
+
+  STATE.audioBuffers = await Promise.all(CONFIG.AUDIO_FILES.map(loadBuffer));
+  console.log(`[AUDIO] ${STATE.audioBuffers.length} buffers listos`);
+}
+
+/** Genera un buffer sintético (ping/blip) cuando no hay MP3 local */
+function makeSyntheticTone(ctx, dur) {
+  const sr   = ctx.sampleRate;
+  const len  = Math.floor(sr * dur);
+  const buf  = ctx.createBuffer(1, len, sr);
+  const data = buf.getChannelData(0);
+  const freq = [261, 293, 329, 392, 440, 523][Math.floor(Math.random() * 6)];
+  for (let i = 0; i < len; i++) {
+    // Sine wave con envelope
+    const t = i / sr;
+    const env = Math.exp(-t * 18);
+    data[i] = Math.sin(2 * Math.PI * freq * t) * env * 0.35;
+  }
+  return buf;
+}
+
+function playRandomSample() {
+  if (!STATE.audioCtx || STATE.audioBuffers.length === 0) return;
+  if (STATE.audioCtx.state === 'suspended') STATE.audioCtx.resume();
+
+  const buf = STATE.audioBuffers[Math.floor(Math.random() * STATE.audioBuffers.length)];
+  const src = STATE.audioCtx.createBufferSource();
+  src.buffer = buf;
+
+  // Gain node para volumen controlado
+  const gain = STATE.audioCtx.createGain();
+  gain.gain.setValueAtTime(0.6, STATE.audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, STATE.audioCtx.currentTime + 1.2);
+
+  src.connect(gain);
+  gain.connect(STATE.audioCtx.destination);
+  src.start();
+}
+
+/* ───────────────────────────────────────────────────────────
+   MAPA LEAFLET
+   ─────────────────────────────────────────────────────────── */
+function initMap() {
+  STATE.map = L.map('map', {
+    center: CONFIG.MAP_CENTER,
+    zoom:   CONFIG.MAP_ZOOM,
+    zoomControl: true,
+    attributionControl: true,
+  });
+
+  // Basemap oscuro — CartoDB Dark Matter
+  L.tileLayer(
+    'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    {
+      attribution: '© <a href="https://carto.com/">CARTO</a> · © <a href="https://www.openstreetmap.org/copyright">OSM</a>',
+      subdomains: 'abcd',
+      maxZoom: 19,
+    }
+  ).addTo(STATE.map);
+
+  // Zoom label en footer
+  STATE.map.on('zoom', () => {
+    document.getElementById('zoom-label').textContent = `ZOOM ${STATE.map.getZoom()}`;
+  });
+
+  // Layer group de pulsos
+  STATE.layerPulses.addTo(STATE.map);
+}
+
+/* ───────────────────────────────────────────────────────────
+   CARGA DE GEOJSON LOCALES
+   ─────────────────────────────────────────────────────────── */
+async function loadGeoJSON() {
+  const bar = document.getElementById('loading-bar');
+  bar.style.width = '20%';
+
+  // ── Intentar cargar líneas ──
+  try {
+    const res = await fetch(CONFIG.GEOJSON_LINES);
+    if (!res.ok) throw new Error('no file');
+    const geojson = await res.json();
+    bar.style.width = '50%';
+
+    STATE.layerLines = L.geoJSON(geojson, {
+      style: (feature) => {
+        const id = feature.properties?.route_short_name
+                || feature.properties?.line
+                || feature.properties?.name
+                || 'DEFAULT';
+        const color = CONFIG.LINE_COLORS[id] || CONFIG.LINE_COLORS.DEFAULT;
+        return {
+          color,
+          weight: 2.5,
+          opacity: 0.8,
+          // Efecto glow via multiple líneas
+          className: 'rail-line',
+        };
+      },
+      onEachFeature: (feature, layer) => {
+        const name = feature.properties?.route_long_name
+                   || feature.properties?.line || '';
+        if (name) layer.bindTooltip(name, { sticky: true });
+      },
+    }).addTo(STATE.map);
+
+    buildLegend(geojson);
+  } catch(e) {
+    console.warn('[GeoJSON] lines.geojson no encontrado. Usando fallback.');
+    buildLegendFallback();
+  }
+
+  bar.style.width = '70%';
+
+  // ── Intentar cargar estaciones ──
+  try {
+    const res = await fetch(CONFIG.GEOJSON_STATIONS);
+    if (!res.ok) throw new Error('no file');
+    const geojson = await res.json();
+    bar.style.width = '90%';
+
+    STATE.layerStations = L.geoJSON(geojson, {
+      pointToLayer: (feature, latlng) => {
+        const id    = feature.properties?.stop_id   || feature.properties?.id   || String(Math.random());
+        const name  = feature.properties?.stop_name || feature.properties?.name || 'Estación';
+        const line  = feature.properties?.route_short_name || feature.properties?.line || '';
+        const color = CONFIG.LINE_COLORS[line] || CONFIG.LINE_COLORS.DEFAULT;
+
+        // Registrar en STATE.stations para mock y cruce con API
+        STATE.stations.push({ id, name, lat: latlng.lat, lng: latlng.lng, line, color });
+
+        return L.circleMarker(latlng, {
+          radius: 4,
+          fillColor: color,
+          color: '#000',
+          weight: 1,
+          opacity: 0.9,
+          fillOpacity: 0.85,
+          className: `station-marker station-${id}`,
+        });
+      },
+      onEachFeature: (feature, layer) => {
+        const name = feature.properties?.stop_name || feature.properties?.name || '';
+        const line = feature.properties?.route_short_name || feature.properties?.line || '';
+        layer.bindTooltip(name, { sticky: true });
+        layer.bindPopup(`
+          <div class="popup-name">${name}</div>
+          <div class="popup-meta">${line ? `LÍNEA ${line} · ` : ''}${feature.properties?.stop_id || ''}</div>
+        `);
+      },
+    }).addTo(STATE.map);
+
+  } catch(e) {
+    console.warn('[GeoJSON] stations.geojson no encontrado. Generando estaciones sintéticas.');
+    generateSyntheticStations();
+  }
+
+  bar.style.width = '100%';
+  setTimeout(() => bar.style.width = '0%', 600);
+}
+
+/** Genera estaciones ficticias de París para demo/mock */
+function generateSyntheticStations() {
+  const synthetic = [
+    { id:'chatelet',    name:"Châtelet",           lat:48.8600, lng:2.3471,  line:'M1' },
+    { id:'nation',      name:"Nation",              lat:48.8483, lng:2.3960,  line:'M1' },
+    { id:'republique',  name:"République",          lat:48.8674, lng:2.3635,  line:'M3' },
+    { id:'bastille',    name:"Bastille",             lat:48.8533, lng:2.3691,  line:'M1' },
+    { id:'opera',       name:"Opéra",               lat:48.8711, lng:2.3317,  line:'M3' },
+    { id:'stnazaire',   name:"Saint-Lazare",        lat:48.8755, lng:2.3244,  line:'M3' },
+    { id:'montparnas',  name:"Montparnasse",        lat:48.8444, lng:2.3214,  line:'M4' },
+    { id:'ladefense',   name:"La Défense",          lat:48.8918, lng:2.2392,  line:'RER A' },
+    { id:'vincennes',   name:"Vincennes",            lat:48.8479, lng:2.4412,  line:'RER A' },
+    { id:'gare-nord',   name:"Gare du Nord",        lat:48.8806, lng:2.3553,  line:'RER B' },
+    { id:'gare-lyon',   name:"Gare de Lyon",        lat:48.8444, lng:2.3740,  line:'RER D' },
+    { id:'gare-est',    name:"Gare de l'Est",       lat:48.8768, lng:2.3594,  line:'RER E' },
+    { id:'invalides',   name:"Invalides",            lat:48.8616, lng:2.3133,  line:'RER C' },
+    { id:'bercy',       name:"Bercy",               lat:48.8400, lng:2.3829,  line:'M14' },
+    { id:'pigalle',     name:"Pigalle",              lat:48.8839, lng:2.3323,  line:'M2' },
+    { id:'belleville',  name:"Belleville",           lat:48.8713, lng:2.3760,  line:'M2' },
+    { id:'oberkampf',   name:"Oberkampf",            lat:48.8649, lng:2.3679,  line:'M5' },
+    { id:'voltsport',   name:"Voltaire",             lat:48.8552, lng:2.3826,  line:'M9' },
+    { id:'censier',     name:"Censier-Daubenton",   lat:48.8424, lng:2.3543,  line:'M7' },
+    { id:'jussieu',     name:"Jussieu",              lat:48.8468, lng:2.3547,  line:'M7' },
+    { id:'odeon',       name:"Odéon",               lat:48.8528, lng:2.3404,  line:'M4' },
+    { id:'stmichel',    name:"Saint-Michel",        lat:48.8531, lng:2.3466,  line:'M4' },
+    { id:'lecourbe',    name:"La Motte-Picquet",    lat:48.8497, lng:2.3005,  line:'M6' },
+    { id:'chdemar',     name:"Champ de Mars",       lat:48.8567, lng:2.2938,  line:'RER C' },
+    { id:'trocadero',   name:"Trocadéro",           lat:48.8631, lng:2.2893,  line:'M9' },
+  ];
+
+  synthetic.forEach(s => {
+    const color = CONFIG.LINE_COLORS[s.line] || CONFIG.LINE_COLORS.DEFAULT;
+    STATE.stations.push({ ...s, color });
+
+    const marker = L.circleMarker([s.lat, s.lng], {
+      radius: 4, fillColor: color,
+      color: '#000', weight: 1,
+      opacity: 0.9, fillOpacity: 0.85,
+    }).bindTooltip(s.name, { sticky: true })
+      .bindPopup(`<div class="popup-name">${s.name}</div><div class="popup-meta">LÍNEA ${s.line}</div>`);
+
+    if (!STATE.layerStations) STATE.layerStations = L.layerGroup();
+    if (typeof STATE.layerStations.addLayer === 'function') STATE.layerStations.addLayer(marker);
+  });
+
+  if (STATE.layerStations && !STATE.map.hasLayer(STATE.layerStations)) {
+    STATE.layerStations.addTo(STATE.map);
+  }
+
+  buildLegendFallback();
+}
+
+/* ───────────────────────────────────────────────────────────
+   LEYENDA
+   ─────────────────────────────────────────────────────────── */
+function buildLegend(geojson) {
+  const seen = new Set();
+  const list = document.getElementById('legend-list');
+  list.innerHTML = '';
+
+  geojson.features?.forEach(f => {
+    const id = f.properties?.route_short_name || f.properties?.line || '';
+    if (!id || seen.has(id)) return;
+    seen.add(id);
+    const color = CONFIG.LINE_COLORS[id] || CONFIG.LINE_COLORS.DEFAULT;
+    list.innerHTML += `
+      <div class="legend-item">
+        <div class="legend-line" style="background:${color};box-shadow:0 0 6px ${color}"></div>
+        <span>${id}</span>
+      </div>`;
+  });
+}
+
+function buildLegendFallback() {
+  const list = document.getElementById('legend-list');
+  list.innerHTML = '';
+  const lines = [
+    ['M1','#FFD700'],['M4','#BE418D'],['M6','#6ECA97'],['M14','#62259D'],
+    ['RER A','#E2001A'],['RER B','#007DC5'],['RER C','#FFD400'],
+    ['RER D','#008F5D'],['RER E','#C04191'],
+  ];
+  lines.forEach(([id, color]) => {
+    list.innerHTML += `
+      <div class="legend-item">
+        <div class="legend-line" style="background:${color};box-shadow:0 0 6px ${color}"></div>
+        <span>${id}</span>
+      </div>`;
+  });
+}
+
+/* ───────────────────────────────────────────────────────────
+   TRIGGER DE EVENTO: audio + flash visual + feed
+   ─────────────────────────────────────────────────────────── */
+function triggerArrival(station, tripId) {
+  const key = `${tripId}_${station.id}`;
+  if (STATE.fired.has(key)) return;
+  STATE.fired.add(key);
+
+  // Limpiar registro antiguo (evitar memoria infinita)
+  if (STATE.fired.size > 2000) {
+    const arr = [...STATE.fired];
+    arr.slice(0, 1000).forEach(k => STATE.fired.delete(k));
+  }
+
+  // ── Audio ──────────────────────────────────────────────
+  playRandomSample();
+
+  // ── Flash visual en el mapa ────────────────────────────
+  flashStation(station);
+
+  // ── Feed lateral ──────────────────────────────────────
+  addEventToFeed(station, tripId);
+
+  // ── Contador ──────────────────────────────────────────
+  STATE.eventCount++;
+  document.getElementById('event-count').textContent = STATE.eventCount;
+}
+
+function flashStation(station) {
+  const marker = L.circleMarker([station.lat, station.lng], {
+    radius: 10,
+    fillColor: station.color,
+    color: station.color,
+    weight: 0,
+    opacity: 0,
+    fillOpacity: 0.9,
+    className: 'pulse-flash',
+  });
+
+  marker.addTo(STATE.layerPulses);
+
+  // Animar mediante opciones sucesivas
+  let frame = 0;
+  const anim = setInterval(() => {
+    frame++;
+    const r = 10 + frame * 3;
+    const o = Math.max(0, 0.9 - frame * 0.12);
+    marker.setStyle({ radius: r, fillOpacity: o, opacity: o * 0.4 });
+    if (frame > 7) {
+      clearInterval(anim);
+      STATE.layerPulses.removeLayer(marker);
+    }
+  }, 60);
+
+  // Second ring — más grande
+  const ring2 = L.circleMarker([station.lat, station.lng], {
+    radius: 6,
+    fillColor: 'transparent',
+    color: station.color,
+    weight: 1.5,
+    opacity: 0.7,
+    fillOpacity: 0,
+  }).addTo(STATE.layerPulses);
+
+  let f2 = 0;
+  const anim2 = setInterval(() => {
+    f2++;
+    ring2.setStyle({ radius: 6 + f2 * 4, opacity: Math.max(0, 0.7 - f2 * 0.1) });
+    if (f2 > 6) { clearInterval(anim2); STATE.layerPulses.removeLayer(ring2); }
+  }, 80);
+}
+
+function addEventToFeed(station, tripId) {
+  const feed = document.getElementById('event-feed');
+
+  // Eliminar placeholder si existe
+  const placeholder = feed.querySelector('[style*="Esperando"]');
+  if (placeholder) placeholder.remove();
+
+  const now  = new Date();
+  const time = now.toTimeString().slice(0,8);
+  const item = document.createElement('div');
+  item.className = 'event-item';
+  item.style.borderLeftColor = station.color;
+  item.innerHTML = `
+    <div class="event-station">${station.name}</div>
+    <div class="event-meta">${time} · LÍNEA ${station.line || '?'} · TRIP ${tripId.slice(-6)}</div>
+  `;
+
+  feed.prepend(item);
+
+  // Limitar feed a 30 items
+  while (feed.children.length > 30) feed.lastChild.remove();
+}
+
+/* ───────────────────────────────────────────────────────────
+   MODO MOCK — simulación de llegadas
+   ─────────────────────────────────────────────────────────── */
+function startMock() {
+  if (STATE.mockTimer) return;
+  console.log('[MOCK] Modo simulación activo');
+
+  STATE.mockTimer = setInterval(() => {
+    if (STATE.stations.length === 0) return;
+    const s      = STATE.stations[Math.floor(Math.random() * STATE.stations.length)];
+    const tripId = `MOCK-${Date.now()}-${Math.floor(Math.random() * 9999)}`;
+    triggerArrival(s, tripId);
+  }, CONFIG.MOCK_INTERVAL_MS);
+
+  setStatus('mock');
+}
+
+function stopMock() {
+  if (STATE.mockTimer) { clearInterval(STATE.mockTimer); STATE.mockTimer = null; }
+  setStatus(STATE.apiKey ? 'offline' : 'offline');
+}
+
+/* ───────────────────────────────────────────────────────────
+   API REAL — PRIM / IDFM
+   
+   Documentación: https://prim.iledefrance-mobilites.fr/fr/apis
+   
+   Endpoint usado:
+     GET /navitia/stop_areas/{stopAreaId}/arrivals
+   Parámetros útiles:
+     from_datetime, count, forbidden_uris[]
+   
+   La función fetchArrivals itera sobre un subset de estaciones
+   cada POLL_INTERVAL_MS. En cada respuesta detecta los arrivi
+   con 0 segundos de espera (tiempo_llegada == now) y los dispara.
+   ─────────────────────────────────────────────────────────── */
+async function fetchArrivals() {
+  if (!STATE.apiKey) return;
+
+  // Tomar un subconjunto de estaciones para no saturar la API
+  // En producción puedes iterar todas con paginación
+  const subset = STATE.stations.slice(0, 10);
+
+  for (const station of subset) {
+    try {
+      // PRIM usa IDs tipo "stop_area:IDFM:monomodal_stop_area:463"
+      // Necesitas mapear tu stop_id del GeoJSON al formato PRIM
+      const stopId = station.id; // Ajusta si tu GeoJSON usa otro esquema
+
+      const url = `${CONFIG.PRIM_BASE}/navitia/stop_areas/${stopId}/arrivals?count=5`;
+      const res = await fetch(url, {
+        headers: {
+          'apikey': STATE.apiKey,
+          'Accept': 'application/json',
+        }
+      });
+
+      if (!res.ok) {
+        if (res.status === 401) { console.error('[PRIM] API Key inválida'); return; }
+        continue;
+      }
+
+      const data = await res.json();
+      const arrivals = data.arrivals || [];
+
+      arrivals.forEach(arrival => {
+        // arrival.stop_date_time.arrival_date_time: "20260524T143012" (UTC+1)
+        const arrTime = arrival.stop_date_time?.arrival_date_time;
+        const tripId  = arrival.vehicle_journey?.id || String(Math.random());
+
+        if (!arrTime) return;
+
+        // Parsear datetime PRIM (formato YYYYMMDDTHHMMSS)
+        const y  = arrTime.slice(0,4), mo = arrTime.slice(4,6), d = arrTime.slice(6,8);
+        const h  = arrTime.slice(9,11), mi = arrTime.slice(11,13), s = arrTime.slice(13,15);
+        const arrDate = new Date(`${y}-${mo}-${d}T${h}:${mi}:${s}`);
+        const diffMs  = arrDate - Date.now();
+
+        // Disparar si el tren llega en los próximos 30 segundos (ya casi aquí)
+        if (diffMs >= -5000 && diffMs <= 30000) {
+          triggerArrival(station, tripId);
+        }
+      });
+
+    } catch(e) {
+      console.warn(`[PRIM] Error en estación ${station.id}:`, e.message);
+    }
+  }
+}
+
+function startPolling() {
+  if (!STATE.apiKey) return;
+  if (STATE.pollTimer) return;
+  fetchArrivals(); // primera llamada inmediata
+  STATE.pollTimer = setInterval(fetchArrivals, CONFIG.POLL_INTERVAL_MS);
+  setStatus('live');
+}
+
+function stopPolling() {
+  if (STATE.pollTimer) { clearInterval(STATE.pollTimer); STATE.pollTimer = null; }
+}
+
+/* ───────────────────────────────────────────────────────────
+   STATUS PILL
+   ─────────────────────────────────────────────────────────── */
+function setStatus(mode) {
+  const pill = document.getElementById('status-pill');
+  const text = document.getElementById('status-text');
+  pill.className = `status-pill ${mode}`;
+  text.textContent = mode.toUpperCase();
+}
+
+/* ───────────────────────────────────────────────────────────
+   TOGGLE CAPAS
+   ─────────────────────────────────────────────────────────── */
+function toggleLayer(name) {
+  STATE.visibleLayers[name] = !STATE.visibleLayers[name];
+  const chip = document.getElementById(`chip-${name}`);
+  chip.classList.toggle('active', STATE.visibleLayers[name]);
+
+  const layerMap = {
+    stations: STATE.layerStations,
+    lines:    STATE.layerLines,
+    pulses:   STATE.layerPulses,
+  };
+
+  const layer = layerMap[name];
+  if (!layer) return;
+
+  if (STATE.visibleLayers[name]) {
+    if (!STATE.map.hasLayer(layer)) layer.addTo(STATE.map);
+  } else {
+    if (STATE.map.hasLayer(layer)) STATE.map.removeLayer(layer);
+  }
+}
+
+/* ───────────────────────────────────────────────────────────
+   MOCK TOGGLE BUTTON
+   ─────────────────────────────────────────────────────────── */
+document.getElementById('mock-toggle').addEventListener('click', function() {
+  STATE.mockActive = !STATE.mockActive;
+  this.textContent = STATE.mockActive ? 'MOCK ON' : 'MOCK OFF';
+  this.classList.toggle('active', STATE.mockActive);
+  if (STATE.mockActive) startMock();
+  else stopMock();
+});
+
+/* ───────────────────────────────────────────────────────────
+   API KEY INPUT
+   ─────────────────────────────────────────────────────────── */
+document.getElementById('apikey-save').addEventListener('click', () => {
+  const val = document.getElementById('apikey-input').value.trim();
+  if (!val) return;
+  STATE.apiKey = val;
+  CONFIG.PRIM_API_KEY = val;
+  console.log('[PRIM] API Key configurada');
+  stopPolling();
+  startPolling();
+});
+
+/* ───────────────────────────────────────────────────────────
+   BOTÓN START — inicializa AudioContext + arranca todo
+   ─────────────────────────────────────────────────────────── */
+document.getElementById('start-btn').addEventListener('click', async () => {
+  const overlay = document.getElementById('start-overlay');
+  const btn     = document.getElementById('start-btn');
+  btn.textContent = '▌▌ CARGANDO…';
+  btn.disabled = true;
+
+  // 1. Audio
+  await initAudio();
+
+  // 2. Mapa
+  initMap();
+
+  // 3. GeoJSON
+  await loadGeoJSON();
+
+  // 4. Ocultar overlay
+  overlay.style.transition = 'opacity 0.5s';
+  overlay.style.opacity = '0';
+  setTimeout(() => overlay.style.display = 'none', 500);
+
+  // 5. Activar mock si está configurado por defecto, o si no hay key
+  if (STATE.mockActive || !STATE.apiKey) {
+    if (STATE.mockActive) {
+      startMock();
+      const btn2 = document.getElementById('mock-toggle');
+      btn2.textContent = 'MOCK ON';
+      btn2.classList.add('active');
+    }
+  }
+
+  // 6. Si hay API key en config, arrancar polling
+  if (STATE.apiKey) startPolling();
+
+  // 7. Precargar key en input si ya estaba en CONFIG
+  if (CONFIG.PRIM_API_KEY) {
+    document.getElementById('apikey-input').value = CONFIG.PRIM_API_KEY;
+  }
+});
+
+/* ───────────────────────────────────────────────────────────
+   NOTA PARA INCRUSTAR EN CARTOGRAFUNK
+   ─────────────────────────────────────────────────────────── */
+/*
+  OPCIÓN A — Como iframe en tu sección de proyectos:
+  <iframe src="paris-metro-map.html" style="width:100%;height:660px;border:none;"></iframe>
+
+  OPCIÓN B — Copiar el HTML dentro de un .project-case o .explorer-block
+  y ajustar la variable `body` a `div` con el container necesario.
+  
+  OPCIÓN C (recomendada para GitHub Pages):
+  Guarda este archivo como /pages/paris-rail.html en tu repo.
+  En tu JS principal abre con window.open() o usa un lightbox.
+*/
+</script>
+</body>
+</html>

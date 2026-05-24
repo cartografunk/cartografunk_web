@@ -325,6 +325,45 @@ section { padding:7rem 4rem; }
   margin-right:0.45rem;
 }
 
+/* ── DAFT METRO ── */
+.metro-section {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(180,79,255,0.12), transparent 42%),
+    var(--black);
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+}
+.metro-intro {
+  display:grid;
+  grid-template-columns:minmax(0,0.65fr) minmax(280px,0.35fr);
+  gap:2rem;
+  align-items:end;
+  margin-bottom:2rem;
+}
+.metro-paths {
+  border:1px solid var(--border);
+  background:rgba(255,255,255,0.025);
+  padding:1rem;
+  font-family:var(--font-mono);
+  font-size:0.62rem;
+  color:var(--muted);
+  letter-spacing:1px;
+  line-height:1.75;
+  text-transform:uppercase;
+}
+.metro-frame-wrap {
+  border:1px solid var(--purple-dim);
+  background:#07070d;
+  box-shadow:0 24px 80px rgba(0,0,0,0.35);
+  overflow:hidden;
+}
+.metro-frame {
+  display:block;
+  width:100%;
+  height:960px;
+  border:0;
+}
+
 /* ── PROYECTOS ── */
 .proyectos-grid {
   display:grid; grid-template-columns:1fr 1fr;
@@ -888,6 +927,8 @@ footer {
   .curso-wrap{grid-template-columns:1fr}
   .curso-sesiones{grid-template-columns:1fr}
   .curso-sesion{min-height:auto}
+  .metro-intro{grid-template-columns:1fr}
+  .metro-frame{height:900px}
   .proyectos-grid{grid-template-columns:1fr}
   .proyecto-hero{grid-template-columns:1fr;gap:1.5rem}
   .case-metrics{grid-template-columns:1fr}
@@ -944,6 +985,7 @@ footer {
   <ul class="nav-links">
     <li><a href="#servicios">Servicios</a></li>
     <li><a href="#cursos">Cursos</a></li>
+    <li><a href="#daft-metro">Daft Metro</a></li>
     <li><a href="#proyectos">Proyectos</a></li>
     <li><a href="#nosotros">Nosotros</a></li>
     <li><a href="#contacto">Contacto</a></li>
@@ -1199,6 +1241,32 @@ footer {
         </ul>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- DAFT METRO -->
+<section id="daft-metro" class="metro-section">
+  <p class="s-tag">Mapa interactivo</p>
+  <div class="metro-intro">
+    <div>
+      <h2 class="s-title">DAFT<br><em>METRO</em></h2>
+      <p class="curso-lead">Experimento audiovisual con la red ferroviaria de París: Leaflet, Web Audio API, datos PRIM/IDFM y visualización en tiempo real. Por ahora corre en modo demo mientras llegan los GeoJSON y los samples finales.</p>
+      <div class="curso-meta">
+        <span class="chip">Leaflet</span>
+        <span class="chip">PRIM API</span>
+        <span class="chip">GeoJSON</span>
+        <span class="chip">Web Audio</span>
+        <span class="chip">Tiempo real</span>
+      </div>
+    </div>
+    <div class="metro-paths">
+      GeoJSON líneas: assets/data/daft-metro/lines.geojson<br>
+      GeoJSON estaciones: assets/data/daft-metro/stations.geojson<br>
+      Audio: assets/audio/sample_01.mp3 ... sample_05.mp3
+    </div>
+  </div>
+  <div class="metro-frame-wrap">
+    <iframe class="metro-frame" src="assets/maps/daft-metro.html" title="Daft Metro interactive map"></iframe>
   </div>
 </section>
 

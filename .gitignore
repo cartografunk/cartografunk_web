@@ -1,0 +1,4 @@
+assets/private/
+*.local
+.env
+.env.*
