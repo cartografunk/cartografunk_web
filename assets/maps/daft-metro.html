@@ -205,6 +205,27 @@ body {
   color: var(--amber);
   background: rgba(245,158,11,0.08);
 }
+.basemap-select {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-hi);
+  color: var(--text-dim);
+  padding: 3px 8px;
+  border-radius: 2px;
+  cursor: pointer;
+}
+.basemap-select:focus {
+  outline: none;
+  border-color: var(--purple);
+  color: var(--text);
+}
+.basemap-select option {
+  background: var(--bg-panel);
+  color: var(--text);
+}
 
 /* Contador en vivo */
 .event-counter {
@@ -612,6 +633,13 @@ body {
       <div class="topbar-title">PARIS · METRO / RER / TRANSILIEN</div>
     </div>
     <div class="topbar-right">
+      <select class="basemap-select" id="basemap-select" title="Mapa base">
+        <option value="positron">Base clara</option>
+        <option value="voyager">Voyager</option>
+        <option value="osm">OSM estándar</option>
+        <option value="dark">Oscuro</option>
+        <option value="toner">Toner</option>
+      </select>
       <div class="event-counter">EVENTOS: <span id="event-count">0</span></div>
       <div id="status-pill" class="status-pill offline">
         <div class="status-dot"></div>
@@ -709,6 +737,52 @@ const CONFIG = {
   // ─── MAPA ──────────────────────────────────────────
   MAP_CENTER: [48.8566, 2.3522],
   MAP_ZOOM: 12,
+  DEFAULT_BASEMAP: 'positron',
+  BASEMAPS: {
+    positron: {
+      label: 'Base clara',
+      url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+      options: {
+        attribution: '© <a href="https://carto.com/">CARTO</a> · © <a href="https://www.openstreetmap.org/copyright">OSM</a>',
+        subdomains: 'abcd',
+        maxZoom: 20,
+      },
+    },
+    voyager: {
+      label: 'Voyager',
+      url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+      options: {
+        attribution: '© <a href="https://carto.com/">CARTO</a> · © <a href="https://www.openstreetmap.org/copyright">OSM</a>',
+        subdomains: 'abcd',
+        maxZoom: 20,
+      },
+    },
+    osm: {
+      label: 'OSM estándar',
+      url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      options: {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 19,
+      },
+    },
+    dark: {
+      label: 'Oscuro',
+      url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+      options: {
+        attribution: '© <a href="https://carto.com/">CARTO</a> · © <a href="https://www.openstreetmap.org/copyright">OSM</a>',
+        subdomains: 'abcd',
+        maxZoom: 19,
+      },
+    },
+    toner: {
+      label: 'Toner',
+      url: 'https://stamen-tiles.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}.png',
+      options: {
+        attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a> · © <a href="https://www.openstreetmap.org/copyright">OSM</a>',
+        maxZoom: 20,
+      },
+    },
+  },
 
   // ─── NEÓN COLORS por tipo de línea ─────────────────
   LINE_COLORS: {
@@ -745,6 +819,7 @@ const STATE = {
   layerLines:  null,
   layerStations: null,
   layerPulses: L.layerGroup(),
+  baseLayer: null,
   mockTimer:   null,
   pollTimer:   null,
   mockActive:  CONFIG.MOCK_ACTIVE,
@@ -860,15 +935,8 @@ function initMap() {
     attributionControl: true,
   });
 
-  // Basemap oscuro — CartoDB Dark Matter
-  L.tileLayer(
-    'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-    {
-      attribution: '© <a href="https://carto.com/">CARTO</a> · © <a href="https://www.openstreetmap.org/copyright">OSM</a>',
-      subdomains: 'abcd',
-      maxZoom: 19,
-    }
-  ).addTo(STATE.map);
+  setBasemap(CONFIG.DEFAULT_BASEMAP);
+  document.getElementById('basemap-select').value = CONFIG.DEFAULT_BASEMAP;
 
   // Zoom label en footer
   STATE.map.on('zoom', () => {
@@ -877,6 +945,15 @@ function initMap() {
 
   // Layer group de pulsos
   STATE.layerPulses.addTo(STATE.map);
+}
+
+function setBasemap(id) {
+  if (!STATE.map || !CONFIG.BASEMAPS[id]) return;
+  if (STATE.baseLayer) STATE.map.removeLayer(STATE.baseLayer);
+
+  const basemap = CONFIG.BASEMAPS[id];
+  STATE.baseLayer = L.tileLayer(basemap.url, basemap.options).addTo(STATE.map);
+  STATE.baseLayer.bringToBack();
 }
 
 /* ───────────────────────────────────────────────────────────
@@ -1333,6 +1410,10 @@ document.getElementById('mock-toggle').addEventListener('click', function() {
   this.classList.toggle('active', STATE.mockActive);
   if (STATE.mockActive) startMock();
   else stopMock();
+});
+
+document.getElementById('basemap-select').addEventListener('change', function() {
+  setBasemap(this.value);
 });
 
 /* ───────────────────────────────────────────────────────────
