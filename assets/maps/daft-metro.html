@@ -622,6 +622,11 @@ body {
 }
 .leaflet-tooltip::before { display: none !important; }
 
+.rail-line-highlight {
+  filter: drop-shadow(0 0 6px rgba(255,255,255,0.9)) drop-shadow(0 0 14px rgba(168,85,247,0.85));
+  pointer-events: none;
+}
+
 /* ─── SCAN LINES ──────────────────────────────────────────── */
 .map-card::after {
   content: '';
@@ -871,6 +876,7 @@ const STATE = {
   layerLines:  null,
   layerStations: null,
   layerPulses: L.layerGroup(),
+  layerLineHighlights: L.layerGroup(),
   baseLayer: null,
   mockTimer:   null,
   pollTimer:   null,
@@ -883,6 +889,7 @@ const STATE = {
   fired: new Set(),
   // Estaciones cargadas del GeoJSON: [{id, name, lat, lng, line}]
   stations: [],
+  lineFeaturesByKey: new Map(),
   // Capas visibles
   visibleLayers: { stations: true, lines: true, pulses: true },
   apiKey: CONFIG.PRIM_API_KEY,
@@ -1012,8 +1019,9 @@ function initMap() {
     document.getElementById('zoom-label').textContent = `ZOOM ${STATE.map.getZoom()}`;
   });
 
-  // Layer group de pulsos
+  // Layer groups de eventos visuales
   STATE.layerPulses.addTo(STATE.map);
+  STATE.layerLineHighlights.addTo(STATE.map);
 }
 
 function setBasemap(id) {
@@ -1030,6 +1038,10 @@ function normalizeLineId(value) {
   return raw.replace(/^METRO\s+/i, 'M').replace(/\s+/g, ' ');
 }
 
+function normalizeLineKey(value) {
+  return normalizeLineId(value).toUpperCase().replace(/\s+/g, ' ').trim();
+}
+
 function getFeatureLineId(properties = {}) {
   return properties.route_short_name
       || properties.line
@@ -1044,6 +1056,37 @@ function getFeatureColor(properties = {}) {
   if (properties.colourweb_hexa) return `#${String(properties.colourweb_hexa).replace('#', '')}`;
   const id = normalizeLineId(getFeatureLineId(properties));
   return CONFIG.LINE_COLORS[id] || CONFIG.LINE_COLORS.DEFAULT;
+}
+
+function getLineKeys(properties = {}) {
+  const keys = [
+    getFeatureLineId(properties),
+    properties.route_short_name,
+    properties.line,
+    properties.res_com,
+    properties.indice_lig,
+    properties.idrefligc,
+    properties.idrefliga,
+    properties.extcode,
+  ];
+
+  if (properties.mode && properties.indice_lig) {
+    const mode = String(properties.mode).toUpperCase();
+    const index = String(properties.indice_lig).trim();
+    if (mode === 'METRO') keys.push(`M${index}`, `METRO ${index}`);
+    if (mode === 'RER') keys.push(`RER ${index}`);
+    if (mode === 'TRAMWAY') keys.push(`T${index}`, `TRAM ${index}`);
+    if (mode === 'TRAIN') keys.push(`TRAIN ${index}`);
+  }
+
+  return [...new Set(keys.filter(Boolean).map(normalizeLineKey).filter(Boolean))];
+}
+
+function indexLineFeature(feature) {
+  getLineKeys(feature.properties).forEach((key) => {
+    if (!STATE.lineFeaturesByKey.has(key)) STATE.lineFeaturesByKey.set(key, []);
+    STATE.lineFeaturesByKey.get(key).push(feature);
+  });
 }
 
 function getStationPrimId(properties = {}) {
@@ -1066,6 +1109,8 @@ async function loadGeoJSON() {
     if (!res.ok) throw new Error('no file');
     const geojson = await res.json();
     bar.style.width = '50%';
+    STATE.lineFeaturesByKey.clear();
+    geojson.features?.forEach(indexLineFeature);
 
     STATE.layerLines = L.geoJSON(geojson, {
       style: (feature) => {
@@ -1116,9 +1161,10 @@ async function loadGeoJSON() {
                    || feature.properties?.mode
                    || '';
         const color = getFeatureColor(feature.properties);
+        const lineKeys = getLineKeys(feature.properties);
 
         // Registrar en STATE.stations para mock y cruce con API
-        STATE.stations.push({ id, name, lat: latlng.lat, lng: latlng.lng, line, color });
+        STATE.stations.push({ id, name, lat: latlng.lat, lng: latlng.lng, line, color, lineKeys });
 
         return L.circleMarker(latlng, {
           radius: 4,
@@ -1189,7 +1235,7 @@ function generateSyntheticStations() {
 
   synthetic.forEach(s => {
     const color = CONFIG.LINE_COLORS[s.line] || CONFIG.LINE_COLORS.DEFAULT;
-    STATE.stations.push({ ...s, color });
+    STATE.stations.push({ ...s, color, lineKeys: [normalizeLineKey(s.line)] });
 
     const marker = L.circleMarker([s.lat, s.lng], {
       radius: 4, fillColor: color,
@@ -1267,6 +1313,7 @@ function triggerArrival(station, tripId) {
 
   // ── Flash visual en el mapa ────────────────────────────
   flashStation(station);
+  highlightLine(station);
 
   // ── Feed lateral ──────────────────────────────────────
   addEventToFeed(station, tripId);
@@ -1318,6 +1365,54 @@ function flashStation(station) {
     ring2.setStyle({ radius: 6 + f2 * 4, opacity: Math.max(0, 0.7 - f2 * 0.1) });
     if (f2 > 6) { clearInterval(anim2); STATE.layerPulses.removeLayer(ring2); }
   }, 80);
+}
+
+function highlightLine(station) {
+  if (!STATE.layerLineHighlights || !STATE.visibleLayers.lines) return;
+
+  const keys = [
+    ...(station.lineKeys || []),
+    station.line,
+  ].filter(Boolean).map(normalizeLineKey);
+
+  const features = keys.map(key => STATE.lineFeaturesByKey.get(key)).find(Boolean);
+  if (!features || features.length === 0) return;
+
+  const color = station.color || CONFIG.LINE_COLORS[normalizeLineId(station.line)] || CONFIG.LINE_COLORS.DEFAULT;
+  const collection = { type: 'FeatureCollection', features };
+  const halo = L.geoJSON(collection, {
+    interactive: false,
+    style: {
+      color: '#ffffff',
+      weight: 9,
+      opacity: 0.55,
+      lineCap: 'round',
+      lineJoin: 'round',
+      className: 'rail-line-highlight',
+    },
+  });
+  const core = L.geoJSON(collection, {
+    interactive: false,
+    style: {
+      color,
+      weight: 5.5,
+      opacity: 1,
+      lineCap: 'round',
+      lineJoin: 'round',
+      className: 'rail-line-highlight',
+    },
+  });
+
+  const group = L.layerGroup([halo, core]).addTo(STATE.layerLineHighlights);
+  group.eachLayer(layer => {
+    if (typeof layer.bringToFront === 'function') layer.bringToFront();
+  });
+
+  setTimeout(() => {
+    if (STATE.layerLineHighlights.hasLayer(group)) {
+      STATE.layerLineHighlights.removeLayer(group);
+    }
+  }, 1500);
 }
 
 function addEventToFeed(station, tripId) {
