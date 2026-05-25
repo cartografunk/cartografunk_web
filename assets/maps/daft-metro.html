@@ -705,7 +705,7 @@ const CONFIG = {
   // Obtén tu clave gratuita en: https://prim.iledefrance-mobilites.fr
   // Si quieres activar datos reales, pon la clave aquí o inyecta CONFIG.PRIM_API_KEY.
   PRIM_API_KEY: 'XTWaMa20m9TjFzW4Mfszjpyqp7QwrSoC',
-  PRIM_BASE:    'https://prim.iledefrance-mobilites.fr/marketplace',
+  PRIM_BASE:    'https://prim.iledefrance-mobilites.fr/marketplace/v2/navitia',
 
   // ─── DATOS LOCALES ─────────────────────────────────
   // Rutas relativas a tu sitio. Si no tienes los archivos aún,
@@ -822,6 +822,7 @@ const STATE = {
   baseLayer: null,
   mockTimer:   null,
   pollTimer:   null,
+  pollCursor:  0,
   mockActive:  CONFIG.MOCK_ACTIVE,
   eventCount:  0,
   // Anti-loop: registra tripId+stopId ya disparados
@@ -956,6 +957,34 @@ function setBasemap(id) {
   STATE.baseLayer.bringToBack();
 }
 
+function normalizeLineId(value) {
+  const raw = String(value || '').split('/')[0].trim();
+  return raw.replace(/^METRO\s+/i, 'M').replace(/\s+/g, ' ');
+}
+
+function getFeatureLineId(properties = {}) {
+  return properties.route_short_name
+      || properties.line
+      || properties.res_com
+      || properties.reseau
+      || properties.indice_lig
+      || properties.name
+      || 'DEFAULT';
+}
+
+function getFeatureColor(properties = {}) {
+  if (properties.colourweb_hexa) return `#${String(properties.colourweb_hexa).replace('#', '')}`;
+  const id = normalizeLineId(getFeatureLineId(properties));
+  return CONFIG.LINE_COLORS[id] || CONFIG.LINE_COLORS.DEFAULT;
+}
+
+function getStationPrimId(properties = {}) {
+  const zdc = properties.id_ref_zdc || properties.stop_area_id || properties.stop_id || properties.id;
+  if (!zdc) return String(Math.random());
+  const raw = String(zdc);
+  return raw.startsWith('stop_area:') ? raw : `stop_area:IDFM:${raw}`;
+}
+
 /* ───────────────────────────────────────────────────────────
    CARGA DE GEOJSON LOCALES
    ─────────────────────────────────────────────────────────── */
@@ -972,21 +1001,18 @@ async function loadGeoJSON() {
 
     STATE.layerLines = L.geoJSON(geojson, {
       style: (feature) => {
-        const id = feature.properties?.route_short_name
-                || feature.properties?.line
-                || feature.properties?.name
-                || 'DEFAULT';
-        const color = CONFIG.LINE_COLORS[id] || CONFIG.LINE_COLORS.DEFAULT;
+        const color = getFeatureColor(feature.properties);
         return {
           color,
-          weight: 2.5,
-          opacity: 0.8,
-          // Efecto glow via multiple líneas
+          weight: 2.8,
+          opacity: 0.86,
           className: 'rail-line',
         };
       },
       onEachFeature: (feature, layer) => {
         const name = feature.properties?.route_long_name
+                   || feature.properties?.res_com
+                   || feature.properties?.reseau
                    || feature.properties?.line || '';
         if (name) layer.bindTooltip(name, { sticky: true });
       },
@@ -1009,10 +1035,19 @@ async function loadGeoJSON() {
 
     STATE.layerStations = L.geoJSON(geojson, {
       pointToLayer: (feature, latlng) => {
-        const id    = feature.properties?.stop_id   || feature.properties?.id   || String(Math.random());
-        const name  = feature.properties?.stop_name || feature.properties?.name || 'Estación';
-        const line  = feature.properties?.route_short_name || feature.properties?.line || '';
-        const color = CONFIG.LINE_COLORS[line] || CONFIG.LINE_COLORS.DEFAULT;
+        const id    = getStationPrimId(feature.properties);
+        const cssId = String(id).replace(/[^a-z0-9_-]/gi, '-');
+        const name  = feature.properties?.stop_name
+                   || feature.properties?.nom_long
+                   || feature.properties?.nom_zdc
+                   || feature.properties?.name
+                   || 'Estación';
+        const line  = feature.properties?.route_short_name
+                   || feature.properties?.line
+                   || feature.properties?.res_com
+                   || feature.properties?.mode
+                   || '';
+        const color = getFeatureColor(feature.properties);
 
         // Registrar en STATE.stations para mock y cruce con API
         STATE.stations.push({ id, name, lat: latlng.lat, lng: latlng.lng, line, color });
@@ -1024,16 +1059,23 @@ async function loadGeoJSON() {
           weight: 1,
           opacity: 0.9,
           fillOpacity: 0.85,
-          className: `station-marker station-${id}`,
+          className: `station-marker station-${cssId}`,
         });
       },
       onEachFeature: (feature, layer) => {
-        const name = feature.properties?.stop_name || feature.properties?.name || '';
-        const line = feature.properties?.route_short_name || feature.properties?.line || '';
+        const name = feature.properties?.stop_name
+                  || feature.properties?.nom_long
+                  || feature.properties?.nom_zdc
+                  || feature.properties?.name
+                  || '';
+        const line = feature.properties?.route_short_name
+                  || feature.properties?.line
+                  || feature.properties?.res_com
+                  || '';
         layer.bindTooltip(name, { sticky: true });
         layer.bindPopup(`
           <div class="popup-name">${name}</div>
-          <div class="popup-meta">${line ? `LÍNEA ${line} · ` : ''}${feature.properties?.stop_id || ''}</div>
+          <div class="popup-meta">${line ? `${line} · ` : ''}${getStationPrimId(feature.properties)}</div>
         `);
       },
     }).addTo(STATE.map);
@@ -1108,10 +1150,10 @@ function buildLegend(geojson) {
   list.innerHTML = '';
 
   geojson.features?.forEach(f => {
-    const id = f.properties?.route_short_name || f.properties?.line || '';
+    const id = getFeatureLineId(f.properties);
     if (!id || seen.has(id)) return;
     seen.add(id);
-    const color = CONFIG.LINE_COLORS[id] || CONFIG.LINE_COLORS.DEFAULT;
+    const color = getFeatureColor(f.properties);
     list.innerHTML += `
       <div class="legend-item">
         <div class="legend-line" style="background:${color};box-shadow:0 0 6px ${color}"></div>
@@ -1304,17 +1346,21 @@ async function resumeExperience() {
 async function fetchArrivals() {
   if (!STATE.apiKey) return;
 
-  // Tomar un subconjunto de estaciones para no saturar la API
-  // En producción puedes iterar todas con paginación
-  const subset = STATE.stations.slice(0, 10);
+  const railStations = STATE.stations.filter(station => /METRO|RER|TRAIN|TRAM/i.test(station.line || ''));
+  const pool = railStations.length ? railStations : STATE.stations;
+  if (pool.length === 0) return;
+
+  const batchSize = 12;
+  const subset = Array.from({ length: Math.min(batchSize, pool.length) }, (_, i) => {
+    return pool[(STATE.pollCursor + i) % pool.length];
+  });
+  STATE.pollCursor = (STATE.pollCursor + subset.length) % pool.length;
 
   for (const station of subset) {
     try {
-      // PRIM usa IDs tipo "stop_area:IDFM:monomodal_stop_area:463"
-      // Necesitas mapear tu stop_id del GeoJSON al formato PRIM
-      const stopId = station.id; // Ajusta si tu GeoJSON usa otro esquema
+      const stopId = station.id;
 
-      const url = `${CONFIG.PRIM_BASE}/navitia/stop_areas/${stopId}/arrivals?count=5`;
+      const url = `${CONFIG.PRIM_BASE}/stop_areas/${encodeURIComponent(stopId)}/arrivals?count=8`;
       const res = await fetch(url, {
         headers: {
           'apikey': STATE.apiKey,
@@ -1330,29 +1376,31 @@ async function fetchArrivals() {
       const data = await res.json();
       const arrivals = data.arrivals || [];
 
-      arrivals.forEach(arrival => {
-        // arrival.stop_date_time.arrival_date_time: "20260524T143012" (UTC+1)
+      arrivals
+        .filter(isRailArrival)
+        .slice(0, 1)
+        .forEach(arrival => {
         const arrTime = arrival.stop_date_time?.arrival_date_time;
-        const tripId  = arrival.vehicle_journey?.id || String(Math.random());
+        const vehicleLink = arrival.links?.find(link => link.type === 'vehicle_journey')?.id;
+        const tripId = vehicleLink
+                    || arrival.vehicle_journey?.id
+                    || `${station.id}_${arrival.display_informations?.label || ''}_${arrTime || Date.now()}`;
 
         if (!arrTime) return;
 
-        // Parsear datetime PRIM (formato YYYYMMDDTHHMMSS)
-        const y  = arrTime.slice(0,4), mo = arrTime.slice(4,6), d = arrTime.slice(6,8);
-        const h  = arrTime.slice(9,11), mi = arrTime.slice(11,13), s = arrTime.slice(13,15);
-        const arrDate = new Date(`${y}-${mo}-${d}T${h}:${mi}:${s}`);
-        const diffMs  = arrDate - Date.now();
-
-        // Disparar si el tren llega en los próximos 30 segundos (ya casi aquí)
-        if (diffMs >= -5000 && diffMs <= 30000) {
-          triggerArrival(station, tripId);
-        }
+        triggerArrival(station, tripId);
       });
 
     } catch(e) {
       console.warn(`[PRIM] Error en estación ${station.id}:`, e.message);
     }
   }
+}
+
+function isRailArrival(arrival) {
+  const info = arrival.display_informations || {};
+  const mode = `${info.physical_mode || ''} ${info.commercial_mode || ''}`;
+  return /Metro|RapidTransit|LocalTrain|Train|Tramway|RER/i.test(mode);
 }
 
 function startPolling() {

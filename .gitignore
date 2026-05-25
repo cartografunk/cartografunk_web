@@ -1,5 +1,6 @@
 assets/private/
 samples/
+cartography/
 *.local
 .env
 .env.*
