@@ -858,6 +858,7 @@ const STATE = {
   audioRandomPairQueue: [],
   audioNextTime: 0,
   audioSources:new Set(),
+  audioTimer: null,
   wasRunningBeforeHidden:false,
   manuallyStopped:false,
   map:         null,
@@ -891,6 +892,7 @@ async function initAudio() {
   ];
   STATE.audioRandomPairQueue = [];
   STATE.audioNextTime = 0;
+  stopAudioLoop();
 
   const loadBuffer = async (file) => {
     try {
@@ -969,6 +971,19 @@ function playNextSample() {
   STATE.audioSources.add(src);
   src.onended = () => STATE.audioSources.delete(src);
   src.start(startAt);
+}
+
+function startAudioLoop() {
+  if (STATE.audioTimer) return;
+  playNextSample();
+  STATE.audioTimer = setInterval(playNextSample, CONFIG.MOCK_INTERVAL_MS);
+}
+
+function stopAudioLoop() {
+  if (STATE.audioTimer) {
+    clearInterval(STATE.audioTimer);
+    STATE.audioTimer = null;
+  }
 }
 
 /* ───────────────────────────────────────────────────────────
@@ -1243,9 +1258,6 @@ function triggerArrival(station, tripId) {
     arr.slice(0, 1000).forEach(k => STATE.fired.delete(k));
   }
 
-  // ── Audio ──────────────────────────────────────────────
-  playNextSample();
-
   // ── Flash visual en el mapa ────────────────────────────
   flashStation(station);
 
@@ -1349,6 +1361,7 @@ function stopMock() {
 }
 
 function stopAudioPlayback() {
+  stopAudioLoop();
   STATE.audioSources.forEach(src => {
     try { src.stop(); } catch(e) {}
   });
@@ -1360,7 +1373,7 @@ function stopAudioPlayback() {
 }
 
 function isExperienceRunning() {
-  return !!STATE.mockTimer || !!STATE.pollTimer;
+  return !!STATE.mockTimer || !!STATE.pollTimer || !!STATE.audioTimer;
 }
 
 async function activateExperience() {
@@ -1369,6 +1382,7 @@ async function activateExperience() {
     await STATE.audioCtx.resume();
     STATE.audioNextTime = STATE.audioCtx.currentTime;
   }
+  startAudioLoop();
   if (STATE.mockActive) startMock();
   else if (STATE.apiKey) startPolling();
   updateStopButton();
