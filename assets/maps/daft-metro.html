@@ -171,6 +171,10 @@ body {
   border-color: var(--text-muted);
   color: var(--text-muted);
 }
+.status-pill.rate {
+  border-color: var(--red);
+  color: var(--red);
+}
 .status-dot {
   width: 5px; height: 5px;
   border-radius: 50%;
@@ -773,7 +777,9 @@ const CONFIG = {
   ],
 
   // ─── POLLING ───────────────────────────────────────
-  POLL_INTERVAL_MS: 15000,     // cada cuántos ms consultar la API real
+  POLL_INTERVAL_MS: 60000,     // PRIM rate-limit friendly
+  POLL_BATCH_SIZE: 3,
+  RATE_LIMIT_BACKOFF_MS: 120000,
   MOCK_INTERVAL_MS: 620,       // ritmo demo: cada pulso avanza un sample
   MOCK_ACTIVE: false,          // PRIM activo por defecto; MOCK queda manual
   AUDIO_OVERLAP_SEC: 0.055,    // pequeño empalme para que la frase no suene cortada
@@ -870,6 +876,7 @@ const STATE = {
   pollTimer:   null,
   pollActive:  false,
   pollCursor:  0,
+  rateLimitUntil: 0,
   mockActive:  CONFIG.MOCK_ACTIVE,
   eventCount:  0,
   // Anti-loop: registra tripId+stopId ya disparados
@@ -1435,12 +1442,16 @@ async function resumeExperience() {
    ─────────────────────────────────────────────────────────── */
 async function fetchArrivals() {
   if (!STATE.apiKey || !STATE.pollActive) return;
+  if (Date.now() < STATE.rateLimitUntil) {
+    setStatus('rate');
+    return;
+  }
 
   const railStations = STATE.stations.filter(station => /METRO|RER|TRAIN|TRAM/i.test(station.line || ''));
   const pool = railStations.length ? railStations : STATE.stations;
   if (pool.length === 0) return;
 
-  const batchSize = 12;
+  const batchSize = CONFIG.POLL_BATCH_SIZE;
   const subset = Array.from({ length: Math.min(batchSize, pool.length) }, (_, i) => {
     return pool[(STATE.pollCursor + i) % pool.length];
   });
@@ -1460,6 +1471,12 @@ async function fetchArrivals() {
       });
 
       if (!res.ok) {
+        if (res.status === 429) {
+          STATE.rateLimitUntil = Date.now() + CONFIG.RATE_LIMIT_BACKOFF_MS;
+          setStatus('rate');
+          console.warn('[PRIM] Rate limit: pausando consultas temporalmente');
+          return;
+        }
         if (res.status === 401) { console.error('[PRIM] API Key inválida'); return; }
         continue;
       }
