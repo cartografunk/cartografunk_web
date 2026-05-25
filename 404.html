@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>404 · Coordenada no encontrada · Cartografunk</title>
+<meta name="robots" content="noindex">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=EB+Garamond:ital,wght@0,400;1,400&family=JetBrains+Mono:wght@400;700&display=swap');
+
+  :root {
+    --bg:       #07080f;
+    --purple:   #7c3aed;
+    --purple-hi:#a855f7;
+    --text:     #e2e8f0;
+    --text-dim: #64748b;
+    --mono: 'JetBrains Mono', monospace;
+    --display: 'Bebas Neue', sans-serif;
+    --serif: 'EB Garamond', Georgia, serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    padding: 2rem;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  /* Grid de fondo */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(124,58,237,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,58,237,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  .glitch {
+    font-family: var(--display);
+    font-size: clamp(6rem, 20vw, 14rem);
+    letter-spacing: 0.05em;
+    line-height: 1;
+    color: var(--text);
+    position: relative;
+    user-select: none;
+  }
+  .glitch::before,
+  .glitch::after {
+    content: '404';
+    position: absolute;
+    inset: 0;
+  }
+  .glitch::before {
+    color: var(--purple);
+    clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
+    transform: translate(-3px, -2px);
+    animation: glitch-top 3.5s infinite;
+  }
+  .glitch::after {
+    color: #06b6d4;
+    clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%);
+    transform: translate(3px, 2px);
+    animation: glitch-bot 3.5s infinite;
+  }
+  @keyframes glitch-top {
+    0%, 90%, 100% { transform: translate(-3px, -2px); opacity: 1; }
+    92%            { transform: translate(3px, -2px); opacity: 0.8; }
+    94%            { transform: translate(-3px, 0px); opacity: 1; }
+  }
+  @keyframes glitch-bot {
+    0%, 90%, 100% { transform: translate(3px, 2px); opacity: 1; }
+    92%           { transform: translate(-3px, 2px); opacity: 0.8; }
+    94%           { transform: translate(3px, 0px); opacity: 1; }
+  }
+
+  .label {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--purple-hi);
+    margin-bottom: 1rem;
+  }
+
+  .title {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: clamp(1.1rem, 3vw, 1.5rem);
+    color: var(--text-dim);
+    margin: 0.75rem 0 2rem;
+    max-width: 480px;
+    line-height: 1.5;
+  }
+
+  .coords {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+    margin-bottom: 2.5rem;
+    opacity: 0.6;
+  }
+  .coords span { color: var(--purple-hi); }
+
+  .btn {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--purple-hi);
+    border: 1px solid var(--purple-hi);
+    padding: 0.65rem 2rem;
+    border-radius: 2px;
+    transition: all 0.2s;
+    display: inline-block;
+  }
+  .btn:hover {
+    background: rgba(124,58,237,0.15);
+    box-shadow: 0 0 20px rgba(124,58,237,0.3);
+  }
+
+  .brand {
+    position: fixed;
+    bottom: 1.5rem;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    opacity: 0.4;
+    text-transform: uppercase;
+  }
+  .brand em { color: var(--purple-hi); font-style: normal; }
+</style>
+</head>
+<body>
+
+  <div class="label">Error de coordenadas</div>
+  <div class="glitch" aria-label="404">404</div>
+  <p class="title">Esta coordenada no existe en el mapa.<br>El punto que buscas se perdió en el espacio vectorial.</p>
+  <div class="coords">
+    LAT <span id="lat">--</span> · LON <span id="lon">--</span> · ALT <span>404m</span>
+  </div>
+  <a class="btn" href="/cartografunk_web/">← Volver al mapa</a>
+
+  <div class="brand"><em>CARTOGRAFUNK</em> · INTELIGENCIA ESPACIAL · MX</div>
+
+  <script>
+    // Coordenadas aleatorias decorativas
+    document.getElementById('lat').textContent =
+      (19 + Math.random() * 10).toFixed(4) + '°N';
+    document.getElementById('lon').textContent =
+      (96 + Math.random() * 10).toFixed(4) + '°W';
+  </script>
+</body>
+</html>
