@@ -873,6 +873,7 @@ const STATE = {
   audioTimer: null,
   wasRunningBeforeHidden:false,
   audioPausedManually:false,
+  audioPausedByRate:false,
   map:         null,
   layerLines:  null,
   layerStations: null,
@@ -1454,12 +1455,14 @@ function startMock() {
   }, CONFIG.MOCK_INTERVAL_MS);
 
   setStatus('mock');
+  if (!STATE.audioPausedManually) startAudioPlayback();
   updateAudioButton();
 }
 
 function stopMock() {
   if (STATE.mockTimer) { clearInterval(STATE.mockTimer); STATE.mockTimer = null; }
-  setStatus(STATE.apiKey ? 'offline' : 'offline');
+  if (isPrimRateLimited()) setStatus('rate');
+  else setStatus(STATE.apiKey ? 'offline' : 'offline');
   updateAudioButton();
 }
 
@@ -1479,8 +1482,22 @@ function isAudioRunning() {
   return !!STATE.audioTimer;
 }
 
+function isPrimRateLimited() {
+  return !!STATE.rateLimitUntil && Date.now() < STATE.rateLimitUntil;
+}
+
+function shouldMuteAudioForRate() {
+  return isPrimRateLimited() && !STATE.mockTimer;
+}
+
 async function startAudioPlayback() {
   STATE.audioPausedManually = false;
+  if (shouldMuteAudioForRate()) {
+    STATE.audioPausedByRate = true;
+    updateAudioButton();
+    return;
+  }
+  STATE.audioPausedByRate = false;
   if (STATE.audioCtx && STATE.audioCtx.state === 'suspended') {
     await STATE.audioCtx.resume();
     STATE.audioNextTime = STATE.audioCtx.currentTime;
@@ -1491,6 +1508,7 @@ async function startAudioPlayback() {
 
 function pauseAudioPlayback({ manual = false } = {}) {
   STATE.audioPausedManually = manual;
+  if (manual) STATE.audioPausedByRate = false;
   stopAudioPlayback();
   updateAudioButton();
 }
@@ -1499,9 +1517,10 @@ function updateAudioButton() {
   const btn = document.getElementById('audio-toggle');
   if (!btn) return;
   const started = !!STATE.map;
+  const mutedForRate = shouldMuteAudioForRate();
   const running = isAudioRunning();
-  btn.disabled = !started;
-  btn.textContent = running ? 'PAUSAR AUDIO' : 'REANUDAR AUDIO';
+  btn.disabled = !started || mutedForRate;
+  btn.textContent = mutedForRate ? 'PAUSA PRIM' : (running ? 'PAUSAR AUDIO' : 'REANUDAR AUDIO');
   btn.classList.toggle('active', running);
 }
 
@@ -1571,6 +1590,9 @@ async function fetchArrivals() {
         continue;
       }
 
+      setStatus('live');
+      if (STATE.audioPausedByRate && !STATE.audioPausedManually) startAudioPlayback();
+
       const data = await res.json();
       if (!STATE.pollActive) return;
       const arrivals = data.arrivals || [];
@@ -1635,6 +1657,11 @@ function setStatus(mode) {
   pill.title = mode === 'rate'
     ? 'PRIM esta limitando llamadas; el polling sigue activo y reintentara automaticamente.'
     : '';
+  if (mode === 'rate' && !STATE.mockTimer) {
+    STATE.audioPausedByRate = true;
+    pauseAudioPlayback({ manual: false });
+  }
+  updateAudioButton();
 }
 
 /* ───────────────────────────────────────────────────────────
