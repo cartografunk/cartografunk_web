@@ -693,8 +693,8 @@ body {
       <button class="mode-btn" id="mock-toggle" title="Activar simulación de trenes">
         MOCK OFF
       </button>
-      <button class="mode-btn" id="stop-toggle" title="Detener audio y consultas" disabled>
-        DETENER
+      <button class="mode-btn" id="audio-toggle" title="Pausar o reanudar audio" disabled>
+        PAUSAR AUDIO
       </button>
     </div>
   </div>
@@ -777,8 +777,8 @@ const CONFIG = {
   ],
 
   // ─── POLLING ───────────────────────────────────────
-  POLL_INTERVAL_MS: 60000,     // PRIM rate-limit friendly
-  POLL_BATCH_SIZE: 3,
+  POLL_INTERVAL_MS: 45000,     // PRIM rate-limit friendly
+  POLL_BATCH_SIZE: 4,
   RATE_LIMIT_BACKOFF_MS: 120000,
   MOCK_INTERVAL_MS: 620,       // ritmo demo: cada pulso avanza un sample
   MOCK_ACTIVE: false,          // PRIM activo por defecto; MOCK queda manual
@@ -866,7 +866,7 @@ const STATE = {
   audioSources:new Set(),
   audioTimer: null,
   wasRunningBeforeHidden:false,
-  manuallyStopped:false,
+  audioPausedManually:false,
   map:         null,
   layerLines:  null,
   layerStations: null,
@@ -1358,13 +1358,13 @@ function startMock() {
   }, CONFIG.MOCK_INTERVAL_MS);
 
   setStatus('mock');
-  updateStopButton();
+  updateAudioButton();
 }
 
 function stopMock() {
   if (STATE.mockTimer) { clearInterval(STATE.mockTimer); STATE.mockTimer = null; }
   setStatus(STATE.apiKey ? 'offline' : 'offline');
-  updateStopButton();
+  updateAudioButton();
 }
 
 function stopAudioPlayback() {
@@ -1379,51 +1379,45 @@ function stopAudioPlayback() {
   }
 }
 
-function isExperienceRunning() {
-  return !!STATE.mockTimer || !!STATE.pollTimer || !!STATE.audioTimer;
+function isAudioRunning() {
+  return !!STATE.audioTimer;
 }
 
-async function activateExperience() {
-  STATE.manuallyStopped = false;
+async function startAudioPlayback() {
+  STATE.audioPausedManually = false;
   if (STATE.audioCtx && STATE.audioCtx.state === 'suspended') {
     await STATE.audioCtx.resume();
     STATE.audioNextTime = STATE.audioCtx.currentTime;
   }
   startAudioLoop();
-  if (STATE.mockActive) startMock();
-  else if (STATE.apiKey) startPolling();
-  updateStopButton();
+  updateAudioButton();
 }
 
-function stopExperience({ manual = false } = {}) {
-  STATE.manuallyStopped = manual;
-  if (manual) STATE.wasRunningBeforeHidden = false;
-  stopMock();
-  stopPolling();
+function pauseAudioPlayback({ manual = false } = {}) {
+  STATE.audioPausedManually = manual;
   stopAudioPlayback();
-  setStatus('offline');
-  updateStopButton();
+  updateAudioButton();
 }
 
-function updateStopButton() {
-  const btn = document.getElementById('stop-toggle');
+function updateAudioButton() {
+  const btn = document.getElementById('audio-toggle');
   if (!btn) return;
   const started = !!STATE.map;
-  const running = isExperienceRunning();
+  const running = isAudioRunning();
   btn.disabled = !started;
-  btn.textContent = running ? 'DETENER' : 'REANUDAR';
+  btn.textContent = running ? 'PAUSAR AUDIO' : 'REANUDAR AUDIO';
   btn.classList.toggle('active', running);
 }
 
 function pauseExperience() {
-  if (STATE.manuallyStopped) return;
-  STATE.wasRunningBeforeHidden = !!STATE.mockTimer || !!STATE.pollTimer;
-  stopExperience({ manual: false });
+  if (STATE.audioPausedManually) return;
+  STATE.wasRunningBeforeHidden = isAudioRunning();
+  pauseAudioPlayback({ manual: false });
 }
 
 async function resumeExperience() {
-  if (STATE.manuallyStopped || !STATE.wasRunningBeforeHidden) return;
-  await activateExperience();
+  if (STATE.audioPausedManually || !STATE.wasRunningBeforeHidden) return;
+  await startAudioPlayback();
 }
 
 /* ───────────────────────────────────────────────────────────
@@ -1519,13 +1513,13 @@ function startPolling() {
   fetchArrivals(); // primera llamada inmediata
   STATE.pollTimer = setInterval(fetchArrivals, CONFIG.POLL_INTERVAL_MS);
   setStatus('live');
-  updateStopButton();
+  updateAudioButton();
 }
 
 function stopPolling() {
   STATE.pollActive = false;
   if (STATE.pollTimer) { clearInterval(STATE.pollTimer); STATE.pollTimer = null; }
-  updateStopButton();
+  updateAudioButton();
 }
 
 /* ───────────────────────────────────────────────────────────
@@ -1577,11 +1571,11 @@ document.getElementById('basemap-select').addEventListener('change', function() 
   setBasemap(this.value);
 });
 
-document.getElementById('stop-toggle').addEventListener('click', async function() {
-  if (isExperienceRunning()) {
-    stopExperience({ manual: true });
+document.getElementById('audio-toggle').addEventListener('click', async function() {
+  if (isAudioRunning()) {
+    pauseAudioPlayback({ manual: true });
   } else {
-    await activateExperience();
+    await startAudioPlayback();
   }
 });
 
@@ -1618,9 +1612,10 @@ document.getElementById('start-btn').addEventListener('click', async () => {
     }
   }
 
-  // 6. Si hay API key en config, arrancar polling
+  // 6. Arrancar audio y, si hay API key en config, polling
+  await startAudioPlayback();
   if (STATE.apiKey) startPolling();
-  updateStopButton();
+  updateAudioButton();
 
 });
 
@@ -1629,8 +1624,17 @@ document.addEventListener('visibilitychange', () => {
   else resumeExperience();
 });
 
-window.addEventListener('pagehide', pauseExperience);
-window.addEventListener('beforeunload', pauseExperience);
+window.addEventListener('pagehide', () => {
+  pauseAudioPlayback({ manual: false });
+  stopMock();
+  stopPolling();
+});
+
+window.addEventListener('beforeunload', () => {
+  pauseAudioPlayback({ manual: false });
+  stopMock();
+  stopPolling();
+});
 
 /* ───────────────────────────────────────────────────────────
    NOTA PARA INCRUSTAR EN CARTOGRAFUNK
