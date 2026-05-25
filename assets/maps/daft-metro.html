@@ -258,6 +258,39 @@ body {
   body { height: auto; min-height: 100vh; overflow: auto; }
   .map-body { grid-template-columns: 1fr; grid-template-rows: minmax(520px, 1fr) auto; min-height: 720px; }
 }
+@media (max-width: 640px) {
+  body { padding: 0.6rem; }
+  .section-header { margin-bottom: 0.7rem; }
+  .section-label { font-size: 0.55rem; letter-spacing: 0.14em; }
+  .section-title { font-size: clamp(2rem, 16vw, 3rem); }
+  .section-desc { font-size: 0.82rem; line-height: 1.45; }
+  .map-topbar { align-items: stretch; padding: 0.65rem; }
+  .topbar-left,
+  .topbar-right { width: 100%; }
+  .topbar-left { justify-content: space-between; }
+  .topbar-title { font-size: 0.58rem; letter-spacing: 0.08em; }
+  .topbar-right {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.45rem;
+  }
+  .basemap-select,
+  .mode-btn,
+  .status-pill,
+  .event-counter {
+    width: 100%;
+    min-height: 30px;
+    justify-content: center;
+  }
+  .event-counter { display:flex; align-items:center; justify-content:center; }
+  .map-body { grid-template-rows: minmax(58vh, 520px) auto; min-height: 0; }
+  .side-panel { border-left: 0; border-top: 1px solid var(--border); max-height: 280px; }
+  .legend-list { max-height: 110px; }
+  .event-feed { max-height: 130px; }
+  .map-footer { font-size: 0.55rem; }
+  #start-overlay { padding: 1rem; }
+  .overlay-icon { width: min(300px, 82vw); }
+}
 
 /* ─── MAPA ────────────────────────────────────────────────── */
 #map {
