@@ -200,6 +200,14 @@ body {
   border-color: var(--purple);
   color: var(--purple-hi);
 }
+.mode-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.mode-btn:disabled:hover {
+  border-color: var(--border-hi);
+  color: var(--text-dim);
+}
 .mode-btn.active {
   border-color: var(--amber);
   color: var(--amber);
@@ -648,6 +656,9 @@ body {
       <button class="mode-btn" id="mock-toggle" title="Activar simulación de trenes">
         MOCK OFF
       </button>
+      <button class="mode-btn" id="stop-toggle" title="Detener audio y consultas" disabled>
+        DETENER
+      </button>
     </div>
   </div>
 
@@ -815,6 +826,7 @@ const STATE = {
   audioNextTime: 0,
   audioSources:new Set(),
   wasRunningBeforeHidden:false,
+  manuallyStopped:false,
   map:         null,
   layerLines:  null,
   layerStations: null,
@@ -822,6 +834,7 @@ const STATE = {
   baseLayer: null,
   mockTimer:   null,
   pollTimer:   null,
+  pollActive:  false,
   pollCursor:  0,
   mockActive:  CONFIG.MOCK_ACTIVE,
   eventCount:  0,
@@ -1293,11 +1306,13 @@ function startMock() {
   }, CONFIG.MOCK_INTERVAL_MS);
 
   setStatus('mock');
+  updateStopButton();
 }
 
 function stopMock() {
   if (STATE.mockTimer) { clearInterval(STATE.mockTimer); STATE.mockTimer = null; }
   setStatus(STATE.apiKey ? 'offline' : 'offline');
+  updateStopButton();
 }
 
 function stopAudioPlayback() {
@@ -1311,22 +1326,50 @@ function stopAudioPlayback() {
   }
 }
 
-function pauseExperience() {
-  STATE.wasRunningBeforeHidden = !!STATE.mockTimer || !!STATE.pollTimer;
-  stopMock();
-  stopPolling();
-  stopAudioPlayback();
-  setStatus('offline');
+function isExperienceRunning() {
+  return !!STATE.mockTimer || !!STATE.pollTimer;
 }
 
-async function resumeExperience() {
-  if (!STATE.wasRunningBeforeHidden) return;
+async function activateExperience() {
+  STATE.manuallyStopped = false;
   if (STATE.audioCtx && STATE.audioCtx.state === 'suspended') {
     await STATE.audioCtx.resume();
     STATE.audioNextTime = STATE.audioCtx.currentTime;
   }
   if (STATE.mockActive) startMock();
   else if (STATE.apiKey) startPolling();
+  updateStopButton();
+}
+
+function stopExperience({ manual = false } = {}) {
+  STATE.manuallyStopped = manual;
+  if (manual) STATE.wasRunningBeforeHidden = false;
+  stopMock();
+  stopPolling();
+  stopAudioPlayback();
+  setStatus('offline');
+  updateStopButton();
+}
+
+function updateStopButton() {
+  const btn = document.getElementById('stop-toggle');
+  if (!btn) return;
+  const started = !!STATE.map;
+  const running = isExperienceRunning();
+  btn.disabled = !started;
+  btn.textContent = running ? 'DETENER' : 'REANUDAR';
+  btn.classList.toggle('active', running);
+}
+
+function pauseExperience() {
+  if (STATE.manuallyStopped) return;
+  STATE.wasRunningBeforeHidden = !!STATE.mockTimer || !!STATE.pollTimer;
+  stopExperience({ manual: false });
+}
+
+async function resumeExperience() {
+  if (STATE.manuallyStopped || !STATE.wasRunningBeforeHidden) return;
+  await activateExperience();
 }
 
 /* ───────────────────────────────────────────────────────────
@@ -1344,7 +1387,7 @@ async function resumeExperience() {
    con 0 segundos de espera (tiempo_llegada == now) y los dispara.
    ─────────────────────────────────────────────────────────── */
 async function fetchArrivals() {
-  if (!STATE.apiKey) return;
+  if (!STATE.apiKey || !STATE.pollActive) return;
 
   const railStations = STATE.stations.filter(station => /METRO|RER|TRAIN|TRAM/i.test(station.line || ''));
   const pool = railStations.length ? railStations : STATE.stations;
@@ -1357,6 +1400,7 @@ async function fetchArrivals() {
   STATE.pollCursor = (STATE.pollCursor + subset.length) % pool.length;
 
   for (const station of subset) {
+    if (!STATE.pollActive) return;
     try {
       const stopId = station.id;
 
@@ -1374,6 +1418,7 @@ async function fetchArrivals() {
       }
 
       const data = await res.json();
+      if (!STATE.pollActive) return;
       const arrivals = data.arrivals || [];
 
       arrivals
@@ -1406,13 +1451,17 @@ function isRailArrival(arrival) {
 function startPolling() {
   if (!STATE.apiKey) return;
   if (STATE.pollTimer) return;
+  STATE.pollActive = true;
   fetchArrivals(); // primera llamada inmediata
   STATE.pollTimer = setInterval(fetchArrivals, CONFIG.POLL_INTERVAL_MS);
   setStatus('live');
+  updateStopButton();
 }
 
 function stopPolling() {
+  STATE.pollActive = false;
   if (STATE.pollTimer) { clearInterval(STATE.pollTimer); STATE.pollTimer = null; }
+  updateStopButton();
 }
 
 /* ───────────────────────────────────────────────────────────
@@ -1464,6 +1513,14 @@ document.getElementById('basemap-select').addEventListener('change', function() 
   setBasemap(this.value);
 });
 
+document.getElementById('stop-toggle').addEventListener('click', async function() {
+  if (isExperienceRunning()) {
+    stopExperience({ manual: true });
+  } else {
+    await activateExperience();
+  }
+});
+
 /* ───────────────────────────────────────────────────────────
    BOTÓN START — inicializa AudioContext + arranca todo
    ─────────────────────────────────────────────────────────── */
@@ -1499,6 +1556,7 @@ document.getElementById('start-btn').addEventListener('click', async () => {
 
   // 6. Si hay API key en config, arrancar polling
   if (STATE.apiKey) startPolling();
+  updateStopButton();
 
 });
 
