@@ -769,7 +769,6 @@ const CONFIG = {
   // ─── AUDIO ─────────────────────────────────────────
   // Samples vocales en /assets/audio/
   AUDIO_BASE: '../audio/',
-  AUDIO_INTRO: ['Harder.mp3', 'Better.mp3', 'Faster.mp3', 'Stronger.mp3'],
   AUDIO_PAIRS: [
     ['Work_it.mp3', 'Harder.mp3'],
     ['Make_it.mp3', 'Better.mp3'],
@@ -780,6 +779,17 @@ const CONFIG = {
     ['Our.mp3', 'Work_is.mp3'],
     ['Never.mp3', 'Over.mp3'],
   ],
+  AUDIO_SEQUENCE: [
+    'Work_it.mp3', 'Make_it.mp3', 'Do_it.mp3', 'Make_us.mp3',
+    'Harder.mp3', 'Better.mp3', 'Faster.mp3', 'Stronger.mp3',
+    'More_than.mp3', 'Hour.mp3', 'Our.mp3', 'Never.mp3',
+    'Ever.mp3', 'After.mp3', 'Work_is.mp3', 'Over.mp3',
+    'Work_it.mp3', 'Harder.mp3', 'Make_it.mp3', 'Better.mp3',
+    'Do_it.mp3', 'Faster.mp3', 'Make_us.mp3', 'Stronger.mp3',
+    'More_than.mp3', 'Ever.mp3', 'Hour.mp3', 'After.mp3',
+    'Our.mp3', 'Work_is.mp3', 'Never.mp3', 'Over.mp3',
+  ],
+  AUDIO_SEQUENCE_LOOPS: 2,
 
   // ─── POLLING ───────────────────────────────────────
   POLL_INTERVAL_MS: 45000,     // PRIM rate-limit friendly
@@ -867,10 +877,11 @@ const STATE = {
   audioCtx:    null,
   audioBuffers:new Map(),
   audioQueue:  [],
-  audioRandomPairQueue: [],
   audioNextTime: 0,
   audioSources:new Set(),
   audioTimer: null,
+  audioFinishTimer:null,
+  audioCompleted:false,
   wasRunningBeforeHidden:false,
   audioPausedManually:false,
   audioPausedByRate:false,
@@ -881,6 +892,7 @@ const STATE = {
   layerLineHighlights: L.layerGroup(),
   baseLayer: null,
   mockTimer:   null,
+  mockEventCount: 0,
   pollTimer:   null,
   pollActive:  false,
   pollCursor:  0,
@@ -902,11 +914,7 @@ const STATE = {
    ─────────────────────────────────────────────────────────── */
 async function initAudio() {
   STATE.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  STATE.audioQueue = [
-    ...CONFIG.AUDIO_INTRO,
-    ...CONFIG.AUDIO_PAIRS.flatMap(pair => pair),
-  ];
-  STATE.audioRandomPairQueue = [];
+  resetAudioSequence();
   STATE.audioNextTime = 0;
   stopAudioLoop();
 
@@ -924,8 +932,7 @@ async function initAudio() {
   };
 
   const files = new Set([
-    ...CONFIG.AUDIO_INTRO,
-    ...CONFIG.AUDIO_PAIRS.flatMap(pair => pair),
+    ...CONFIG.AUDIO_SEQUENCE,
   ]);
   const loaded = await Promise.all([...files].map(async file => [file, await loadBuffer(file)]));
   STATE.audioBuffers = new Map(loaded);
@@ -948,23 +955,25 @@ function makeSyntheticTone(ctx, dur) {
   return buf;
 }
 
-function getNextAudioFile() {
-  if (STATE.audioQueue.length > 0) return STATE.audioQueue.shift();
+function resetAudioSequence() {
+  STATE.audioQueue = Array.from({ length: CONFIG.AUDIO_SEQUENCE_LOOPS }, () => CONFIG.AUDIO_SEQUENCE).flat();
+  STATE.audioCompleted = false;
+}
 
-  if (STATE.audioRandomPairQueue.length === 0) {
-    const pair = CONFIG.AUDIO_PAIRS[Math.floor(Math.random() * CONFIG.AUDIO_PAIRS.length)];
-    STATE.audioRandomPairQueue = [...pair];
-  }
-  return STATE.audioRandomPairQueue.shift();
+function getNextAudioFile() {
+  const file = STATE.audioQueue.shift();
+  if (!file) STATE.audioCompleted = true;
+  return file || null;
 }
 
 function playNextSample() {
-  if (!STATE.audioCtx || STATE.audioBuffers.size === 0) return;
+  if (!STATE.audioCtx || STATE.audioBuffers.size === 0) return false;
   if (STATE.audioCtx.state === 'suspended') STATE.audioCtx.resume();
 
   const file = getNextAudioFile();
+  if (!file) return false;
   const buf = STATE.audioBuffers.get(file);
-  if (!buf) return;
+  if (!buf) return true;
 
   const src = STATE.audioCtx.createBufferSource();
   src.buffer = buf;
@@ -987,12 +996,26 @@ function playNextSample() {
   STATE.audioSources.add(src);
   src.onended = () => STATE.audioSources.delete(src);
   src.start(startAt);
+  return true;
 }
 
 function startAudioLoop() {
   if (STATE.audioTimer) return;
-  playNextSample();
-  STATE.audioTimer = setInterval(playNextSample, CONFIG.MOCK_INTERVAL_MS);
+  if (STATE.audioCompleted || STATE.audioQueue.length === 0) resetAudioSequence();
+  if (!playNextSample()) {
+    finishAudioSequence();
+    return;
+  }
+  STATE.audioTimer = setInterval(() => {
+    if (!playNextSample()) {
+      finishAudioSequence();
+    }
+  }, CONFIG.MOCK_INTERVAL_MS);
+  clearTimeout(STATE.audioFinishTimer);
+  STATE.audioFinishTimer = setTimeout(
+    finishAudioSequence,
+    (STATE.audioQueue.length + 2) * CONFIG.MOCK_INTERVAL_MS
+  );
 }
 
 function stopAudioLoop() {
@@ -1000,6 +1023,26 @@ function stopAudioLoop() {
     clearInterval(STATE.audioTimer);
     STATE.audioTimer = null;
   }
+  clearTimeout(STATE.audioFinishTimer);
+  STATE.audioFinishTimer = null;
+}
+
+function finishAudioSequence() {
+  STATE.audioCompleted = true;
+  stopAudioLoop();
+  if (STATE.mockTimer) {
+    clearInterval(STATE.mockTimer);
+    STATE.mockTimer = null;
+  }
+  STATE.mockActive = false;
+  const mockBtn = document.getElementById('mock-toggle');
+  if (mockBtn) {
+    mockBtn.textContent = 'MOCK OFF';
+    mockBtn.classList.remove('active');
+  }
+  stopPolling();
+  setStatus('offline');
+  updateAudioButton();
 }
 
 /* ───────────────────────────────────────────────────────────
@@ -1447,11 +1490,19 @@ function startMock() {
   if (STATE.mockTimer) return;
   console.log('[MOCK] Modo simulación activo');
 
+  stopPolling();
+  STATE.mockEventCount = 0;
+
   STATE.mockTimer = setInterval(() => {
+    if (STATE.mockEventCount >= CONFIG.AUDIO_SEQUENCE.length * CONFIG.AUDIO_SEQUENCE_LOOPS) {
+      finishAudioSequence();
+      return;
+    }
     if (STATE.stations.length === 0) return;
     const s      = STATE.stations[Math.floor(Math.random() * STATE.stations.length)];
     const tripId = `MOCK-${Date.now()}-${Math.floor(Math.random() * 9999)}`;
     triggerArrival(s, tripId);
+    STATE.mockEventCount++;
   }, CONFIG.MOCK_INTERVAL_MS);
 
   setStatus('mock');
@@ -1461,8 +1512,15 @@ function startMock() {
 
 function stopMock() {
   if (STATE.mockTimer) { clearInterval(STATE.mockTimer); STATE.mockTimer = null; }
+  STATE.mockActive = false;
+  const btn = document.getElementById('mock-toggle');
+  if (btn) {
+    btn.textContent = 'MOCK OFF';
+    btn.classList.remove('active');
+  }
   if (isPrimRateLimited()) setStatus('rate');
   else setStatus(STATE.apiKey ? 'offline' : 'offline');
+  if (STATE.apiKey && !STATE.audioCompleted) startPolling();
   updateAudioButton();
 }
 
@@ -1487,7 +1545,7 @@ function isPrimRateLimited() {
 }
 
 function shouldMuteAudioForRate() {
-  return isPrimRateLimited() && !STATE.mockTimer;
+  return isPrimRateLimited() && STATE.pollActive && !STATE.mockTimer;
 }
 
 async function startAudioPlayback() {
@@ -1520,7 +1578,7 @@ function updateAudioButton() {
   const mutedForRate = shouldMuteAudioForRate();
   const running = isAudioRunning();
   btn.disabled = !started || mutedForRate;
-  btn.textContent = mutedForRate ? 'PAUSA PRIM' : (running ? 'PAUSAR AUDIO' : 'REANUDAR AUDIO');
+  btn.textContent = mutedForRate ? 'PAUSA PRIM' : (running ? 'PAUSAR AUDIO' : (STATE.audioCompleted ? 'REINICIAR AUDIO' : 'REANUDAR AUDIO'));
   btn.classList.toggle('active', running);
 }
 
