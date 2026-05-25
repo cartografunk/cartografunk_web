@@ -786,6 +786,7 @@ const CONFIG = {
   POLL_BATCH_SIZE: 4,
   RATE_LIMIT_BACKOFF_MS: 120000,
   MOCK_INTERVAL_MS: 620,       // ritmo demo: cada pulso avanza un sample
+  LINE_HIGHLIGHT_MS: 3600,
   MOCK_ACTIVE: false,          // PRIM activo por defecto; MOCK queda manual
   AUDIO_OVERLAP_SEC: 0.055,    // pequeño empalme para que la frase no suene cortada
 
@@ -1412,7 +1413,7 @@ function highlightLine(station) {
     if (STATE.layerLineHighlights.hasLayer(group)) {
       STATE.layerLineHighlights.removeLayer(group);
     }
-  }, 1500);
+  }, CONFIG.LINE_HIGHLIGHT_MS);
 }
 
 function addEventToFeed(station, tripId) {
@@ -1623,8 +1624,17 @@ function stopPolling() {
 function setStatus(mode) {
   const pill = document.getElementById('status-pill');
   const text = document.getElementById('status-text');
+  const labels = {
+    live: 'LIVE',
+    mock: 'MOCK',
+    offline: 'OFFLINE',
+    rate: 'PRIM RATE',
+  };
   pill.className = `status-pill ${mode}`;
-  text.textContent = mode.toUpperCase();
+  text.textContent = labels[mode] || mode.toUpperCase();
+  pill.title = mode === 'rate'
+    ? 'PRIM esta limitando llamadas; el polling sigue activo y reintentara automaticamente.'
+    : '';
 }
 
 /* ───────────────────────────────────────────────────────────
