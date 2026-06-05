@@ -69,6 +69,8 @@ body {
   background: var(--bg);
   color: var(--white);
   font-family: var(--font-display);
+  font-size:17px;
+  line-height:1.65;
   overflow-x: hidden;
 }
 
@@ -148,7 +150,7 @@ h1 em { font-family:var(--font-serif); font-style:italic; font-weight:300; color
 }
 
 .hero-desc {
-  font-size:1rem; color:var(--muted); line-height:1.8;
+  font-size:clamp(1rem,0.95rem + 0.25vw,1.15rem); color:var(--muted); line-height:1.65;
   max-width:440px; margin-bottom:3rem;
   font-family:var(--font-serif); font-weight:300;
 }
@@ -164,6 +166,10 @@ h1 em { font-family:var(--font-serif); font-style:italic; font-weight:300; color
 .btn-fill:hover { background:var(--purple-bright); transform:translateY(-2px); box-shadow:0 8px 30px rgba(180,79,255,0.4); }
 .btn-outline { background:transparent; color:var(--purple); border:1px solid var(--purple); }
 .btn-outline:hover { background:var(--purple-glow); transform:translateY(-2px); }
+.btn-primary { background:var(--purple); color:#fff; }
+.btn-primary:hover { background:var(--purple-bright); transform:translateY(-2px); box-shadow:0 8px 30px rgba(180,79,255,0.4); }
+.btn-secondary { background:transparent; color:var(--purple); border:1px solid var(--purple); }
+.btn-secondary:hover { background:var(--purple-glow); transform:translateY(-2px); }
 
 /* HERO VISUAL */
 .hero-right {
@@ -265,7 +271,7 @@ section { padding:7rem 4rem; }
 }
 
 .servicio-card {
-  background:var(--card); padding:2.5rem 2rem;
+  background:var(--card); padding:2.75rem 2.15rem;
   position:relative; overflow:hidden;
   cursor:default; transition:background 0.25s;
 }
@@ -297,35 +303,95 @@ section { padding:7rem 4rem; }
 }
 .servicio-desc {
   font-family:var(--font-serif); font-weight:300;
-  font-size:0.9rem; color:var(--muted); line-height:1.7;
-  margin-bottom:1.5rem;
+  font-size:clamp(1rem,0.95rem + 0.2vw,1.12rem); color:var(--muted); line-height:1.65;
+  margin-bottom:1.75rem;
 }
 .servicio-tags { display:flex; gap:0.4rem; flex-wrap:wrap; }
 .chip {
-  font-family:var(--font-mono); font-size:0.58rem;
-  padding:0.25rem 0.6rem;
+  font-family:var(--font-mono); font-size:clamp(0.68rem,0.62rem + 0.18vw,0.82rem);
+  padding:0.32rem 0.7rem;
   border:1px solid var(--border); color:var(--muted);
   letter-spacing:1px; text-transform:uppercase;
 }
 
 /* ── CURSOS ── */
+#cursos .s-title {
+  margin-bottom:1.5rem;
+}
 .curso-wrap {
   display:grid;
   grid-template-columns:minmax(0,0.85fr) minmax(320px,1.15fr);
-  gap:2rem;
+  gap:2.5rem;
   align-items:start;
 }
 .curso-lead {
   font-family:var(--font-serif);
   color:var(--muted);
-  font-size:1rem;
-  line-height:1.8;
-  margin-bottom:1.5rem;
+  font-size:clamp(1.05rem,1rem + 0.35vw,1.25rem);
+  line-height:1.55;
+  margin-bottom:1.75rem;
+  max-width:760px;
 }
 .curso-meta {
   display:flex;
   flex-wrap:wrap;
-  gap:0.45rem;
+  gap:0.55rem;
+  margin-bottom:1.5rem;
+}
+.course-actions {
+  display:flex;
+  gap:1rem;
+  flex-wrap:wrap;
+  margin:1.75rem 0 0;
+}
+.course-actions-top {
+  margin:0 0 2.5rem;
+}
+.course-flow {
+  margin-top:2rem;
+  border-top:1px solid var(--border);
+  padding-top:1.5rem;
+}
+.course-flow h4 {
+  font-size:0.82rem;
+  font-family:var(--font-mono);
+  color:var(--purple);
+  letter-spacing:2px;
+  text-transform:uppercase;
+  margin-bottom:1rem;
+}
+.course-flow-steps {
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:1px;
+  background:var(--border);
+  border:1px solid var(--border);
+}
+.course-flow-step {
+  background:var(--surface);
+  padding:1rem;
+  font-family:var(--font-mono);
+  color:var(--white);
+  font-size:0.78rem;
+  line-height:1.45;
+  letter-spacing:1px;
+  text-transform:uppercase;
+}
+.course-flow-step span {
+  display:block;
+  color:var(--purple-bright);
+  margin-bottom:0.4rem;
+}
+.course-form-embed {
+  margin-top:2rem;
+  border:1px solid var(--border);
+  background:var(--surface);
+}
+.course-form-embed iframe {
+  display:block;
+  width:100%;
+  min-height:900px;
+  border:0;
 }
 .curso-sesiones {
   display:grid;
@@ -336,25 +402,25 @@ section { padding:7rem 4rem; }
 }
 .curso-sesion {
   background:var(--card);
-  padding:1.5rem;
-  min-height:340px;
+  padding:1.75rem;
+  min-height:300px;
 }
 .curso-sesion h3 {
   color:var(--white);
-  font-size:1.35rem;
+  font-size:1.25rem;
   margin-bottom:1rem;
 }
 .curso-sesion ul {
   list-style:none;
   display:flex;
   flex-direction:column;
-  gap:0.65rem;
+  gap:0.75rem;
 }
 .curso-sesion li {
   font-family:var(--font-serif);
   color:var(--muted);
-  font-size:0.9rem;
-  line-height:1.45;
+  font-size:clamp(1rem,0.95rem + 0.2vw,1.12rem);
+  line-height:1.6;
 }
 .curso-sesion li::before {
   content:'→';
@@ -981,6 +1047,7 @@ footer {
   .curso-wrap{grid-template-columns:1fr}
   .curso-sesiones{grid-template-columns:1fr}
   .curso-sesion{min-height:auto}
+  .course-flow-steps{grid-template-columns:repeat(2,minmax(0,1fr))}
   .metro-intro{grid-template-columns:1fr}
   .metro-frame{height:760px}
   .proyectos-grid{grid-template-columns:1fr}
@@ -1015,6 +1082,7 @@ footer {
   .stats{grid-template-columns:1fr}
   .servicio-card{padding:1.7rem 1.25rem}
   .curso-sesion{padding:1.25rem}
+  .course-flow-steps{grid-template-columns:1fr}
   .metro-frame{height:720px}
   .case-panel{padding:1rem}
   .coverage-row{grid-template-columns:62px minmax(0,1fr) 44px;gap:0.5rem}
@@ -1276,52 +1344,70 @@ footer {
 <!-- CURSOS -->
 <section id="cursos">
   <p class="s-tag">Formación</p>
-  <h2 class="s-title">CURSOS</h2>
+  <h2 class="s-title">TALLER DE<br><em>CARTOGRAFÍA</em><br>CREATIVA</h2>
+  <div class="course-actions course-actions-top">
+    <a class="btn btn-primary" href="https://forms.gle/tnqN3U5XReh65nq19" target="_blank" rel="noopener noreferrer">Aplicar al taller</a>
+    <a class="btn btn-secondary" href="https://chat.whatsapp.com/DYhGx5LVKL5JuLMwbtxWpg" target="_blank" rel="noopener noreferrer">Grupo informativo</a>
+    <a class="btn btn-secondary" href="https://chat.whatsapp.com/BqhjaiEJfpM22M0GyvGGCT" target="_blank" rel="noopener noreferrer">Comunidad Cartografunk</a>
+  </div>
   <div class="curso-wrap">
     <div>
       <p class="proy-type">Taller · Cartografía · Visualización</p>
-      <h3 class="proy-name hero-case">TALLER DE<br><em>CARTOGRAFÍA</em><br>CREATIVA</h3>
-      <p class="curso-lead">Un taller para pensar, diseñar y presentar mapas con intención. Va de fundamentos cartográficos a sistemas de información geográfica, narrativa visual y composición final.</p>
+      <h3 class="proy-name hero-case">Mapas para pensar,<br><em>cuestionar</em><br>y contar historias</h3>
+      <p class="curso-lead">Taller práctico para transformar ideas, datos y lugares en mapas visuales. No necesitas experiencia previa.</p>
       <div class="curso-meta">
-        <span class="chip">3 sesiones</span>
-        <span class="chip">GIS</span>
-        <span class="chip">Diseño cartográfico</span>
-        <span class="chip">Narrativa de datos</span>
-        <span class="chip">Mapas</span>
+        <span class="chip">3 sesiones por Zoom</span>
+        <span class="chip">Nivel inicial</span>
+        <span class="chip">Proyecto final exportable</span>
+        <span class="chip">Cupo limitado</span>
       </div>
     </div>
     <div class="curso-sesiones">
       <div class="curso-sesion">
-        <h3>Sesión 1</h3>
+        <h3>Sesión 1 · Los mapas también mienten</h3>
         <ul>
           <li>Fundamentos de la cartografía</li>
-          <li>Estructura del conocimiento</li>
-          <li>Modelos y representaciones</li>
-          <li>¿Los mapas mienten?</li>
-          <li>Tarea 1</li>
+          <li>Conocimiento, modelos y representaciones</li>
+          <li>Primer contacto con QGIS</li>
         </ul>
       </div>
       <div class="curso-sesion">
-        <h3>Sesión 2</h3>
+        <h3>Sesión 2 · Del dato al mapa</h3>
         <ul>
-          <li>Tipos y componentes de un mapa</li>
-          <li>(Re)Introducción a los sistemas de información geográfica</li>
           <li>Sistemas de coordenadas e información espacial</li>
           <li>Simbología y lenguaje gráfico</li>
-          <li>Spatial join, table join y summary table</li>
-          <li>Principios teleológicos aplicados a la visualización de datos</li>
+          <li>Joins, tablas y herramientas básicas</li>
         </ul>
       </div>
       <div class="curso-sesion">
-        <h3>Sesión 3</h3>
+        <h3>Sesión 3 · Narrativa y composición</h3>
         <ul>
           <li>Construcción de narrativas con datos</li>
-          <li>Diseño y composición cartográfica</li>
-          <li>Escala, grid y rosa de los vientos</li>
-          <li>Presentación de los mapas</li>
+          <li>Escala, grid y composición</li>
+          <li>Presentación de mapas finales</li>
         </ul>
       </div>
     </div>
+  </div>
+  <div class="course-flow">
+    <h4>Flujo de inscripción</h4>
+    <div class="course-flow-steps">
+      <div class="course-flow-step"><span>01</span>Aplica al taller</div>
+      <div class="course-flow-step"><span>02</span>Revisamos horarios</div>
+      <div class="course-flow-step"><span>03</span>Confirmas tu lugar</div>
+      <div class="course-flow-step"><span>04</span>Recibes materiales</div>
+    </div>
+  </div>
+  <div class="course-form-embed">
+    <iframe
+      src="https://docs.google.com/forms/d/e/1FAIpQLSfiKj5ufusbLwQDTjEtp-4qEdXjYhyDmLSnXPvBPQg-YXYR7Q/viewform?embedded=true"
+      width="100%"
+      height="900"
+      frameborder="0"
+      marginheight="0"
+      marginwidth="0">
+      Cargando...
+    </iframe>
   </div>
 </section>
 
