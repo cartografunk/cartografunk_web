@@ -795,6 +795,8 @@ const CONFIG = {
   POLL_INTERVAL_MS: 45000,     // PRIM rate-limit friendly
   POLL_BATCH_SIZE: 4,
   RATE_LIMIT_BACKOFF_MS: 120000,
+  CACHE_REPLAY_INTERVAL_MS: 720,
+  CACHE_MAX_EVENTS: 256,
   MOCK_INTERVAL_MS: 620,       // ritmo demo: cada pulso avanza un sample
   LINE_HIGHLIGHT_MS: 3600,
   MOCK_ACTIVE: false,          // PRIM activo por defecto; MOCK queda manual
@@ -881,6 +883,9 @@ const STATE = {
   audioSources:new Set(),
   audioTimer: null,
   audioFinishTimer:null,
+  cacheReplayTimer:null,
+  cacheReplayIndex:0,
+  cachedRun: [],
   audioCompleted:false,
   wasRunningBeforeHidden:false,
   audioPausedManually:false,
@@ -915,6 +920,7 @@ const STATE = {
 async function initAudio() {
   STATE.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   resetAudioSequence();
+  loadCachedRun();
   STATE.audioNextTime = 0;
   stopAudioLoop();
 
@@ -966,7 +972,65 @@ function getNextAudioFile() {
   return file || null;
 }
 
+function getRunCacheKey(date = new Date()) {
+  return `daft-metro-run-${date.toISOString().slice(0, 10)}`;
+}
+
+function loadCachedRun() {
+  try {
+    const raw = localStorage.getItem(getRunCacheKey());
+    STATE.cachedRun = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(STATE.cachedRun)) STATE.cachedRun = [];
+  } catch(e) {
+    STATE.cachedRun = [];
+  }
+  return STATE.cachedRun;
+}
+
+function cacheArrivalEvent(station, tripId) {
+  if (!station || !tripId || String(tripId).startsWith('MOCK-') || String(tripId).startsWith('CACHE-')) return;
+  const event = {
+    stationId: station.id,
+    stationName: station.name,
+    tripId,
+    at: Date.now(),
+  };
+  STATE.cachedRun = [...STATE.cachedRun, event].slice(-CONFIG.CACHE_MAX_EVENTS);
+  try {
+    localStorage.setItem(getRunCacheKey(), JSON.stringify(STATE.cachedRun));
+  } catch(e) {
+    // Si storage no esta disponible, mantenemos la corrida solo en memoria.
+  }
+}
+
+function startCachedReplay(reason = 'PRIM') {
+  loadCachedRun();
+  if (STATE.cacheReplayTimer || STATE.cachedRun.length === 0) return false;
+  console.warn(`[CACHE] Reproduciendo corrida local por ${reason}`);
+  STATE.cacheReplayIndex = 0;
+  STATE.cacheReplayTimer = setInterval(() => {
+    if (STATE.cachedRun.length === 0) {
+      stopCachedReplay();
+      return;
+    }
+    const event = STATE.cachedRun[STATE.cacheReplayIndex % STATE.cachedRun.length];
+    STATE.cacheReplayIndex++;
+    const station = STATE.stations.find(s => s.id === event.stationId || s.name === event.stationName);
+    if (!station) return;
+    triggerArrival(station, `CACHE-${event.tripId}-${STATE.cacheReplayIndex}`, { cache: false });
+  }, CONFIG.CACHE_REPLAY_INTERVAL_MS);
+  return true;
+}
+
+function stopCachedReplay() {
+  if (STATE.cacheReplayTimer) {
+    clearInterval(STATE.cacheReplayTimer);
+    STATE.cacheReplayTimer = null;
+  }
+}
+
 function playNextSample() {
+  if (STATE.audioPausedManually) return false;
   if (!STATE.audioCtx || STATE.audioBuffers.size === 0) return false;
   if (STATE.audioCtx.state === 'suspended') STATE.audioCtx.resume();
 
@@ -999,25 +1063,6 @@ function playNextSample() {
   return true;
 }
 
-function startAudioLoop() {
-  if (STATE.audioTimer) return;
-  if (STATE.audioCompleted || STATE.audioQueue.length === 0) resetAudioSequence();
-  if (!playNextSample()) {
-    finishAudioSequence();
-    return;
-  }
-  STATE.audioTimer = setInterval(() => {
-    if (!playNextSample()) {
-      finishAudioSequence();
-    }
-  }, CONFIG.MOCK_INTERVAL_MS);
-  clearTimeout(STATE.audioFinishTimer);
-  STATE.audioFinishTimer = setTimeout(
-    finishAudioSequence,
-    (STATE.audioQueue.length + 2) * CONFIG.MOCK_INTERVAL_MS
-  );
-}
-
 function stopAudioLoop() {
   if (STATE.audioTimer) {
     clearInterval(STATE.audioTimer);
@@ -1030,6 +1075,7 @@ function stopAudioLoop() {
 function finishAudioSequence() {
   STATE.audioCompleted = true;
   stopAudioLoop();
+  stopCachedReplay();
   if (STATE.mockTimer) {
     clearInterval(STATE.mockTimer);
     STATE.mockTimer = null;
@@ -1345,7 +1391,8 @@ function buildLegendFallback() {
 /* ───────────────────────────────────────────────────────────
    TRIGGER DE EVENTO: audio + flash visual + feed
    ─────────────────────────────────────────────────────────── */
-function triggerArrival(station, tripId) {
+function triggerArrival(station, tripId, options = {}) {
+  const { cache = true } = options;
   const key = `${tripId}_${station.id}`;
   if (STATE.fired.has(key)) return;
   STATE.fired.add(key);
@@ -1362,6 +1409,12 @@ function triggerArrival(station, tripId) {
 
   // ── Feed lateral ──────────────────────────────────────
   addEventToFeed(station, tripId);
+
+  // ── Audio: cada llegada consume exactamente un sample ──
+  if (STATE.audioCompleted || STATE.audioQueue.length === 0) resetAudioSequence();
+  playNextSample();
+
+  if (cache) cacheArrivalEvent(station, tripId);
 
   // ── Contador ──────────────────────────────────────────
   STATE.eventCount++;
@@ -1537,7 +1590,7 @@ function stopAudioPlayback() {
 }
 
 function isAudioRunning() {
-  return !!STATE.audioTimer;
+  return !!STATE.audioCtx && !STATE.audioPausedManually && STATE.audioCtx.state !== 'suspended';
 }
 
 function isPrimRateLimited() {
@@ -1545,22 +1598,16 @@ function isPrimRateLimited() {
 }
 
 function shouldMuteAudioForRate() {
-  return isPrimRateLimited() && STATE.pollActive && !STATE.mockTimer;
+  return false;
 }
 
 async function startAudioPlayback() {
   STATE.audioPausedManually = false;
-  if (shouldMuteAudioForRate()) {
-    STATE.audioPausedByRate = true;
-    updateAudioButton();
-    return;
-  }
   STATE.audioPausedByRate = false;
   if (STATE.audioCtx && STATE.audioCtx.state === 'suspended') {
     await STATE.audioCtx.resume();
     STATE.audioNextTime = STATE.audioCtx.currentTime;
   }
-  startAudioLoop();
   updateAudioButton();
 }
 
@@ -1611,6 +1658,7 @@ async function fetchArrivals() {
   if (!STATE.apiKey || !STATE.pollActive) return;
   if (Date.now() < STATE.rateLimitUntil) {
     setStatus('rate');
+    startCachedReplay('rate limit');
     return;
   }
 
@@ -1641,6 +1689,7 @@ async function fetchArrivals() {
         if (res.status === 429) {
           STATE.rateLimitUntil = Date.now() + CONFIG.RATE_LIMIT_BACKOFF_MS;
           setStatus('rate');
+          startCachedReplay('rate limit');
           console.warn('[PRIM] Rate limit: pausando consultas temporalmente');
           return;
         }
@@ -1649,6 +1698,7 @@ async function fetchArrivals() {
       }
 
       setStatus('live');
+      stopCachedReplay();
       if (STATE.audioPausedByRate && !STATE.audioPausedManually) startAudioPlayback();
 
       const data = await res.json();
@@ -1672,6 +1722,7 @@ async function fetchArrivals() {
 
     } catch(e) {
       console.warn(`[PRIM] Error en estación ${station.id}:`, e.message);
+      startCachedReplay('error de red');
     }
   }
 }
@@ -1685,6 +1736,7 @@ function isRailArrival(arrival) {
 function startPolling() {
   if (!STATE.apiKey) return;
   if (STATE.pollTimer) return;
+  stopCachedReplay();
   STATE.pollActive = true;
   fetchArrivals(); // primera llamada inmediata
   STATE.pollTimer = setInterval(fetchArrivals, CONFIG.POLL_INTERVAL_MS);
@@ -1715,10 +1767,7 @@ function setStatus(mode) {
   pill.title = mode === 'rate'
     ? 'PRIM esta limitando llamadas; el polling sigue activo y reintentara automaticamente.'
     : '';
-  if (mode === 'rate' && !STATE.mockTimer) {
-    STATE.audioPausedByRate = true;
-    pauseAudioPlayback({ manual: false });
-  }
+  if (mode === 'rate' && !STATE.mockTimer) STATE.audioPausedByRate = true;
   updateAudioButton();
 }
 
