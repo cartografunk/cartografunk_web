@@ -6,3 +6,5 @@ cartography/
 .env.*
 
 data/municipios.geojson
+
+data/municipios.geojson
