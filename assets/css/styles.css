@@ -1129,3 +1129,51 @@ footer {
 .hero-desc {
   font-size: clamp(1rem, 0.95rem + 0.25vw, 1.15rem);
 }
+
+/* ── MODAL AMBIENTAL — TABS ── */
+.amb-tabs {
+  display:flex; gap:2px;
+  margin-bottom:2rem;
+  border-bottom:1px solid var(--border);
+  overflow-x:auto; scrollbar-width:none;
+}
+.amb-tabs::-webkit-scrollbar { display:none; }
+.amb-tab {
+  font-family:var(--font-mono); font-size:var(--fs-ui);
+  letter-spacing:2px; text-transform:uppercase;
+  padding:0.75rem 1.4rem;
+  background:transparent; border:none; border-bottom:2px solid transparent;
+  color:var(--muted); cursor:pointer;
+  transition:all 0.2s; white-space:nowrap;
+}
+.amb-tab:hover { color:var(--purple-bright); }
+.amb-tab.active {
+  color:var(--purple-bright);
+  border-bottom-color:var(--purple-bright);
+}
+.amb-panel { display:none; }
+.amb-panel.active { display:block; }
+.amb-panel-title {
+  font-family:var(--font-mono); font-size:var(--fs-ui);
+  letter-spacing:2px; text-transform:uppercase;
+  color:var(--purple); margin-bottom:1rem;
+}
+.amb-list {
+  list-style:none; padding:0;
+  display:grid; grid-template-columns:1fr 1fr; gap:0.5rem 2rem;
+}
+.amb-list li {
+  font-family:var(--font-serif); font-weight:300;
+  font-size:clamp(0.9rem,0.85rem + 0.2vw,1rem);
+  color:var(--muted); line-height:1.5;
+  padding-left:1rem; position:relative;
+}
+.amb-list li::before {
+  content:'—'; position:absolute; left:0;
+  color:var(--purple); opacity:0.6;
+  font-family:var(--font-mono); font-size:var(--fs-label);
+}
+@media(max-width:600px) {
+  .amb-list { grid-template-columns:1fr; }
+  .amb-tab { padding:0.6rem 0.9rem; font-size:var(--fs-label); }
+}
