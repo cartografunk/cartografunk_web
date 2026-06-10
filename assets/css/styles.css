@@ -929,6 +929,32 @@ section { padding:7rem 4rem; }
 }
 .skill:hover { border-color:var(--purple); color:var(--purple); }
 
+/* ── DRON HIGHLIGHT ── */
+.dron-section {
+  background:var(--surface);
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+}
+.dron-inner {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:5rem; align-items:center;
+  padding:7rem 4rem;
+}
+.dron-specs {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:1px;
+  background:var(--border);
+}
+.spec-item {
+  background:var(--card); padding:1.5rem;
+}
+.spec-val {
+  font-size:1.6rem; font-weight:800; color:var(--purple-bright);
+  margin-bottom:0.2rem;
+}
+.spec-key { letter-spacing:2px; }
+
 /* ── CONTACTO ── */
 .contacto-section {
   text-align:center; padding:10rem 4rem;
@@ -1032,6 +1058,8 @@ footer {
   .project-modal-grid{grid-template-columns:1fr}
   .project-modal-list{grid-template-columns:1fr}
   .sobre-grid{grid-template-columns:1fr;gap:2rem}
+  .dron-inner{grid-template-columns:1fr;gap:2rem;padding:4rem 1.25rem}
+  .dron-specs{grid-template-columns:1fr 1fr}
   .contacto-section{padding:6rem 1.25rem}
   .contacto-email{font-size:clamp(1rem,5vw,1.4rem);word-break:break-word}
   footer{flex-direction:column;gap:1rem;text-align:center}
@@ -1054,6 +1082,7 @@ footer {
   .lirio-caption{flex-direction:column;gap:0.35rem}
   .team-box{padding:1.25rem}
   .team-member{align-items:flex-start}
+  .dron-specs{grid-template-columns:1fr}
   .contacto-title{letter-spacing:0}
 }
 
