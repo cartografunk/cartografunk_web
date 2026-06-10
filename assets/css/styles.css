@@ -276,6 +276,11 @@ section { padding:7rem 4rem; }
   position:relative; overflow:hidden;
   cursor:default; transition:background 0.25s;
 }
+a.servicio-card {
+  display:block;
+  color:inherit;
+  text-decoration:none;
+}
 .servicio-card:hover { background:#161626; }
 
 .servicio-card::before {
@@ -357,6 +362,37 @@ section { padding:7rem 4rem; }
   content:'·';
   color:var(--purple-dim);
   font-size:var(--fs-label);
+}
+.service-mini-list {
+  list-style:none;
+  padding:0;
+  margin:1rem 0 0;
+  display:flex;
+  flex-direction:column;
+  gap:0.35rem;
+}
+.service-mini-list li {
+  position:relative;
+  padding-left:1.1rem;
+  font-family:var(--font-mono);
+  font-size:1rem;
+  color:rgba(242,238,255,0.72);
+  line-height:1.5;
+}
+.service-mini-list li::before {
+  content:'→';
+  position:absolute;
+  left:0;
+  color:var(--purple);
+}
+.service-card-link {
+  display:inline-block;
+  margin-top:1.4rem;
+  font-family:var(--font-mono);
+  font-size:1rem;
+  color:var(--purple-bright);
+  letter-spacing:1.5px;
+  text-transform:uppercase;
 }
 
 .chip {
@@ -1131,72 +1167,51 @@ footer {
 }
 
 
-.amb-tabs {
-  display:flex; gap:2px;
-  margin-bottom:2rem;
-  border-bottom:1px solid var(--border);
-  overflow-x:auto; scrollbar-width:none;
+/* ── CONSULTORÍA AMBIENTAL ── */
+.servicio-card--clickable {
+  cursor:pointer;
 }
-.amb-tabs::-webkit-scrollbar { display:none; }
-.amb-tab {
-  font-family:var(--font-mono); font-size:var(--fs-ui);
-  letter-spacing:2px; text-transform:uppercase;
-  padding:0.75rem 1.4rem;
-  background:transparent; border:none; border-bottom:2px solid transparent;
-  color:var(--muted); cursor:pointer;
-  transition:all 0.2s; white-space:nowrap;
-}
-.amb-tab:hover { color:var(--purple-bright); }
-.amb-tab.active {
-  color:var(--purple-bright);
-  border-bottom-color:var(--purple-bright);
+.servicio-card--clickable:hover,
+.servicio-card--clickable:focus-visible {
+  border-color:var(--purple);
+  background:rgba(180,79,255,0.06);
+  outline:none;
 }
 .amb-panel { display:none; }
 .amb-panel.active { display:block; }
 .amb-panel-title {
-  font-family:var(--font-mono); font-size:var(--fs-ui);
-  letter-spacing:2px; text-transform:uppercase;
-  color:var(--purple); margin-bottom:1rem;
+  font-family:var(--font-mono);
+  font-size:1rem;
+  letter-spacing:1.6px;
+  text-transform:uppercase;
+  color:var(--purple-bright);
+  margin-bottom:1rem;
+  line-height:1.45;
 }
 .amb-list {
-  list-style:none; padding:0;
-  display:grid; grid-template-columns:1fr 1fr; gap:0.5rem 2rem;
+  list-style:none;
+  padding:0;
+  margin:0;
+  display:flex;
+  flex-direction:column;
+  gap:0.55rem;
 }
 .amb-list li {
-  font-family:var(--font-serif); font-weight:300;
-  font-size:clamp(0.9rem,0.85rem + 0.2vw,1rem);
-  color:var(--muted); line-height:1.5;
-  padding-left:1rem; position:relative;
+  font-family:var(--font-serif);
+  font-weight:300;
+  font-size:1rem;
+  color:rgba(242,238,255,0.86);
+  line-height:1.55;
+  padding-left:1.25rem;
+  position:relative;
 }
 .amb-list li::before {
-  content:'—'; position:absolute; left:0;
-  color:var(--purple); opacity:0.6;
-  font-family:var(--font-mono); font-size:var(--fs-label);
-}
-@media(max-width:600px) {
-  .amb-list { grid-template-columns:1fr; }
-  .amb-tab { padding:0.6rem 0.9rem; font-size:var(--fs-label); }
-}
-
-/* ── CONSULTORÍA AMBIENTAL — tarjeta expandible ── */
-.servicio-card--clickable:hover { border-color:var(--purple); background:rgba(180,79,255,0.06); }
-.servicio-card--clickable[aria-expanded="true"] { border-color:var(--purple); }
-.amb-detail-card { animation:fadeUp 0.4s ease forwards; }
-.amb-panel { display:none; }
-.amb-panel.active { display:block; }
-.amb-list {
-  list-style:none; padding:0; margin-top:0.5rem;
-  display:flex; flex-direction:column; gap:0.45rem;
-}
-.amb-list li {
-  font-family:var(--font-serif); font-weight:300;
-  font-size:clamp(0.9rem,0.85rem + 0.15vw,1rem);
-  color:var(--muted); line-height:1.5;
-  padding-left:1.2rem; position:relative;
-}
-.amb-list li::before {
-  content:'—'; position:absolute; left:0;
-  color:var(--purple); opacity:0.55;
-  font-family:var(--font-mono); font-size:var(--fs-label);
+  content:'—';
+  position:absolute;
+  left:0;
+  color:var(--purple);
+  opacity:0.75;
+  font-family:var(--font-mono);
+  font-size:var(--fs-label);
   top:0.1em;
 }
