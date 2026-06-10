@@ -66,82 +66,70 @@ nav {
 
 /* ── HERO ── */
 .hero {
-  min-height: 100vh;
-  display: grid;
-  grid-template-columns: 1.85fr 1fr;
-  align-items: center;
-  padding: 8rem 5vw 5rem;
-  position: relative;
-  overflow: hidden;
+  min-height:100vh;
+  display:grid; grid-template-columns:1.85fr 1fr;
+  align-items:center;
+  padding:8rem 5vw 5rem;
+  position:relative; overflow:hidden;
 }
 
-h1 {
-  font-size: clamp(5rem, 12vw, 11rem);  /* más grande */
-  font-weight: 800;
-  line-height: 0.88;
-  letter-spacing: -3px;
-  margin-bottom: 0;
+.hero-bg {
+  position:absolute; inset:0; pointer-events:none;
+  background:
+    radial-gradient(ellipse 60% 50% at 75% 50%, rgba(140,40,255,0.1) 0%, transparent 70%),
+    radial-gradient(ellipse 30% 40% at 20% 80%, rgba(100,20,200,0.07) 0%, transparent 60%);
+}
+
+.hero-grid {
+  position:absolute; inset:0; pointer-events:none;
+  background-image:
+    linear-gradient(rgba(160,80,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(160,80,255,0.04) 1px, transparent 1px);
+  background-size:48px 48px;
+}
+
+#hero-map {
+  position:absolute; inset:0;
+  width:100%; height:100%;
+  z-index:0; opacity:0.55;
 }
 
 .hero-text {
-  position: relative;
-  z-index: 1;
-  grid-column: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+  position:relative; z-index:1;
+  grid-column:1;
+  display:flex; flex-direction:column; gap:1.5rem;
 }
 
 .hero-right {
-  position: relative;
-  z-index: 1;
-  grid-column: 2;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 2rem;
-  padding-left: 2vw;
+  position:relative; z-index:1;
+  grid-column:2;
+  display:flex; flex-direction:column;
+  justify-content:center; gap:2rem;
+  padding-left:2vw;
 }
 
-/* Mapa centrado */
-#hero-map {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-  opacity: 0.55;
+.hero-eyebrow {
+  font-family:var(--font-mono); font-size:var(--fs-tag);
+  color:var(--purple); letter-spacing:4px; text-transform:uppercase;
+  display:flex; align-items:center; gap:1rem;
+}
+.hero-eyebrow::after { content:''; flex:1; max-width:60px; height:1px; background:var(--purple); opacity:0.5; }
+
+h1 {
+  font-size:clamp(5rem,12vw,11rem);
+  font-weight:800; line-height:0.88;
+  letter-spacing:-3px; margin-bottom:0;
+}
+h1 em { font-family:var(--font-serif); font-style:italic; font-weight:300; color:var(--purple-bright); }
+
+.hero-sub {
+  font-family:var(--font-mono); font-size:var(--fs-ui); color:var(--muted);
+  letter-spacing:2px; text-transform:uppercase; line-height:1.8;
 }
 
-/* ── Responsive ── */
-@media (max-width: 768px) {
-  .hero {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto;
-    padding: 7rem 1.25rem 3rem;
-    min-height: 100vh;
-    align-items: start;
-  }
-  .hero-text {
-    grid-column: 1;
-    grid-row: 1;
-  }
-  .hero-right {
-    grid-column: 1;
-    grid-row: 2;
-    padding-left: 0;
-    padding-top: 1.5rem;
-    display: flex;  /* asegura que no quede hidden */
-  }
-
-  h1 {
-    font-size: clamp(4rem, 18vw, 6rem);
-    letter-spacing: -2px;
-  }
-
-  .hero-desc {
-    max-width: 100%;
-  }
+.hero-desc {
+  color:var(--muted); line-height:1.65;
+  font-family:var(--font-serif); font-weight:300;
 }
 
 .ctas { display:flex; gap:1rem; flex-wrap:wrap; }
@@ -941,7 +929,6 @@ section { padding:7rem 4rem; }
 }
 .skill:hover { border-color:var(--purple); color:var(--purple); }
 
-
 /* ── CONTACTO ── */
 .contacto-section {
   text-align:center; padding:10rem 4rem;
@@ -1010,7 +997,15 @@ footer {
   }
   .nav-links::-webkit-scrollbar{display:none}
   .nav-links a{font-size:var(--fs-tag);letter-spacing:1.4px;white-space:nowrap}
-  .hero{grid-template-columns:1fr;padding:9rem 1.25rem 3rem;min-height:auto}
+  .hero{
+    grid-template-columns:1fr;
+    grid-template-rows:auto auto;
+    padding:7rem 1.25rem 3rem;
+    min-height:100vh;
+    align-items:start;
+  }
+  .hero-text{grid-column:1;grid-row:1;}
+  .hero-right{grid-column:1;grid-row:2;padding-left:0;padding-top:1.5rem;display:flex;}
   .stats{grid-template-columns:1fr 1fr}
   .stat{padding:1.5rem}
   section{padding:4rem 1.25rem}
