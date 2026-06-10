@@ -1130,7 +1130,7 @@ footer {
   font-size: clamp(1rem, 0.95rem + 0.25vw, 1.15rem);
 }
 
-/* ── MODAL AMBIENTAL — TABS ── */
+
 .amb-tabs {
   display:flex; gap:2px;
   margin-bottom:2rem;
@@ -1176,4 +1176,27 @@ footer {
 @media(max-width:600px) {
   .amb-list { grid-template-columns:1fr; }
   .amb-tab { padding:0.6rem 0.9rem; font-size:var(--fs-label); }
+}
+
+/* ── CONSULTORÍA AMBIENTAL — tarjeta expandible ── */
+.servicio-card--clickable:hover { border-color:var(--purple); background:rgba(180,79,255,0.06); }
+.servicio-card--clickable[aria-expanded="true"] { border-color:var(--purple); }
+.amb-detail-card { animation:fadeUp 0.4s ease forwards; }
+.amb-panel { display:none; }
+.amb-panel.active { display:block; }
+.amb-list {
+  list-style:none; padding:0; margin-top:0.5rem;
+  display:flex; flex-direction:column; gap:0.45rem;
+}
+.amb-list li {
+  font-family:var(--font-serif); font-weight:300;
+  font-size:clamp(0.9rem,0.85rem + 0.15vw,1rem);
+  color:var(--muted); line-height:1.5;
+  padding-left:1.2rem; position:relative;
+}
+.amb-list li::before {
+  content:'—'; position:absolute; left:0;
+  color:var(--purple); opacity:0.55;
+  font-family:var(--font-mono); font-size:var(--fs-label);
+  top:0.1em;
 }

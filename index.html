@@ -185,7 +185,7 @@
       </p>
     </div>
 
-    <div class="servicio-card">
+    <div class="servicio-card servicio-card--clickable" onclick="toggleAmbientalCard()" aria-expanded="false" id="amb-trigger" style="cursor:pointer">
       <div class="servicio-icon">🌿</div>
       <p class="servicio-num">04</p>
       <h3 class="servicio-name">CONSULTORÍA<br>AMBIENTAL</h3>
@@ -198,9 +198,7 @@
           <li>Peritaje</li>
         </ul>
       </p>
-      <div class="servicio-tags chip-list" style="margin-top:auto">
-        <button class="btn btn-outline" style="font-size:var(--fs-tag);padding:0.5rem 1rem" onclick="document.getElementById('ambientalModal').classList.add('open')">Ver detalle completo →</button>
-      </div>
+      <p class="amb-expand-hint" style="font-family:var(--font-mono);font-size:var(--fs-tag);color:var(--purple);letter-spacing:2px;text-transform:uppercase;margin-top:1.5rem;opacity:0.8">Ver detalle →</p>
     </div>
 
     <div class="servicio-card">
@@ -234,6 +232,121 @@
         <span class="chip">Capacitación</span>
       </div>
     </div>
+
+
+  <!-- CONSULTORÍA AMBIENTAL — tarjeta expandible tipo Lirio -->
+  <div class="proyecto-card proyecto-hero amb-detail-card" id="amb-detail" style="display:none;grid-column:1/-1;margin-top:1px">
+    <div>
+      <p class="proy-type text-kicker">Normatividad ambiental · Derecho procesal · Tecnología</p>
+      <h3 class="proy-name hero-case">CONSULTORÍA<br><em>AMBIENTAL</em></h3>
+      <p class="proy-desc text-body">Agilizamos con tecnología el monitoreo y cumplimiento de normatividad ambiental. Nuestro enfoque combina derecho procesal administrativo con herramientas geoespaciales para dar al cliente una radiografía exacta de su situación regulatoria en tiempo real.</p>
+
+      <div class="case-metrics">
+        <div class="case-metric"><strong>MIA</strong><span>Impacto Ambiental</span></div>
+        <div class="case-metric"><strong>CUS</strong><span>Cambio de Uso de Suelo</span></div>
+        <div class="case-metric"><strong>PROFEPA</strong><span>Asesoría procesal</span></div>
+      </div>
+
+      <div class="case-flow content-grid">
+        <div class="case-step"><b>01 · Diagnóstico</b><span>Análisis del predio y situación regulatoria.</span></div>
+        <div class="case-step"><b>02 · Trámite</b><span>Elaboración y gestión de estudios técnicos.</span></div>
+        <div class="case-step"><b>03 · Seguimiento</b><span>Cumplimiento de términos y condicionantes.</span></div>
+        <div class="case-step"><b>04 · Cierre</b><span>Informes finales y renovaciones.</span></div>
+      </div>
+
+      <div class="proy-stack chip-list">
+        <span class="chip">SEMARNAT</span>
+        <span class="chip">PROFEPA</span>
+        <span class="chip">GIS</span>
+        <span class="chip">Estudios Técnicos</span>
+        <span class="chip">Derecho Ambiental</span>
+        <span class="chip">Residuos Peligrosos</span>
+      </div>
+
+      <div style="margin-top:2rem">
+        <a href="#contacto" class="btn btn-fill" onclick="toggleAmbientalCard()">Solicitar cotización</a>
+      </div>
+    </div>
+
+    <div class="case-panel">
+      <p class="case-panel-title text-kicker">Servicios · Consultoría Ambiental</p>
+
+      <div class="lirio-toolbar" id="amb-tabs">
+        <button class="lirio-tab active" data-amb="mia">MIA</button>
+        <button class="lirio-tab" data-amb="informes">Informes</button>
+        <button class="lirio-tab" data-amb="riesgo">Riesgo</button>
+        <button class="lirio-tab" data-amb="cus">CUS</button>
+        <button class="lirio-tab" data-amb="residuos">Residuos</button>
+      </div>
+
+      <div class="amb-panel active" id="amb-mia">
+        <p class="case-panel-title text-kicker" style="margin-bottom:0.6rem">Manifestaciones de Impacto Ambiental</p>
+        <ul class="amb-list">
+          <li>Dictamen de impacto ambiental de obras o actividades</li>
+          <li>Seguimiento y cumplimiento de autorizaciones</li>
+          <li>Avisos de no requerimiento de MIA</li>
+          <li>Exenciones</li>
+          <li>Modificaciones y desistimientos de autorizaciones</li>
+          <li>Seguimiento y renovación de autorizaciones</li>
+          <li>Solicitudes de Opinión</li>
+        </ul>
+      </div>
+
+      <div class="amb-panel" id="amb-informes">
+        <p class="case-panel-title text-kicker" style="margin-bottom:0.6rem">Informes Preventivos</p>
+        <ul class="amb-list">
+          <li>Elaboración de informes preventivos</li>
+          <li>Modificaciones a proyectos autorizados</li>
+          <li>Solicitudes de Opinión</li>
+          <li>Seguimiento de términos y condicionantes</li>
+          <li>Cumplimiento de autorizaciones de Impacto Ambiental</li>
+          <li>Auditorías Ambientales Internas</li>
+        </ul>
+      </div>
+
+      <div class="amb-panel" id="amb-riesgo">
+        <p class="case-panel-title text-kicker" style="margin-bottom:0.6rem">Riesgo Ambiental</p>
+        <ul class="amb-list">
+          <li>Estudio de riesgo ambiental</li>
+          <li>Programa de prevención de accidentes</li>
+          <li>Vigilancia ambiental</li>
+          <li>Reforestación</li>
+          <li>Restauración ecológica</li>
+          <li>Reubicación y rescate de flora y fauna silvestre</li>
+          <li>Elaboración de Estudios Técnicos</li>
+        </ul>
+      </div>
+
+      <div class="amb-panel" id="amb-cus">
+        <p class="case-panel-title text-kicker" style="margin-bottom:0.6rem">Cambio de Uso de Suelo</p>
+        <ul class="amb-list">
+          <li>Diagnóstico general de predio y dictámenes forestales</li>
+          <li>Estudios técnicos justificativos</li>
+          <li>Verificación de medios de mitigación</li>
+          <li>Informes de cumplimiento</li>
+          <li>Programas de manejo de vegetación</li>
+          <li>Documentos técnicos justificativos municipales</li>
+          <li>Estudios de suelo (Fase I y II)</li>
+          <li>Estudios para sitios contaminados</li>
+        </ul>
+      </div>
+
+      <div class="amb-panel" id="amb-residuos">
+        <p class="case-panel-title text-kicker" style="margin-bottom:0.6rem">Residuos y Contaminantes</p>
+        <ul class="amb-list">
+          <li>Definición y clasificación de residuos</li>
+          <li>Registro como generador de residuos</li>
+          <li>Plan de manejo de grandes generadores</li>
+          <li>Recolección y manejo de residuos peligrosos</li>
+          <li>Transporte y almacenamiento</li>
+          <li>Estudios de Suelos (Fase I y II)</li>
+          <li>Gestión interna de residuos peligrosos</li>
+          <li>Programas de mejora continua</li>
+          <li>Asesoría ante PROFEPA</li>
+        </ul>
+      </div>
+    </div>
+  </div>
 
   </div>
 </section>
@@ -876,18 +989,6 @@ document.addEventListener('keydown', e => {
   }
 
 </script>
-
-<!-- MODAL CONSULTORÍA AMBIENTAL -->
-<div class="project-modal" id="ambientalModal" aria-hidden="true">
-  <div class="project-modal-panel" role="dialog" aria-modal="true" style="max-width:860px">
-    <div class="project-modal-top">
-      <div>
-        <p class="s-tag section-kicker" style="margin-bottom:0.5rem">Consultoría Ambiental</p>
-        <h3 class="proy-name hero-case" style="font-size:clamp(1.6rem,4vw,2.4rem);line-height:1">SERVICIOS<br><em>AMBIENTALES</em></h3>
-      </div>
-      <button class="project-modal-close" type="button" aria-label="Cerrar" onclick="document.getElementById('ambientalModal').classList.remove('open')">×</button>
-    </div>
-
     <!-- TABS -->
     <div class="amb-tabs" role="tablist">
       <button class="amb-tab active" data-tab="mia" role="tab">MIA</button>
