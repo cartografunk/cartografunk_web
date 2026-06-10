@@ -4,3 +4,5 @@ cartography/
 *.local
 .env
 .env.*
+
+data/municipios.geojson
