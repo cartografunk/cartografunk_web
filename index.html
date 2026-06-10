@@ -249,17 +249,72 @@ h1 em { font-family:var(--font-serif); font-style:italic; font-weight:300; color
 
 /* ── SECTION COMMON ── */
 section { padding:7rem 4rem; }
+.section-kicker,
 .s-tag {
   font-family:var(--font-mono); font-size:0.62rem; color:var(--purple);
   letter-spacing:4px; text-transform:uppercase; margin-bottom:1rem;
   display:flex; align-items:center; gap:0.8rem;
 }
+.section-kicker::before,
 .s-tag::before { content:''; width:20px; height:1px; background:var(--purple); }
+.section-title,
 .s-title {
   font-size:clamp(2.5rem,5vw,4.5rem); font-weight:800;
   line-height:0.95; letter-spacing:-1px; margin-bottom:4rem;
 }
+.section-title em,
 .s-title em { font-family:var(--font-serif); font-style:italic; font-weight:300; color:var(--purple); }
+
+/* ── GLOBAL CONTENT SYSTEM ── */
+.text-kicker,
+.text-meta,
+.text-caption,
+.text-label {
+  font-family:var(--font-mono);
+  color:var(--white);
+  letter-spacing:1px;
+  text-transform:uppercase;
+}
+.text-kicker {
+  color:var(--purple);
+  letter-spacing:3px;
+  margin-bottom:1rem;
+}
+.text-lead,
+.text-body {
+  font-family:var(--font-serif);
+  color:var(--white);
+  font-weight:300;
+}
+.text-lead {
+  font-size:clamp(1.05rem,1rem + 0.35vw,1.25rem);
+  line-height:1.55;
+  max-width:760px;
+}
+.text-body {
+  font-size:clamp(1rem,0.95rem + 0.2vw,1.12rem);
+  line-height:1.65;
+}
+.text-caption,
+.text-meta {
+  font-size:1rem;
+  line-height:1.6;
+}
+.chip-list {
+  display:flex;
+  gap:0.45rem;
+  flex-wrap:wrap;
+}
+.content-grid {
+  display:grid;
+  gap:1px;
+  background:var(--border);
+  border:1px solid var(--border);
+}
+.content-card {
+  background:var(--card);
+  border:1px solid var(--border);
+}
 
 /* ── SERVICIOS ── */
 .servicios-section { background:var(--surface); border-top:1px solid var(--border); }
@@ -1263,16 +1318,16 @@ footer .footer-copy {
 
 <!-- SERVICIOS -->
 <section id="servicios" class="servicios-section">
-  <p class="s-tag">Lo que hacemos</p>
-  <h2 class="s-title">SERVICIOS</h2>
+  <p class="s-tag section-kicker">Lo que hacemos</p>
+  <h2 class="s-title section-title">SERVICIOS</h2>
   <div class="servicios-grid">
 
     <div class="servicio-card">
       <div class="servicio-icon">🚁</div>
       <p class="servicio-num">01</p>
       <h3 class="servicio-name">LEVANTAMIENTO<br>TOPOGRÁFICO</h3>
-      <p class="servicio-desc">Generamos información precisa del terreno con dron profesional: ortomosaicos, modelos digitales de elevación, curvas de nivel y nubes de puntos. Ideal para obra, predios, bancos de material, proyectos urbanos y levantamientos donde necesitas medir, comparar o documentar el sitio sin depender solo de recorridos manuales.</p>
-      <div class="servicio-tags">
+      <p class="servicio-desc text-body">Generamos información precisa del terreno con dron profesional: ortomosaicos, modelos digitales de elevación, curvas de nivel y nubes de puntos. Ideal para obra, predios, bancos de material, proyectos urbanos y levantamientos donde necesitas medir, comparar o documentar el sitio sin depender solo de recorridos manuales.</p>
+      <div class="servicio-tags chip-list">
         <span class="chip">Ortofoto</span>
         <span class="chip">MDE</span>
         <span class="chip">Curvas de nivel</span>
@@ -1285,8 +1340,8 @@ footer .footer-copy {
       <div class="servicio-icon">🌿</div>
       <p class="servicio-num">02</p>
       <h3 class="servicio-name">MONITOREO DE CULTIVOS<br>Y AGRICULTURA DE PRECISIÓN</h3>
-      <p class="servicio-desc">Detectamos variaciones en vigor vegetal, estrés hídrico, posibles plagas, problemas de nutrición y zonas críticas mediante imágenes RGB y multiespectrales. El objetivo no es solo “hacer mapas bonitos”, sino ayudar a decidir dónde actuar primero, cuánto intervenir y cómo ahorrar recorridos, agua o insumos.</p>
-      <div class="servicio-tags">
+      <p class="servicio-desc text-body">Detectamos variaciones en vigor vegetal, estrés hídrico, posibles plagas, problemas de nutrición y zonas críticas mediante imágenes RGB y multiespectrales. El objetivo no es solo “hacer mapas bonitos”, sino ayudar a decidir dónde actuar primero, cuánto intervenir y cómo ahorrar recorridos, agua o insumos.</p>
+      <div class="servicio-tags chip-list">
         <span class="chip">NDVI</span>
         <span class="chip">NDRE</span>
         <span class="chip">Estrés hídrico</span>
@@ -1299,8 +1354,8 @@ footer .footer-copy {
       <div class="servicio-icon">🏙️</div>
       <p class="servicio-num">03</p>
       <h3 class="servicio-name">ORDENAMIENTO<br>TERRITORIAL</h3>
-      <p class="servicio-desc">Convertimos información urbana, ambiental y socioeconómica en diagnósticos territoriales claros para planeación, gestión pública y toma de decisiones. Trabajamos con expansión urbana, aptitud territorial, infraestructura, movilidad, uso de suelo y análisis espacial para entender hacia dónde crece una ciudad y qué riesgos implica.</p>
-      <div class="servicio-tags">
+      <p class="servicio-desc text-body">Convertimos información urbana, ambiental y socioeconómica en diagnósticos territoriales claros para planeación, gestión pública y toma de decisiones. Trabajamos con expansión urbana, aptitud territorial, infraestructura, movilidad, uso de suelo y análisis espacial para entender hacia dónde crece una ciudad y qué riesgos implica.</p>
+      <div class="servicio-tags chip-list">
         <span class="chip">Uso de suelo</span>
         <span class="chip">Planeación urbana</span>
         <span class="chip">Aptitud territorial</span>
@@ -1313,8 +1368,8 @@ footer .footer-copy {
       <div class="servicio-icon">⚠️</div>
       <p class="servicio-num">04</p>
       <h3 class="servicio-name">ATLAS DE<br>RIESGOS</h3>
-      <p class="servicio-desc">Integramos datos físicos, ambientales, urbanos y sociales para identificar amenazas, exposición y vulnerabilidad en el territorio. Generamos cartografía y diagnósticos útiles para municipios, consultoras, desarrolladores y equipos que necesitan anticipar riesgos antes de construir, invertir o intervenir.</p>
-      <div class="servicio-tags">
+      <p class="servicio-desc text-body">Integramos datos físicos, ambientales, urbanos y sociales para identificar amenazas, exposición y vulnerabilidad en el territorio. Generamos cartografía y diagnósticos útiles para municipios, consultoras, desarrolladores y equipos que necesitan anticipar riesgos antes de construir, invertir o intervenir.</p>
+      <div class="servicio-tags chip-list">
         <span class="chip">Amenazas</span>
         <span class="chip">Vulnerabilidad</span>
         <span class="chip">Riesgo urbano</span>
@@ -1327,8 +1382,8 @@ footer .footer-copy {
       <div class="servicio-icon">🤖</div>
       <p class="servicio-num">05</p>
       <h3 class="servicio-name">DATA SCIENCE, MACHINE LEARNING<br>Y AUTOMATIZACIÓN</h3>
-      <p class="servicio-desc">Convertimos datos crudos en herramientas que sí se usan: modelos, dashboards, clasificadores, pipelines automatizados y sistemas de monitoreo. Trabajamos desde la limpieza de bases hasta la detección de patrones, predicción, clasificación de imágenes y análisis operativo.</p>
-      <div class="servicio-tags">
+      <p class="servicio-desc text-body">Convertimos datos crudos en herramientas que sí se usan: modelos, dashboards, clasificadores, pipelines automatizados y sistemas de monitoreo. Trabajamos desde la limpieza de bases hasta la detección de patrones, predicción, clasificación de imágenes y análisis operativo.</p>
+      <div class="servicio-tags chip-list">
         <span class="chip">Python</span>
         <span class="chip">SQL</span>
         <span class="chip">ML</span>
@@ -1342,8 +1397,8 @@ footer .footer-copy {
       <div class="servicio-icon">📊</div>
       <p class="servicio-num">06</p>
       <h3 class="servicio-name">CURSOS<br>Y CAPACITACIÓN</h3>
-      <p class="servicio-desc">Capacitamos equipos en QGIS, cartografía, análisis espacial, drones y Python aplicado a datos. Este servicio funciona como puente hacia una pestaña específica de cursos, con temarios, duración, nivel, modalidad y ejemplos de resultados.</p>
-      <div class="servicio-tags">
+      <p class="servicio-desc text-body">Capacitamos equipos en QGIS, cartografía, análisis espacial, drones y Python aplicado a datos. Este servicio funciona como puente hacia una pestaña específica de cursos, con temarios, duración, nivel, modalidad y ejemplos de resultados.</p>
+      <div class="servicio-tags chip-list">
         <span class="chip">QGIS</span>
         <span class="chip">Python</span>
         <span class="chip">Drones</span>
@@ -1357,8 +1412,8 @@ footer .footer-copy {
 
 <!-- CURSOS -->
 <section id="cursos">
-  <p class="s-tag">Formación</p>
-  <h2 class="s-title">TALLER DE<br><em>CARTOGRAFÍA</em><br>CREATIVA</h2>
+  <p class="s-tag section-kicker">Formación</p>
+  <h2 class="s-title section-title">TALLER DE<br><em>CARTOGRAFÍA</em><br>CREATIVA</h2>
   <div class="course-actions course-actions-top">
     <a class="btn btn-primary" href="https://forms.gle/tnqN3U5XReh65nq19" target="_blank" rel="noopener noreferrer">Aplicar al taller</a>
     <a class="btn btn-secondary" href="https://chat.whatsapp.com/DYhGx5LVKL5JuLMwbtxWpg" target="_blank" rel="noopener noreferrer">Grupo informativo</a>
@@ -1366,10 +1421,10 @@ footer .footer-copy {
   </div>
   <div class="curso-wrap">
     <div>
-      <p class="proy-type">Taller · Cartografía · Visualización</p>
+      <p class="proy-type text-kicker">Taller · Cartografía · Visualización</p>
       <h3 class="proy-name hero-case">Mapas para pensar,<br><em>cuestionar</em><br>y contar historias</h3>
-      <p class="curso-lead">Taller práctico para transformar ideas, datos y lugares en mapas visuales. No necesitas experiencia previa.</p>
-      <div class="curso-meta">
+      <p class="curso-lead text-lead">Taller práctico para transformar ideas, datos y lugares en mapas visuales. No necesitas experiencia previa.</p>
+      <div class="curso-meta chip-list">
         <span class="chip">3 sesiones por Zoom</span>
         <span class="chip">Nivel inicial</span>
         <span class="chip">Proyecto final exportable</span>
@@ -1427,12 +1482,12 @@ footer .footer-copy {
 
 <!-- DAFT METRO -->
 <section id="daft-metro" class="metro-section">
-  <p class="s-tag">Mapa interactivo</p>
+  <p class="s-tag section-kicker">Mapa interactivo</p>
   <div class="metro-intro">
     <div>
-      <h2 class="s-title">DAFT<br><em>METRO</em></h2>
-      <p class="curso-lead">Experimento audiovisual con la red ferroviaria de París: Leaflet, Web Audio API, datos PRIM/IDFM y visualización en tiempo real. Por ahora corre en modo demo mientras llegan los GeoJSON y los samples finales.</p>
-      <div class="curso-meta">
+      <h2 class="s-title section-title">DAFT<br><em>METRO</em></h2>
+      <p class="curso-lead text-lead">Experimento audiovisual con la red ferroviaria de París: Leaflet, Web Audio API, datos PRIM/IDFM y visualización en tiempo real. Por ahora corre en modo demo mientras llegan los GeoJSON y los samples finales.</p>
+      <div class="curso-meta chip-list">
         <span class="chip">Leaflet</span>
         <span class="chip">PRIM API</span>
         <span class="chip">GeoJSON</span>
@@ -1455,36 +1510,36 @@ footer .footer-copy {
 <section class="dron-section">
   <div class="dron-inner">
     <div>
-      <p class="s-tag">Equipo</p>
-      <h2 class="s-title" style="margin-bottom:1.5rem">DJI MAVIC<br><em>3 Enterprise</em></h2>
-      <p style="font-family:var(--font-serif);font-weight:300;font-size:1rem;color:var(--muted);line-height:1.8;margin-bottom:2rem;">
+      <p class="s-tag section-kicker">Equipo</p>
+      <h2 class="s-title section-title" style="margin-bottom:1.5rem">DJI MAVIC<br><em>3 Enterprise</em></h2>
+      <p class="text-body" style="margin-bottom:2rem;">
         No es un dron de hobby. El Mavic 3 Enterprise es equipo profesional con cámara principal 4/3 CMOS, zoom 56x, sensor térmico opcional y capacidad de operación RTK para precisión centimétrica.
       </p>
       <a href="#contacto" class="btn btn-fill">Solicitar levantamiento</a>
     </div>
     <div class="dron-specs">
-      <div class="spec-item"><div class="spec-val">4/3"</div><div class="spec-key">Sensor CMOS</div></div>
-      <div class="spec-item"><div class="spec-val">56×</div><div class="spec-key">Zoom máximo</div></div>
-      <div class="spec-item"><div class="spec-val">45 min</div><div class="spec-key">Tiempo de vuelo</div></div>
-      <div class="spec-item"><div class="spec-val">RTK</div><div class="spec-key">Precisión cm</div></div>
-      <div class="spec-item"><div class="spec-val">15 km</div><div class="spec-key">Rango transmisión</div></div>
-      <div class="spec-item"><div class="spec-val">M3E</div><div class="spec-key">Mavic 3 Enterprise</div></div>
+      <div class="spec-item"><div class="spec-val">4/3"</div><div class="spec-key text-meta">Sensor CMOS</div></div>
+      <div class="spec-item"><div class="spec-val">56×</div><div class="spec-key text-meta">Zoom máximo</div></div>
+      <div class="spec-item"><div class="spec-val">45 min</div><div class="spec-key text-meta">Tiempo de vuelo</div></div>
+      <div class="spec-item"><div class="spec-val">RTK</div><div class="spec-key text-meta">Precisión cm</div></div>
+      <div class="spec-item"><div class="spec-val">15 km</div><div class="spec-key text-meta">Rango transmisión</div></div>
+      <div class="spec-item"><div class="spec-val">M3E</div><div class="spec-key text-meta">Mavic 3 Enterprise</div></div>
     </div>
   </div>
 </section>
 
 <!-- PROYECTOS -->
 <section id="proyectos">
-  <p class="s-tag">Portafolio</p>
-  <h2 class="s-title">PROYECTOS</h2>
+  <p class="s-tag section-kicker">Portafolio</p>
+  <h2 class="s-title section-title">PROYECTOS</h2>
   <div class="proyectos-grid">
 
     <!-- LIRIO — HERO PROJECT spanning full width -->
     <div class="proyecto-card proyecto-hero" id="lirio-case">
       <div>
-        <p class="proy-type">Percepción remota · ML · Drones · Mayo 2026</p>
+        <p class="proy-type text-kicker">Percepción remota · ML · Drones · Mayo 2026</p>
         <h3 class="proy-name hero-case">MONITOREO DE<br><em>LIRIO ACUÁTICO</em><br>BORDO BENITO JUÁREZ</h3>
-        <p class="proy-desc">Caso de estudio para estimar la cobertura de <em>Eichhornia crassipes</em> con Sentinel-2, reNDVI y validación independiente con DJI Mavic 3 Multispectral. El flujo combina Google Earth Engine, Python, clasificación por umbral automático y cartografía lista para decisión pública.</p>
+        <p class="proy-desc text-body">Caso de estudio para estimar la cobertura de <em>Eichhornia crassipes</em> con Sentinel-2, reNDVI y validación independiente con DJI Mavic 3 Multispectral. El flujo combina Google Earth Engine, Python, clasificación por umbral automático y cartografía lista para decisión pública.</p>
 
         <div class="case-metrics" aria-label="Métricas clave del proyecto de lirio acuático">
           <div class="case-metric"><strong>10.71 ha</strong><span>Área total del AOI</span></div>
@@ -1501,7 +1556,7 @@ footer .footer-copy {
 
         <div class="proy-result" style="margin-bottom:0.8rem">→ Resultado: cuantificación reproducible de cobertura, área libre y avance de remoción.</div>
         <div class="proy-result" style="margin-bottom:1.5rem;border-color:var(--purple-dim)">→ Doble lectura: Sentinel-2 para serie temporal + dron multiespectral para validación fina.</div>
-        <div class="proy-stack">
+        <div class="proy-stack chip-list">
           <span class="chip">Python</span><span class="chip">Sentinel-2</span>
           <span class="chip">reNDVI</span><span class="chip">Otsu / KDE</span>
           <span class="chip">Mavic 3 MS</span><span class="chip">OpenDroneMap</span>
@@ -1509,7 +1564,7 @@ footer .footer-copy {
         </div>
       </div>
       <div class="case-panel">
-        <p class="case-panel-title">Explorador interactivo · Lirio acuático</p>
+        <p class="case-panel-title text-kicker">Explorador interactivo · Lirio acuático</p>
 
         <div class="lirio-toolbar" aria-label="Fechas de análisis">
           <button class="lirio-tab active" type="button" data-lirio-date="20260217">17 Feb</button>
@@ -1528,12 +1583,12 @@ footer .footer-copy {
         <div class="lirio-media">
           <img id="lirioImage" src="assets/img/lirio/map-rendvi-20260217.png" alt="Mapa reNDVI del 17 de febrero de 2026">
         </div>
-        <div class="lirio-caption">
+        <div class="lirio-caption text-caption">
           <span id="lirioCaption">Sentinel-2 · 17 Feb 2026 · reNDVI 2 m</span>
           <span id="lirioMetric">Cobertura estimada: 97.5%</span>
         </div>
 
-        <p class="case-panel-title" style="margin-top:1.4rem">Cobertura de lirio · serie temporal</p>
+        <p class="case-panel-title text-kicker" style="margin-top:1.4rem">Cobertura de lirio · serie temporal</p>
         <div class="coverage-bars">
           <div class="coverage-row clickable active" data-lirio-date="20260217">
             <span class="coverage-date">17 Feb</span>
@@ -1566,18 +1621,18 @@ footer .footer-copy {
             <span class="coverage-value" style="font-weight:700">7.88%</span>
           </div>
         </div>
-        <p class="case-note">Área total: 10.71 ha · Fuente: Sentinel-2 MSI L2A + DJI Mavic 3 Multispectral · reNDVI = (NIR - Red Edge) / (NIR + Red Edge)</p>
+        <p class="case-note text-caption">Área total: 10.71 ha · Fuente: Sentinel-2 MSI L2A + DJI Mavic 3 Multispectral · reNDVI = (NIR - Red Edge) / (NIR + Red Edge)</p>
       </div>
     </div>
 
     <div class="proyecto-card project-visual aicom-card" id="aicom-case">
       <div>
-        <p class="proy-type">Investigación territorial · Minería · Riesgo</p>
+        <p class="proy-type text-kicker">Investigación territorial · Minería · Riesgo</p>
         <h3 class="proy-name">MINERÍA,<br><em>MERCURIO</em> Y CRIMEN ORGANIZADO</h3>
-        <p class="proy-desc">Línea base AICOM sobre crimen organizado, minería y riesgos ambientales. El trabajo convirtió registros por estado y municipio, yacimientos, MOAPEs y presencia de organizaciones en cartografía analítica para lectura territorial.</p>
+        <p class="proy-desc text-body">Línea base AICOM sobre crimen organizado, minería y riesgos ambientales. El trabajo convirtió registros por estado y municipio, yacimientos, MOAPEs y presencia de organizaciones en cartografía analítica para lectura territorial.</p>
         <div class="proy-result">→ 14 mapas temáticos · lectura por organización, delito, yacimiento y zona minera</div>
         <div class="proy-result" style="border-color:var(--purple-dim)">→ Output: repositorio cartográfico y evidencia para diagnóstico de riesgo territorial</div>
-        <div class="proy-stack">
+        <div class="proy-stack chip-list">
           <span class="chip">ArcGIS</span><span class="chip">CSV</span>
           <span class="chip">Cartografía temática</span><span class="chip">Indicadores</span>
           <span class="chip">AICOM</span><span class="chip">Riesgo territorial</span>
@@ -1585,7 +1640,7 @@ footer .footer-copy {
         </div>
       </div>
       <div>
-        <p class="case-panel-title">Explorador de mapas · AICOM</p>
+        <p class="case-panel-title text-kicker">Explorador de mapas · AICOM</p>
         <div class="aicom-tabs" aria-label="Mapas del proyecto AICOM">
           <button class="aicom-tab active" type="button" data-aicom-map="yacimientos">Yacimientos</button>
           <button class="aicom-tab" type="button" data-aicom-map="moapes">MOAPEs</button>
@@ -1599,18 +1654,18 @@ footer .footer-copy {
         <div class="aicom-media">
           <img id="aicomImage" src="assets/img/aicom/yacimientos.png" alt="Mapa de yacimientos del proyecto AICOM">
         </div>
-        <p class="aicom-caption" id="aicomCaption">Yacimientos mineros · capa de contexto territorial</p>
+        <p class="aicom-caption text-caption" id="aicomCaption">Yacimientos mineros · capa de contexto territorial</p>
       </div>
     </div>
 
     <div class="proyecto-card atlas-card">
-      <p class="proy-type">Data Science · Protección Civil</p>
+      <p class="proy-type text-kicker">Data Science · Protección Civil</p>
       <h3 class="proy-name">ATLAS DE<br><em>RIESGOS</em> MUNICIPALES</h3>
-      <p class="proy-desc">Diagnóstico geoespacial para priorizar municipios con exposición territorial, vulnerabilidad e indicadores de presión urbana/ambiental. La lógica del proyecto fue pasar de tablas dispersas a una lectura de riesgo accionable.</p>
-      <p class="atlas-munis"><strong>Municipios:</strong> Chicoloapan, Estado de México · Puebla, Puebla · Santa Catarina, Nuevo León · El Marqués, Querétaro</p>
+      <p class="proy-desc text-body">Diagnóstico geoespacial para priorizar municipios con exposición territorial, vulnerabilidad e indicadores de presión urbana/ambiental. La lógica del proyecto fue pasar de tablas dispersas a una lectura de riesgo accionable.</p>
+      <p class="atlas-munis text-meta"><strong>Municipios:</strong> Chicoloapan, Estado de México · Puebla, Puebla · Santa Catarina, Nuevo León · El Marqués, Querétaro</p>
       <button class="project-expand" type="button" data-project-modal="atlasModal" onclick="document.getElementById('atlasModal').className='project-modal open';document.getElementById('atlasModal').setAttribute('aria-hidden','false')">Ver ficha completa</button>
       <div class="proy-result">→ Output: priorización municipal, capas de amenaza y tablero de lectura territorial</div>
-      <div class="proy-stack">
+      <div class="proy-stack chip-list">
         <span class="chip">Python</span><span class="chip">GeoPandas</span>
         <span class="chip">QGIS</span><span class="chip">INEGI</span>
         <span class="chip">Riesgo</span><span class="chip">Municipios</span>
@@ -1624,23 +1679,23 @@ footer .footer-copy {
   <div class="project-modal-panel" role="dialog" aria-modal="true" aria-labelledby="atlasModalTitle">
     <div class="project-modal-top">
       <div>
-        <p class="proy-type">Data Science · Protección Civil</p>
+        <p class="proy-type text-kicker">Data Science · Protección Civil</p>
         <h3 class="proy-name hero-case" id="atlasModalTitle">ATLAS DE<br><em>RIESGOS</em> MUNICIPALES</h3>
       </div>
       <button class="project-modal-close" type="button" data-close-modal onclick="document.getElementById('atlasModal').className='project-modal';document.getElementById('atlasModal').setAttribute('aria-hidden','true')" aria-label="Cerrar ficha">×</button>
     </div>
     <div class="project-modal-grid">
       <div>
-        <p class="proy-desc">Diagnóstico geoespacial para priorizar municipios con exposición territorial, vulnerabilidad e indicadores de presión urbana/ambiental. La lógica del proyecto fue pasar de tablas dispersas a una lectura de riesgo accionable.</p>
+        <p class="proy-desc text-body">Diagnóstico geoespacial para priorizar municipios con exposición territorial, vulnerabilidad e indicadores de presión urbana/ambiental. La lógica del proyecto fue pasar de tablas dispersas a una lectura de riesgo accionable.</p>
         <div class="proy-result">→ Output: priorización municipal, capas de amenaza y tablero de lectura territorial</div>
-        <div class="proy-stack">
+        <div class="proy-stack chip-list">
           <span class="chip">Python</span><span class="chip">GeoPandas</span>
           <span class="chip">QGIS</span><span class="chip">INEGI</span>
           <span class="chip">Riesgo</span><span class="chip">Municipios</span>
         </div>
       </div>
       <div>
-        <p class="case-panel-title">Municipios de trabajo</p>
+        <p class="case-panel-title text-kicker">Municipios de trabajo</p>
         <div class="project-modal-list">
           <span>Chicoloapan, Estado de México</span>
           <span>Puebla, Puebla</span>
@@ -1654,8 +1709,8 @@ footer .footer-copy {
 
 <!-- NOSOTROS -->
 <section id="nosotros">
-  <p class="s-tag">El equipo</p>
-  <h2 class="s-title">NOSOTROS</h2>
+  <p class="s-tag section-kicker">El equipo</p>
+  <h2 class="s-title section-title">NOSOTROS</h2>
   <div class="sobre-grid">
     <div class="sobre-text">
       <p>Somos un equipo de <strong>mentes espaciales</strong> con presencia en 4 estados de la república mexicana. Nacimos de la idea de que la cartografía no debería ser aburrida ni inaccesible.</p>
@@ -1664,7 +1719,7 @@ footer .footer-copy {
       <a href="#contacto" class="btn btn-fill" style="display:inline-block;margin-top:1rem">Trabajemos juntos</a>
 
       <div class="skills-wrap">
-        <p class="skills-label">Stack técnico</p>
+        <p class="skills-label text-kicker">Stack técnico</p>
         <div class="skills-list">
           <span class="skill">Python</span><span class="skill">QGIS</span>
           <span class="skill">GeoPandas</span><span class="skill">Scikit-learn</span>
@@ -1678,47 +1733,47 @@ footer .footer-copy {
 
     <div>
       <div class="team-box">
-        <p class="team-label">Equipo Cartografunk</p>
+        <p class="team-label text-kicker">Equipo Cartografunk</p>
         <div class="team-member">
           <div class="team-avatar">👨🏾‍🚀🗺️</div>
           <div>
             <p class="team-name">Spatial Lead</p>
-            <p class="team-role">Dirección · GIS · ML · Estrategia</p>
+            <p class="team-role text-meta">Dirección · GIS · ML · Estrategia</p>
           </div>
         </div>
         <div class="team-member">
           <div class="team-avatar">👨🏾‍💻🌐</div>
           <div>
             <p class="team-name">Data Engineer</p>
-            <p class="team-role">GIS · R · Web</p>
+            <p class="team-role text-meta">GIS · R · Web</p>
           </div>
         </div>
         <div class="team-member">
           <div class="team-avatar">👨🏼‍✈️🚁</div>
           <div>
             <p class="team-name">Piloto / Topógrafo</p>
-            <p class="team-role">Operaciones de dron · Topografía</p>
+            <p class="team-role text-meta">Operaciones de dron · Topografía</p>
           </div>
         </div>
         <div class="team-member">
           <div class="team-avatar">👨🏾‍💻📊</div>
           <div>
             <p class="team-name">Data Analyst</p>
-            <p class="team-role">Procesamiento · Visualización</p>
+            <p class="team-role text-meta">Procesamiento · Visualización</p>
           </div>
         </div>
         <div class="team-member">
           <div class="team-avatar">👩🏾‍🔬✍️</div>
           <div>
             <p class="team-name">Environmental Scientist</p>
-            <p class="team-role">Research · LLM · Environmental Science</p>
+            <p class="team-role text-meta">Research · LLM · Environmental Science</p>
           </div>
         </div>
         <div class="team-member">
           <div class="team-avatar">🧑🏾‍⚖️🌎</div>
           <div>
             <p class="team-name">Legal Researcher</p>
-            <p class="team-role">International Consultancy · Derecho</p>
+            <p class="team-role text-meta">International Consultancy · Derecho</p>
           </div>
         </div>
       </div>
