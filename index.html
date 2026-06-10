@@ -1125,6 +1125,14 @@ footer {
   margin-top:1rem;
 }
 @media(max-width:600px){ .form-row{grid-template-columns:1fr} }
+
+/* Legibilidad: no usar texto menor a 16px fuera del footer. */
+body :where(p, li, a, span, button, label, input, select, textarea, option, text, b, strong, h4, .chip, .s-tag, .hero-eyebrow, .hero-sub, .stat-l, .servicio-num, .proy-type, .proy-desc, .proy-result, .case-panel-title, .case-metric-label, .case-note, .lirio-caption, .atlas-munis, .team-label, .skills-label, .team-name, .team-role, .spec-label, .spec-key, .metro-paths, .contacto-email, .form-success, .course-flow-step) {
+  font-size: max(16px, 1em) !important;
+}
+footer .footer-copy {
+  font-size:0.6rem !important;
+}
 </style>
 </head>
 <body>
