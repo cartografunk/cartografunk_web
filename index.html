@@ -1130,6 +1130,12 @@ footer {
 body :where(p, li, a, span, button, label, input, select, textarea, option, text, b, strong, h4, .chip, .s-tag, .hero-eyebrow, .hero-sub, .stat-l, .servicio-num, .proy-type, .proy-desc, .proy-result, .case-panel-title, .case-metric-label, .case-note, .lirio-caption, .atlas-munis, .team-label, .skills-label, .team-name, .team-role, .spec-label, .spec-key, .metro-paths, .contacto-email, .form-success, .course-flow-step) {
   font-size: max(16px, 1em) !important;
 }
+body :where([class*="desc"], [class*="caption"], [class*="note"], [class*="meta"], [class*="label"], [class*="role"], [class*="munis"], [class*="path"], .chip, .skill, .lirio-tab, .aicom-tab, .coverage-date, .coverage-value, .case-step span, .case-metric span):not(footer *) {
+  color:var(--white) !important;
+  opacity:1 !important;
+  font-size:max(16px, 1em) !important;
+  line-height:1.6 !important;
+}
 footer .footer-copy {
   font-size:0.6rem !important;
 }
