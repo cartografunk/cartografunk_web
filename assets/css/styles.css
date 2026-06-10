@@ -321,8 +321,63 @@ section { padding:7rem 4rem; }
   font-size:1.5rem; font-weight:800; line-height:1.1;
   margin-bottom:1rem; letter-spacing:-0.5px;
 }
-.servicio-desc { margin-bottom:1.75rem; }
-.servicio-tags { gap:0.4rem; }
+.servicio-desc {
+  font-size:var(--fs-ui);
+  line-height:1.7;
+  color:rgba(242,238,255,0.78);
+  margin-bottom:1.5rem;
+}
+.servicio-tags {
+  display:flex;
+  flex-wrap:wrap;
+  gap:0.4rem;
+  margin-top:auto;
+  padding-top:1.25rem;
+  border-top:1px solid var(--border);
+}
+.servicio-desc ul {
+  list-style:none;
+  margin-top:0.85rem;
+  display:flex;
+  flex-direction:column;
+  gap:0.3rem;
+  padding-left:0;
+}
+.servicio-desc > ul > li {
+  font-family:var(--font-mono);
+  font-size:var(--fs-tag);
+  color:rgba(242,238,255,0.65);
+  letter-spacing:0.5px;
+  padding-left:1.1em;
+  position:relative;
+  line-height:1.55;
+}
+.servicio-desc > ul > li::before {
+  content:'—';
+  position:absolute; left:0;
+  color:var(--purple-dim);
+  font-size:var(--fs-label);
+  top:0.15em;
+}
+/* Listas anidadas (ej. Atlas de Riesgos nivel 2) */
+.servicio-desc ul ul {
+  margin-top:0.25rem;
+  gap:0.2rem;
+  padding-left:1rem;
+  border-left:1px solid var(--border);
+}
+.servicio-desc ul ul li {
+  font-size:var(--fs-label);
+  color:rgba(242,238,255,0.45);
+  padding-left:0.8em;
+  letter-spacing:0;
+}
+.servicio-desc ul ul li::before {
+  content:'·';
+  color:var(--purple-dim);
+  font-size:var(--fs-label);
+}
+
 .chip {
   font-family:var(--font-mono); font-size:clamp(var(--fs-tag),var(--fs-tag) + 0.18vw,0.9rem);
   padding:0.32rem 0.7rem;
