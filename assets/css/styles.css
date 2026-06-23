@@ -1165,8 +1165,6 @@ footer {
 .hero-desc {
   font-size: clamp(1rem, 0.95rem + 0.25vw, 1.15rem);
 }
-
-
 /* ── CONSULTORÍA AMBIENTAL ── */
 .servicio-card--clickable {
   cursor:pointer;
@@ -1214,4 +1212,130 @@ footer {
   font-family:var(--font-mono);
   font-size:var(--fs-label);
   top:0.1em;
+}
+
+/* ── FÚTBOL Y PERSONAS DESAPARECIDAS ── */
+.fd-chart-wrap {
+  position: relative;
+  width: 100%;
+  height: 320px;
+}
+
+.fd-panel {
+  padding: 2rem;
+  margin-top: 1.5rem;
+}
+.fd-panel-title {
+  margin-bottom: 1rem;
+}
+
+/* Filtros de periodo — extiende .chip con estado activo */
+.fd-filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 1.25rem;
+}
+.fd-filter {
+  font-family: var(--font-mono);
+  font-size: var(--fs-tag);
+  padding: 0.32rem 0.7rem;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: transparent;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.fd-filter:hover {
+  border-color: var(--purple);
+  color: var(--purple-bright);
+}
+.fd-filter[aria-pressed="true"] {
+  border-color: var(--purple);
+  color: var(--purple-bright);
+  background: var(--purple-glow);
+}
+.fd-filter:focus-visible {
+  outline: 2px solid var(--purple);
+  outline-offset: 2px;
+}
+
+/* Leyenda de la gráfica */
+.fd-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.fd-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-tag);
+  color: var(--muted);
+  letter-spacing: 1px;
+}
+.fd-swatch {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+}
+.fd-swatch--dashed {
+  width: 20px;
+  height: 0;
+  border-top: 2px dashed #EF9F27;
+}
+
+/* Panel de aviso editorial */
+.fd-warning {
+  border-left: 2px solid var(--purple-dim);
+  padding: 0.75rem 1rem;
+  margin-top: 1.5rem;
+  font-family: var(--font-mono);
+  font-size: var(--fs-tag);
+  color: rgba(242,238,255,0.55);
+  letter-spacing: 0.5px;
+  line-height: 1.65;
+}
+.fd-warning strong { color: var(--purple-bright); }
+
+/* Fuentes */
+.fd-sources-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.fd-sources-list li {
+  font-family: var(--font-mono);
+  font-size: var(--fs-tag);
+  color: rgba(242,238,255,0.45);
+  padding-left: 1.1rem;
+  position: relative;
+}
+.fd-sources-list li::before {
+  content: '→';
+  position: absolute;
+  left: 0;
+  color: var(--purple-dim);
+}
+.fd-sources-list a {
+  color: var(--purple-bright);
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+.fd-sources-list a:hover { opacity: 0.7; text-decoration: underline; }
+
+/* Responsive */
+@media (max-width: 520px) {
+  .fd-chart-wrap { height: 240px; }
+  #futbol-desaparecidos .s-title {
+    font-size:2rem;
+    overflow-wrap:anywhere;
+  }
 }
