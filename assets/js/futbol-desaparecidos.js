@@ -33,6 +33,29 @@
     { y: 2017, total: 21198, desp: 11040, goles: 39 },
   ];
 
+  const BUDGET = [
+    { y: 2007, mxn: 4200000 },
+    { y: 2008, mxn: 5100000 },
+    { y: 2009, mxn: 5500000 },
+    { y: 2010, mxn: 5900000 },
+    { y: 2011, mxn: 6200000 },
+    { y: 2012, mxn: 6800000 },
+    { y: 2013, mxn: 14200000 },
+    { y: 2014, mxn: 26100000 },
+    { y: 2015, mxn: 38500000 },
+    { y: 2016, mxn: 29300000 },
+    { y: 2017, mxn: 6823000 },
+    { y: 2018, mxn: 469300000 },
+    { y: 2019, mxn: 400800000 },
+    { y: 2020, mxn: 720300000 },
+    { y: 2021, mxn: 1134200000 },
+    { y: 2022, mxn: 1107500000 },
+    { y: 2023, mxn: 1097100000 },
+    { y: 2024, mxn: 1149000000 },
+    { y: 2025, mxn: 1102000000 },
+    { y: 2026, mxn: 1143000000 },
+  ];
+
   const VIEWS = {
     all:    RAW,
     pre:    RAW.filter(d => d.y <= 2005),
@@ -41,6 +64,7 @@
   };
 
   let chart = null;
+  let budgetChart = null;
   let currentView = "all";
 
   /* ── Métricas de resumen ── */
@@ -170,6 +194,81 @@
     });
   }
 
+  function buildBudgetChart(canvasId) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+
+    const compactNumber = new Intl.NumberFormat("es-MX", {
+      maximumFractionDigits: 1,
+    });
+    const currency = new Intl.NumberFormat("es-MX", {
+      style: "currency",
+      currency: "MXN",
+      maximumFractionDigits: 0,
+    });
+
+    const formatAxisValue = value => {
+      if (value >= 1000000000) {
+        return `${compactNumber.format(value / 1000000000)}B`;
+      }
+      return `${compactNumber.format(value / 1000000)}M`;
+    };
+
+    if (budgetChart) budgetChart.destroy();
+
+    budgetChart = new Chart(canvas, {
+      type: "bar",
+      data: {
+        labels: BUDGET.map(d => d.y),
+        datasets: [{
+          label: "Presupuesto federal asignado a búsqueda",
+          data: BUDGET.map(d => d.mxn),
+          backgroundColor: "#b44fff",
+          borderRadius: 2,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` Presupuesto: ${currency.format(ctx.raw)}`,
+            },
+          },
+        },
+        scales: {
+          x: {
+            ticks: {
+              color: "#f2eeff",
+              font: { family: "DM Mono, monospace", size: 11 },
+              autoSkip: false,
+              maxRotation: 45,
+            },
+            grid: { color: "rgba(160,80,255,0.12)" },
+          },
+          y: {
+            beginAtZero: true,
+            ticks: {
+              color: "#f2eeff",
+              font: { size: 11 },
+              callback: formatAxisValue,
+            },
+            grid: { color: "rgba(160,80,255,0.12)" },
+            title: {
+              display: true,
+              text: "Pesos mexicanos",
+              font: { size: 11 },
+              color: "#f2eeff",
+            },
+          },
+        },
+      },
+    });
+  }
+
   /* ── Control de vistas ── */
   function setView(v) {
     currentView = v;
@@ -193,8 +292,8 @@
       btn.addEventListener("click", () => setView(btn.dataset.view));
     });
 
-    buildChart(RAW);
-    updateMetrics(RAW);
+    setView("all");
+    buildBudgetChart("fd-chart-budget");
   }
 
   if (document.readyState === "loading") {
