@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://cartografunk.github.io/cartografunk_web/sitemap.xml
+Sitemap: https://cartografunk.com/sitemap.xml

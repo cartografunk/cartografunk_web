@@ -3,45 +3,45 @@
 
   <!-- Página principal -->
   <url>
-    <loc>https://cartografunk.github.io/cartografunk_web/</loc>
+    <loc>https://cartografunk.com/</loc>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
 
   <!-- Secciones principales -->
   <url>
-    <loc>https://cartografunk.github.io/cartografunk_web/#servicios</loc>
+    <loc>https://cartografunk.com/#servicios</loc>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
-    <loc>https://cartografunk.github.io/cartografunk_web/#proyectos</loc>
+    <loc>https://cartografunk.com/#proyectos</loc>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
-    <loc>https://cartografunk.github.io/cartografunk_web/#cursos</loc>
+    <loc>https://cartografunk.com/#cursos</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://cartografunk.github.io/cartografunk_web/#nosotros</loc>
+    <loc>https://cartografunk.com/#nosotros</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
-    <loc>https://cartografunk.github.io/cartografunk_web/#contacto</loc>
+    <loc>https://cartografunk.com/#contacto</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <!-- Explorador Paris Rail (si lo publicas como página separada) -->
   <!-- <url>
-    <loc>https://cartografunk.github.io/cartografunk_web/pages/paris-rail.html</loc>
+    <loc>https://cartografunk.com/pages/paris-rail.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url> -->
