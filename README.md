@@ -32,7 +32,7 @@ production
   -> https://cartografunk.com/
 ```
 
-El repo no usa NPM, Vite ni build step. La raiz del repositorio ya es el sitio publicable: `index.html`, `assets/`, `data/`, etc.
+El repo usa un build estatico minimo para produccion. No compila frontend: solo prepara `dist/` con los archivos publicos y excluye GeoJSON fuente demasiado pesados para Cloudflare.
 
 Los metadatos SEO (`canonical`, Open Graph, sitemap y robots) apuntan a `https://cartografunk.com/`, porque ese es el dominio publico de produccion. GitHub Pages queda como URL de revision.
 
@@ -67,11 +67,9 @@ Crear un proyecto en Cloudflare Pages conectado a GitHub:
 Repository: cartografunk/cartografunk_web
 Production branch: production
 Framework preset: None
-Build command: exit 0
-Build output directory: /
+Build command: npm run build
+Build output directory: dist
 ```
-
-Si Cloudflare no acepta `/` como output directory, usar `.`.
 
 Agregar los custom domains:
 
@@ -90,7 +88,7 @@ Trabajar y probar en `main`. Cuando este listo para publicar:
 .\scripts\deploy-production.ps1
 ```
 
-El script hace `fetch`, actualiza `main`, cambia a `production`, exige fast-forward desde `main`, empuja `production` y vuelve a la rama original. Cloudflare Pages despliega automaticamente desde `production`.
+El script hace `fetch`, actualiza `main`, cambia a `production`, exige fast-forward desde `main`, empuja `production` y vuelve a la rama original. Cloudflare Pages despliega automaticamente desde `production` y corre `npm run build`.
 
 ## Pitch tecnico
 

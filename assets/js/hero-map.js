@@ -1,7 +1,7 @@
 /**
  * Cartografunk — Hero Map D3
  * Mapa de México con animación "scan" secuencial de estados
- * Archivos: data/estados.geojson, data/division_estatal.geojson
+ * Archivos: data/estados-hero.geojson, data/division_estatal.geojson
  *
  * Uso: <script src="js/hero-map.js"></script>
  * Requiere: D3 v7 cargado antes en el HTML
@@ -70,7 +70,7 @@
 
     /* Carga de datos */
     Promise.all([
-      d3.json("data/estados.geojson"),
+      d3.json("data/estados-hero.geojson"),
       d3.json("data/division_estatal.geojson"),
     ]).then(([estadosGeo, divisionGeo]) => {
       build(svg, gStates, gLines, estadosGeo, divisionGeo, W, H);
