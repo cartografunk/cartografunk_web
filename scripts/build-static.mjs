@@ -13,7 +13,6 @@ const rootFiles = [
   "index.html",
   "marcas.html",
   "robots.txt",
-  "seccion-futbol-desaparecidos.html",
   "sitemap.xml",
 ];
 
