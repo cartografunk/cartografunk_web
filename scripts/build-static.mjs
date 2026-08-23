@@ -7,6 +7,7 @@ const dist = path.join(root, "dist");
 
 const rootFiles = [
   "404.html",
+  "_redirects",
   "desaparecidos.html",
   "google5b9223c756063cb5.html",
   "index.html",
