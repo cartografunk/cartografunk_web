@@ -36,7 +36,21 @@ El repo usa un build estatico minimo para produccion. No compila frontend: solo 
 
 Los metadatos SEO (`canonical`, Open Graph, sitemap y robots) apuntan a `https://cartografunk.com/`, porque ese es el dominio publico de produccion. GitHub Pages queda como URL de revision.
 
-## Estructura
+## Registro del taller en Supabase
+
+El formulario de `index.html` usa `assets/js/course-form.js` y la configuración
+pública de `assets/js/supabase-config.js`. Completar `publishableKey` con la clave
+ANON (JWT con role anon) o `sb_publishable_...` del proyecto. Nunca usar claves
+service_role ni `sb_secret_...`. No hay variables de entorno procesadas por el build.
+
+El envío llama a `registrar_inscripcion` mediante POST a
+`/rest/v1/rpc/registrar_inscripcion`, equivalente a `supabase.rpc`, con los diez
+parámetros `p_*` del formulario. La función gestiona el upsert de usuarios e
+inscripciones en el backend. El frontend no consulta ni modifica las tablas
+directamente y no requiere políticas públicas SELECT/UPDATE; el rol anon debe
+poder ejecutar el RPC. Instagram vacío se envía como null.
+
+## Estructura de archivos
 
 ```text
 cartografunk_web/

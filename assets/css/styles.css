@@ -460,17 +460,19 @@ a.servicio-card {
   color:var(--purple-bright);
   margin-bottom:0.4rem;
 }
-.course-form-embed {
+.course-form {
   margin-top:2rem;
   border:1px solid var(--border);
   background:var(--surface);
+  padding:clamp(1rem, 3vw, 2rem);
+  scroll-margin-top:6rem;
 }
-.course-form-embed iframe {
-  display:block;
-  width:100%;
-  min-height:900px;
-  border:0;
-}
+.course-form > p { margin:1rem 0; }
+.course-form .form-group { min-width:0; }
+.course-form input, .course-form select, .course-form textarea { min-width:0; width:100%; }
+.course-form button:disabled { opacity:0.65; cursor:default; }
+#courseFormStatus[data-state="error"] { color:#ffb4ab; }
+#courseFormStatus[data-state="success"] { color:var(--purple-bright); }
 .curso-sesiones {
   display:grid;
   grid-template-columns:repeat(3,minmax(0,1fr));

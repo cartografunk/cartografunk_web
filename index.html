@@ -243,7 +243,7 @@
   <p class="s-tag section-kicker">Formación</p>
   <h2 class="s-title section-title">TALLER DE<br><em>CARTOGRAFÍA</em><br>CREATIVA</h2>
   <div class="course-actions course-actions-top">
-    <a class="btn btn-primary" href="https://forms.gle/tnqN3U5XReh65nq19" target="_blank" rel="noopener noreferrer">Aplicar al taller</a>
+    <a class="btn btn-primary" href="#courseForm">Aplicar al taller</a>
     <a class="btn btn-secondary" href="https://chat.whatsapp.com/DYhGx5LVKL5JuLMwbtxWpg" target="_blank" rel="noopener noreferrer">Grupo informativo</a>
     <a class="btn btn-secondary" href="https://chat.whatsapp.com/BqhjaiEJfpM22M0GyvGGCT" target="_blank" rel="noopener noreferrer">Comunidad Cartografunk</a>
   </div>
@@ -295,17 +295,40 @@
       <div class="course-flow-step"><span>04</span>Recibes materiales</div>
     </div>
   </div>
-  <div class="course-form-embed">
-    <iframe
-      src="https://docs.google.com/forms/d/e/1FAIpQLSfiKj5ufusbLwQDTjEtp-4qEdXjYhyDmLSnXPvBPQg-YXYR7Q/viewform?embedded=true"
-      width="100%"
-      height="900"
-      frameborder="0"
-      marginheight="0"
-      marginwidth="0">
-      Cargando...
-    </iframe>
-  </div>
+  <form id="courseForm" class="course-form" method="post">
+    <h3>Aplica al taller</h3>
+    <p>Cuéntanos sobre ti. Los campos con * son obligatorios.</p>
+    <div class="form-row">
+      <div class="form-group"><label for="courseName">Nombre *</label><input id="courseName" name="nombre" autocomplete="name" required maxlength="200"></div>
+      <div class="form-group"><label for="courseEmail">Email *</label><input id="courseEmail" name="email" type="email" autocomplete="email" required maxlength="254"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label for="courseInstagram">Instagram</label><input id="courseInstagram" name="instagram" placeholder="@tuusuario" maxlength="200"></div>
+      <div class="form-group"><label for="courseWhatsapp">WhatsApp</label><input id="courseWhatsapp" name="whatsapp" type="tel" autocomplete="tel" maxlength="40"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="courseExperience">Experiencia con QGIS *</label>
+        <select id="courseExperience" name="experiencia_qgis" required>
+          <option value="">Selecciona una opción</option>
+          <option>Nunca</option><option>Lo abrí una vez</option><option>Nivel básico</option><option>Nivel intermedio</option><option>Nivel avanzado</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="courseSchedule">Horario preferido *</label>
+        <select id="courseSchedule" name="horario_preferido" required>
+          <option value="">Selecciona una opción</option>
+          <option>Entre semana - Matutino</option><option>Entre semana - Vespertino</option><option>Sábado</option><option>Domingo</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label for="courseDiscover">¿Qué te gustaría descubrir?</label><textarea id="courseDiscover" name="que_descubrir" maxlength="4000"></textarea></div>
+    <div class="form-group"><label for="courseWord">¿Cuál es la primera palabra que asocias con los mapas?</label><input id="courseWord" name="primera_palabra" maxlength="200"></div>
+    <div class="form-group"><label for="courseBelief">¿Qué creencia te gustaría poner a prueba con un mapa?</label><textarea id="courseBelief" name="creencia_a_probar" maxlength="4000"></textarea></div>
+    <button type="submit" class="btn btn-primary">Enviar solicitud</button>
+    <p id="courseFormStatus" role="status" aria-live="polite" aria-atomic="true"></p>
+    <noscript>Activa JavaScript para enviar tu solicitud.</noscript>
+  </form>
 </section>
 
 <!-- DAFT METRO -->
@@ -1143,6 +1166,8 @@ document.addEventListener('keydown', e => {
      ──────────────────────────────────────────────────────────────────────── -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" defer></script>
 <script src="assets/js/futbol-desaparecidos.js" defer></script>
+<script src="assets/js/supabase-config.js" defer></script>
+<script src="assets/js/course-form.js" defer></script>
 
 
 </body>
