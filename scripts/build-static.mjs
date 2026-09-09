@@ -11,6 +11,8 @@ const rootFiles = [
   "desaparecidos.html",
   "google5b9223c756063cb5.html",
   "index.html",
+  "actualidad.html",
+  "daft-metro.html",
   "cursos.html",
   "servicios.html",
   "proyectos.html",

@@ -37,19 +37,20 @@ window.plausible = window.plausible || function() {
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@300;400;500&family=Fraunces:ital,wght@0,300;0,700;1,300&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/styles.css?v=pages-repair-2">
+<link rel="stylesheet" href="assets/css/projects-theme.css">
 </head>
-<body>
+<body class="projects-page-theme">
 <nav aria-label="Navegación principal">
   <a href="index.html" class="nav-logo">CARTOGRAFUNK</a>
   <ul class="nav-links">
     <li><a href="servicios.html">Servicios</a></li>
     <li><a href="cursos.html">Cursos</a></li>
-    <li><a href="index.html#daft-metro">Daft Metro</a></li>
+    <li><a href="daft-metro.html">Daft Metro</a></li>
     <li><a href="proyectos.html" aria-current="page">Proyectos</a></li>
     <li><a href="nosotros.html">Nosotros</a></li>
     <li><a href="nosotros.html#contacto">Contacto</a></li>
-    <li><a href="marcas.html">Marcas</a></li>
-    <li><a href="desaparecidos.html">Desaparecidos</a></li>
+    <li><a href="marcas.html">Media kit</a></li>
+    <li><a href="actualidad.html">Actualidad</a></li>
   </ul>
 </nav>
 <main>
@@ -70,13 +71,6 @@ window.plausible = window.plausible || function() {
           <div class="case-metric"><strong>MIA</strong><span>Impacto ambiental</span></div>
           <div class="case-metric"><strong>CUS</strong><span>Cambio de uso de suelo</span></div>
           <div class="case-metric"><strong>PROFEPA</strong><span>Seguimiento administrativo</span></div>
-        </div>
-
-        <div class="case-flow content-grid">
-          <div class="case-step"><b>01 · Diagnóstico</b><span>Revisión del predio, actividad y obligaciones aplicables</span></div>
-          <div class="case-step"><b>02 · Estudios</b><span>Elaboración de MIA, informes, programas y estudios técnicos</span></div>
-          <div class="case-step"><b>03 · Gestión</b><span>Trámites, avisos, modificaciones, opiniones y autorizaciones</span></div>
-          <div class="case-step"><b>04 · Cumplimiento</b><span>Seguimiento de términos, condicionantes, residuos y auditorías</span></div>
         </div>
 
         <div class="proy-result" style="margin-bottom:1.5rem">→ Servicio orientado a reducir incertidumbre regulatoria y sostener evidencia técnica clara</div>
@@ -176,6 +170,12 @@ window.plausible = window.plausible || function() {
           </ul>
         </div>
       </div>
+      <div class="case-flow content-grid" aria-label="Etapas de consultoría ambiental">
+        <div class="case-step"><b>01 · Diagnóstico</b><span>Revisión del predio, actividad y obligaciones aplicables</span></div>
+        <div class="case-step"><b>02 · Estudios</b><span>Elaboración de MIA, informes, programas y estudios técnicos</span></div>
+        <div class="case-step"><b>03 · Gestión</b><span>Trámites, avisos, modificaciones, opiniones y autorizaciones</span></div>
+        <div class="case-step"><b>04 · Cumplimiento</b><span>Seguimiento de términos, condicionantes, residuos y auditorías</span></div>
+      </div>
     </div>
 
     <!-- LIRIO — HERO PROJECT spanning full width -->
@@ -256,12 +256,12 @@ window.plausible = window.plausible || function() {
           </div>
           <div class="coverage-row clickable" data-lirio-date="20260508">
             <span class="coverage-date">8 May</span>
-            <div class="coverage-track"><div class="coverage-fill" style="width:13.63%;background:rgba(180,79,255,0.85)"></div></div>
+            <div class="coverage-track"><div class="coverage-fill" style="width:13.63%;background:var(--purple)"></div></div>
             <span class="coverage-value">13.63%</span>
           </div>
           <div class="coverage-row clickable" data-lirio-date="20260508m">
             <span class="coverage-date accent">Dron</span>
-            <div class="coverage-track" style="border-color:rgba(180,79,255,0.5)"><div class="coverage-fill" style="width:7.88%;background:var(--purple)"></div></div>
+            <div class="coverage-track" style="border-color:var(--purple)"><div class="coverage-fill" style="width:7.88%;background:var(--purple)"></div></div>
             <span class="coverage-value" style="font-weight:700">7.88%</span>
           </div>
         </div>
@@ -301,18 +301,6 @@ window.plausible = window.plausible || function() {
         <p class="aicom-caption text-caption" id="aicomCaption">Yacimientos mineros · capa de contexto territorial</p>
       </div>
     </div>
-
-    <a class="proyecto-card marca-card" href="marcas">
-      <p class="proy-type text-kicker">Media Kit Â· Marcas Â· Audiencia tÃ©cnica</p>
-      <h3 class="proy-name">CARTOGRAFUNK<br><em>PARA MARCAS</em></h3>
-      <p class="proy-desc text-body">Ficha privada para colaboraciones: mÃ©tricas de Instagram, audiencia, caso de conversiÃ³n y propuesta de valor para marcas tecnolÃ³gicas.</p>
-      <div class="case-metrics" aria-label="MÃ©tricas destacadas del media kit">
-        <div class="case-metric"><strong>4.4M</strong><span>Views en 28 dÃ­as</span></div>
-        <div class="case-metric"><strong>2.1M</strong><span>Cuentas alcanzadas</span></div>
-        <div class="case-metric"><strong>31.3K</strong><span>Seguidores totales</span></div>
-      </div>
-      <span class="service-card-link">Ver media kit â†’</span>
-    </a>
 
     <div class="proyecto-card atlas-card">
       <p class="proy-type text-kicker">Data Science · Protección Civil</p>
@@ -363,123 +351,7 @@ window.plausible = window.plausible || function() {
   </div>
 </div>
 
-<section id="futbol-desaparecidos" aria-labelledby="fd-heading">
 
-  <!-- Encabezado editorial -->
-  <div>
-    <p class="s-tag section-kicker">Cartografía social · Memoria · México</p>
-    <h2 id="fd-heading" class="s-title section-title">
-      FÚTBOL Y PERSONAS <em>DESAPARECIDAS</em> EN MÉXICO
-    </h2>
-    <p class="text-lead">
-      Dos realidades que coexisten en el territorio nacional. Mientras la selección
-      jugaba ante millones, miles de personas desaparecían. Este visualizador no
-      establece causalidad: contrasta presencias y ausencias en el tiempo, entre 2000 y 2017.
-    </p>
-  </div>
-
-  <!-- Métricas de resumen -->
-  <div class="stats" role="list">
-    <div class="stat" role="listitem">
-      <span class="stat-n" id="fd-metric-total">189,618</span>
-      <span class="stat-l">Casos registrados · 2000–2017</span>
-    </div>
-    <div class="stat" role="listitem">
-      <span class="stat-n" id="fd-metric-desp">68,906</span>
-      <span class="stat-l">Personas desaparecidas · 2000–2017</span>
-    </div>
-    <div class="stat" role="listitem">
-      <span class="stat-n">18 años</span>
-      <span class="stat-l">Periodo cubierto</span>
-    </div>
-  </div>
-
-  <!-- Panel: gráfica combinada -->
-  <div class="content-card fd-panel">
-    <p class="case-panel-title text-kicker fd-panel-title">Casos registrados y goles de la selección · por año</p>
-
-    <!-- Leyenda -->
-    <div class="fd-legend" role="list" aria-label="Leyenda del gráfico">
-      <span class="fd-legend-item" role="listitem">
-        <span class="fd-swatch" style="background:#b44fff;" aria-hidden="true"></span>
-        Casos registrados totales
-      </span>
-      <span class="fd-legend-item" role="listitem">
-        <span class="fd-swatch" style="background:rgba(208,112,255,0.45);" aria-hidden="true"></span>
-        Personas desaparecidas
-      </span>
-      <span class="fd-legend-item" role="listitem">
-        <span class="fd-swatch fd-swatch--dashed" aria-hidden="true"></span>
-        Goles selección (eje derecho)
-      </span>
-    </div>
-
-    <!-- Filtros temporales -->
-    <div class="fd-filter-group" role="group" aria-label="Filtrar periodo">
-      <button class="fd-filter" type="button" data-view="all" aria-pressed="true">2000–2017</button>
-      <button class="fd-filter" type="button" data-view="pre" aria-pressed="false">Pre-crisis · 2000–2005</button>
-      <button class="fd-filter" type="button" data-view="crisis" aria-pressed="false">Escalada · 2006–2012</button>
-      <button class="fd-filter" type="button" data-view="post" aria-pressed="false">2013–2017</button>
-    </div>
-
-    <!-- Canvas -->
-    <div class="fd-chart-wrap">
-      <canvas
-        id="fd-chart"
-        role="img"
-        aria-label="Gráfica combinada de barras y línea. Las barras muestran casos registrados
-          y personas desaparecidas por año de 2000 a 2017. La línea discontinua muestra
-          los goles de la selección mexicana en el eje secundario derecho."
-      >
-        Gráfica de casos registrados de desaparición y goles de la selección
-        nacional de México, por año, entre 2000 y 2017. Los casos aumentaron
-        de forma sostenida desde 2006.
-      </canvas>
-    </div>
-  </div>
-
-  <!-- Bloque metodológico -->
-  <div class="content-card fd-panel">
-    <p class="case-panel-title text-kicker fd-panel-title">Nota metodológica y fuentes</p>
-    <p class="text-body">
-      Los datos de desapariciones provienen del dataset preparado para este proyecto
-      a partir de cifras públicas. Las personas desaparecidas son un subconjunto de los
-      casos registrados totales (incluyen personas no localizadas).
-      Los goles corresponden a partidos oficiales de la selección mayor.
-      <strong>Fecha de corte: 2017.</strong> El RNPDNO actualiza cifras retroactivamente;
-      los datos aquí presentados pueden diferir de versiones más recientes.
-      Escala geográfica: nacional.
-    </p>
-
-    <!-- Aviso editorial -->
-    <div class="fd-warning" role="note">
-      <strong>Aviso editorial:</strong> La proximidad temporal entre los partidos de fútbol
-      y los registros de desaparición <em>no demuestra ni sugiere causalidad</em>.
-      Esta visualización contrasta dos dimensiones de la realidad nacional para estimular
-      reflexión crítica, no para establecer relaciones explicativas.
-    </div>
-
-    <!-- Fuentes -->
-    <ul class="fd-sources-list" aria-label="Fuentes de datos">
-      <li>
-        <a href="https://versionpublicarnpdno.segob.gob.mx" target="_blank" rel="noopener noreferrer">
-          RNPDNO · Registro Nacional de Personas Desaparecidas y No Localizadas
-        </a>
-      </li>
-      <li>
-        <a href="https://www.gob.mx/cnb" target="_blank" rel="noopener noreferrer">
-          Comisión Nacional de Búsqueda
-        </a>
-      </li>
-      <li>
-        <a href="https://datos.gob.mx" target="_blank" rel="noopener noreferrer">
-          Datos Abiertos de México
-        </a>
-      </li>
-    </ul>
-  </div>
-
-</section>
 
 
 </main>
@@ -719,7 +591,7 @@ document.addEventListener('keydown', e => {
   }
 
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" defer></script>
-<script src="assets/js/futbol-desaparecidos.js" defer></script>
+
+
 </body>
 </html>

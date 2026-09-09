@@ -10,6 +10,11 @@
 
 (function () {
   "use strict";
+  const greenTheme = document.body.classList.contains('projects-page-theme');
+  const editorialTheme = document.body.classList.contains('actualidad-theme');
+  const chartAccent = editorialTheme ? '#d5ae46' : greenTheme ? '#4fce96' : '#b44fff';
+  const chartSecondary = editorialTheme ? 'rgba(239,209,126,0.45)' : greenTheme ? 'rgba(138,230,185,0.45)' : 'rgba(208,112,255,0.45)';
+  const chartGrid = editorialTheme ? 'rgba(213,174,70,0.12)' : greenTheme ? 'rgba(79,206,150,0.12)' : 'rgba(160,80,255,0.12)';
 
   /* ── Datos ── */
   const RAW = [
@@ -89,7 +94,7 @@
     if (!canvas) return;
 
     const tickColor = "#f2eeff";
-    const gridColor = "rgba(160,80,255,0.12)";
+    const gridColor = chartGrid;
 
     if (chart) chart.destroy();
 
@@ -101,7 +106,7 @@
           {
             label: "Casos registrados",
             data: data.map(d => d.total),
-            backgroundColor: "#b44fff",
+            backgroundColor: chartAccent,
             yAxisID: "y",
             order: 2,
             borderRadius: 2,
@@ -109,7 +114,7 @@
           {
             label: "Personas desaparecidas",
             data: data.map(d => d.desp),
-            backgroundColor: "rgba(208,112,255,0.45)",
+            backgroundColor: chartSecondary,
             yAxisID: "y",
             order: 3,
             borderRadius: 2,
@@ -223,7 +228,7 @@
         datasets: [{
           label: "Presupuesto federal asignado a búsqueda",
           data: BUDGET.map(d => d.mxn),
-          backgroundColor: "#b44fff",
+          backgroundColor: chartAccent,
           borderRadius: 2,
         }],
       },
@@ -247,7 +252,7 @@
               autoSkip: false,
               maxRotation: 45,
             },
-            grid: { color: "rgba(160,80,255,0.12)" },
+            grid: { color: chartGrid },
           },
           y: {
             beginAtZero: true,
@@ -256,7 +261,7 @@
               font: { size: 11 },
               callback: formatAxisValue,
             },
-            grid: { color: "rgba(160,80,255,0.12)" },
+            grid: { color: chartGrid },
             title: {
               display: true,
               text: "Pesos mexicanos",

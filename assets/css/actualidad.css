@@ -1,0 +1,16 @@
+.actualidad-theme {
+  --bg:#141109; --surface:#201b0f; --card:#292212;
+  --purple:#d5ae46; --purple-bright:#efd17e; --purple-dim:#9a7827;
+  --purple-glow:rgba(213,174,70,.12); --border:rgba(213,174,70,.28);
+  --white:#fff7df; --muted:#e0d6b8;
+}
+.actualidad-theme nav { background:rgba(20,17,9,.94); }
+.actualidad-theme .btn-fill { color:#201807; }
+.actualidad-theme .btn:hover { box-shadow:0 8px 30px rgba(213,174,70,.2); }
+.editorial-archive { margin-top:4rem; }
+.editorial-archive h2 { margin-bottom:1.5rem; }
+.editorial-archive article { max-width:960px; }
+.editorial-breadcrumb { padding:9rem 4rem 0; }
+.editorial-breadcrumb a { color:var(--purple-bright); }
+.editorial-breadcrumb p { margin-top:.7rem; color:var(--muted); }
+@media(max-width:600px){.editorial-breadcrumb{padding:9rem 1.25rem 0}}

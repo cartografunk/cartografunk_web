@@ -708,6 +708,33 @@ a.proyecto-card {
   text-transform:uppercase;
   margin-bottom:1rem;
 }
+/* Environmental consulting owns its green palette and roomier process cards. */
+#ambiental-case {
+  --purple:#4fce96;
+  --purple-bright:#8ae6b9;
+  --purple-dim:#257951;
+  --purple-glow:rgba(79,206,150,0.1);
+  --border:rgba(79,206,150,0.24);
+  --muted:#d4e8dd;
+  border-color:var(--border);
+  background:linear-gradient(135deg,#101d18,#0b1511);
+  gap:clamp(1.5rem,3vw,3rem);
+}
+#ambiental-case > div { min-width:0; }
+#ambiental-case .case-panel { border-color:var(--border); background:#0b1611; }
+#ambiental-case .case-flow {
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:0.75rem;
+  border:0;
+  background:transparent;
+}
+#ambiental-case .case-step { border:1px solid var(--border); background:#14271d; padding:1rem; }
+#ambiental-case .btn-fill { color:#092417; }
+#ambiental-case .btn-fill:hover { box-shadow:0 8px 30px rgba(79,206,150,0.22); }
+@media(max-width:600px) {
+  #ambiental-case .case-flow,
+  #ambiental-case .case-metrics { grid-template-columns:1fr; }
+}
 .coverage-bars { display:flex; flex-direction:column; gap:0.6rem; }
 .coverage-row {
   display:grid;

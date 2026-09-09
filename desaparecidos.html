@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/webp" href="/assets/img/favicon.webp">
-<title>Cartografunk — Neo-Cartografía · Inteligencia espacial · MX</title>
+<title>Fútbol y personas desaparecidas · Actualidad · Cartografunk</title>
 <meta name="description" content="Inteligencia espacial, levantamientos con dron, machine learning aplicado al territorio <br> La consultoría más cool de México.">
 
 <!-- SEO -->
@@ -50,22 +50,24 @@
 <!-- D3 primero, luego el módulo -->
 <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
 <script src="assets/js/hero-map.js"></script>
+<link rel="stylesheet" href="assets/css/actualidad.css">
 </head>
-<body>
+<body class="actualidad-theme">
 
 <nav aria-label="Navegación principal">
   <a href="index.html" class="nav-logo">CARTOGRAFUNK</a>
   <ul class="nav-links">
     <li><a href="servicios.html">Servicios</a></li>
     <li><a href="cursos.html">Cursos</a></li>
-    <li><a href="index.html#daft-metro">Daft Metro</a></li>
+    <li><a href="daft-metro.html">Daft Metro</a></li>
     <li><a href="proyectos.html">Proyectos</a></li>
     <li><a href="nosotros.html">Nosotros</a></li>
     <li><a href="nosotros.html#contacto">Contacto</a></li>
-    <li><a href="marcas.html">Marcas</a></li>
-    <li><a href="desaparecidos.html" aria-current="page">Desaparecidos</a></li>
+    <li><a href="marcas.html">Media kit</a></li>
+    <li><a href="actualidad.html" aria-current="page">Actualidad</a></li>
   </ul>
 </nav>
+<div class="editorial-breadcrumb"><a href="actualidad.html">← Actualidad</a><p>Archivo · Datos de 2000 a 2017</p></div>
 
 <section id="futbol-desaparecidos" aria-labelledby="fd-heading">
   <div>
@@ -100,11 +102,11 @@
 
     <div class="fd-legend" role="list" aria-label="Leyenda del gráfico">
       <span class="fd-legend-item" role="listitem">
-        <span class="fd-swatch" style="background:#b44fff;" aria-hidden="true"></span>
+        <span class="fd-swatch" style="background:var(--purple);" aria-hidden="true"></span>
         Casos registrados totales
       </span>
       <span class="fd-legend-item" role="listitem">
-        <span class="fd-swatch" style="background:rgba(208,112,255,0.45);" aria-hidden="true"></span>
+        <span class="fd-swatch" style="background:rgba(239,209,126,0.45);" aria-hidden="true"></span>
         Personas desaparecidas
       </span>
       <span class="fd-legend-item" role="listitem">

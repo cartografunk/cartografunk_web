@@ -1,0 +1,47 @@
+/* Green identity for the entire projects route. */
+#ambiental-case { grid-template-columns:minmax(0,1fr) minmax(0,1fr); }
+#ambiental-case > .case-flow {
+  grid-column:1 / -1;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  margin:0;
+  gap:1rem;
+}
+#ambiental-case > .case-panel { align-self:stretch; }
+#ambiental-case .case-step { padding:1.25rem; }
+@media(max-width:1100px) {
+  #ambiental-case { grid-template-columns:1fr; }
+  #ambiental-case > .case-flow { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media(max-width:600px) {
+  #ambiental-case > .case-flow { grid-template-columns:1fr; }
+}
+.projects-page-theme {
+  --bg:#080f0c;
+  --surface:#0c1912;
+  --card:#101f17;
+  --border:rgba(79,206,150,0.24);
+  --purple:#4fce96;
+  --purple-bright:#8ae6b9;
+  --purple-dim:#257951;
+  --purple-glow:rgba(79,206,150,0.12);
+  --white:#edf8f1;
+  --muted:#d4e8dd;
+}
+.projects-page-theme nav { background:rgba(8,20,13,0.9); }
+.projects-page-theme .proyecto-hero,
+.projects-page-theme .marca-card {
+  border-color:var(--border);
+  background:linear-gradient(135deg,var(--card),#0b1511);
+}
+.projects-page-theme .case-panel,
+.projects-page-theme .project-modal-panel,
+.projects-page-theme .lirio-view-switch button { background:var(--surface); border-color:var(--border); }
+.projects-page-theme .project-modal-list span,
+.projects-page-theme .proyecto-card.coming { border-color:var(--border); }
+.projects-page-theme .coverage-track,
+.projects-page-theme .lirio-view-switch button.active,
+.projects-page-theme .coverage-row.clickable:hover,
+.projects-page-theme .coverage-row.clickable.active { background:var(--purple-glow); border-color:var(--border); }
+.projects-page-theme .btn-fill,
+.projects-page-theme .btn-primary { color:#092417; }
+.projects-page-theme .btn:hover { box-shadow:0 8px 30px rgba(79,206,150,0.25); }
