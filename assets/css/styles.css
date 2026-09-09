@@ -45,11 +45,12 @@
 .course-page-theme .btn-primary:hover,
 .course-page-theme .btn-fill:hover { background: #3294ef; border-color: #3294ef; }
 
-/* The workshop has its own route; keep the home page focused on the studio. */
-body:not(.course-page-theme) #cursos { display: none; }
-body:not(.course-page-theme) #servicios,
-body:not(.course-page-theme) #proyectos,
-body:not(.course-page-theme) #nosotros { display: none; }
+nav .nav-links a[aria-current="page"] { color:var(--purple-bright); }
+.course-page-theme { --bg:#080f1b; --surface:#0b1b2d; --card:#102238; }
+.course-page-theme .btn-primary:hover { box-shadow:0 8px 30px rgba(62,156,255,0.3); }
+.home-directory a { text-decoration:none; color:inherit; }
+body > #servicios,
+main > section:first-child { padding-top:10rem; }
 
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 html { scroll-behavior: smooth; }

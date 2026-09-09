@@ -1,5 +1,9 @@
 {
   "scripts": {
+    "dev": "vite",
     "build": "node scripts/build-static.mjs"
+  },
+  "devDependencies": {
+    "vite": "^8.2.2"
   }
 }
