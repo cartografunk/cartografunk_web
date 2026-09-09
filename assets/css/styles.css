@@ -442,6 +442,23 @@ a.servicio-card {
   gap:2.5rem;
   align-items:start;
 }
+.course-page .curso-wrap { display:block; }
+.course-page .course-syllabus {
+  margin-top:clamp(3rem, 6vw, 6rem);
+  padding-top:2rem;
+  border-top:1px solid var(--border);
+}
+.course-page .curso-sesiones {
+  grid-template-columns:repeat(3, minmax(0, 1fr));
+  gap:1.5rem;
+  background:transparent;
+  align-items:stretch;
+}
+.course-page .curso-sesion { min-width:0; border:1px solid var(--border); }
+.course-page .course-flow { margin-top:clamp(3rem, 6vw, 6rem); }
+@media(max-width:900px) {
+  .course-page .curso-sesiones { grid-template-columns:1fr; }
+}
 .curso-lead { margin-bottom:1.75rem; }
 .curso-meta { gap:0.55rem; margin-bottom:1.5rem; }
 .course-actions {
