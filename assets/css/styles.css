@@ -25,6 +25,26 @@
   --fs-ui:    0.778rem;
 }
 
+/* Course view palette: blue signals learning, openness and exploration. */
+.course-page-theme {
+  --border: rgba(62, 156, 255, 0.24);
+  --purple: #4da3ff;
+  --purple-bright: #8bc7ff;
+  --purple-dim: #2873ba;
+  --purple-glow: rgba(62, 156, 255, 0.14);
+  --white: #edf7ff;
+  --muted: #c9e3f7;
+}
+.course-page-theme nav { background: rgba(5, 16, 30, 0.88); }
+.course-page-theme .course-form,
+.course-page-theme .curso-sesion,
+.course-page-theme .course-flow-step { background: #0b1b2d; }
+.course-page-theme .course-form { border-color: rgba(62, 156, 255, 0.38); }
+.course-page-theme .btn-primary,
+.course-page-theme .btn-fill { background: #1976d2; border-color: #1976d2; }
+.course-page-theme .btn-primary:hover,
+.course-page-theme .btn-fill:hover { background: #3294ef; border-color: #3294ef; }
+
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 html { scroll-behavior: smooth; }
 img, iframe, video, canvas, svg { max-width:100%; }
