@@ -50,6 +50,17 @@ inscripciones en el backend. El frontend no consulta ni modifica las tablas
 directamente y no requiere políticas públicas SELECT/UPDATE; el rol anon debe
 poder ejecutar el RPC. Instagram vacío se envía como null.
 
+## Insights de Instagram para Media kit
+
+Se dejó preparado `supabase/functions/instagram-insights/index.ts` para obtener
+insights de la cuenta profesional y de sus últimas publicaciones. Configura los
+secretos `META_INSTAGRAM_ACCESS_TOKEN`, `META_INSTAGRAM_ACCOUNT_ID` y
+`MEDIA_KIT_ORIGIN` en Supabase; nunca los pongas en HTML o JavaScript público.
+Después de desplegar la función, define `window.CARTOGRAFUNK_INSIGHTS_ENDPOINT`
+antes de `media-kit-insights.js` en `marcas.html`. La cuenta debe ser Business o
+Creator y la app de Meta debe tener `instagram_business_basic` y
+`instagram_business_manage_insights`.
+
 ## Estructura de archivos
 
 ```text
