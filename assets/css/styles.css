@@ -45,6 +45,12 @@
 .course-page-theme .btn-primary:hover,
 .course-page-theme .btn-fill:hover { background: #3294ef; border-color: #3294ef; }
 
+/* The workshop has its own route; keep the home page focused on the studio. */
+body:not(.course-page-theme) #cursos { display: none; }
+body:not(.course-page-theme) #servicios,
+body:not(.course-page-theme) #proyectos,
+body:not(.course-page-theme) #nosotros { display: none; }
+
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 html { scroll-behavior: smooth; }
 img, iframe, video, canvas, svg { max-width:100%; }
