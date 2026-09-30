@@ -18,6 +18,7 @@ const rootFiles = [
   "proyectos.html",
   "nosotros.html",
   "marcas.html",
+  "privacidad.html",
   "robots.txt",
   "sitemap.xml",
 ];
