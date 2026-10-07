@@ -36,6 +36,12 @@ El repo usa un build estatico minimo para produccion. No compila frontend: solo 
 
 Los metadatos SEO (`canonical`, Open Graph, sitemap y robots) apuntan a `https://cartografunk.com/`, porque ese es el dominio publico de produccion. GitHub Pages queda como URL de revision.
 
+## Enlace a Batcomputer
+
+La portada incluye un enlace a `https://batcomputer.cartografunk.com/`. La aplicación vive en el repositorio independiente `cartografunk/batcomputer` y se servirá desde Railway; este sitio estático no aloja su frontend ni su API.
+
+El enlace se prepara en una rama de trabajo. Antes de promoverlo a `production`, desplegar Batcomputer en Railway, configurar allí el dominio personalizado, crear en DNS los registros exactos que Railway indique y comprobar HTTPS y la navegación de ida y vuelta. No publicar la rama mientras el subdominio no resuelva.
+
 ## Registro del taller en Supabase
 
 El formulario de `index.html` usa `assets/js/course-form.js` y la configuración
