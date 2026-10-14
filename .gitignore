@@ -10,3 +10,6 @@ data/municipios.geojson
 data/municipios.geojson
 dist/
 .wrangler/
+
+supabase/.env.secrets
+supabase/.temp/

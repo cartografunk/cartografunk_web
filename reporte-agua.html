@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reporte ciudadano de agua · Cartografunk</title>
+  <meta name="description" content="Documenta señales de contaminación del agua en Guadalajara y consulta reportes revisados.">
+  <link rel="canonical" href="https://cartografunk.com/reporte-agua">
+  <link rel="icon" type="image/webp" href="/assets/img/favicon.webp">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@300;400;500&family=Fraunces:ital,wght@0,300;0,700;1,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css">
+  <link rel="stylesheet" href="assets/css/styles.css?v=pages-repair-2">
+  <link rel="stylesheet" href="assets/css/reporte-agua.css">
+</head>
+<body class="agua-page">
+  <a class="agua-skip" href="#contenido">Ir al contenido</a>
+  <nav aria-label="Navegación principal">
+    <a href="index.html" class="nav-logo">CARTOGRAFUNK</a>
+    <ul class="nav-links">
+      <li><a href="servicios.html">Servicios</a></li>
+      <li><a href="cursos.html">Cursos</a></li>
+      <li><a href="daft-metro.html">Daft Metro</a></li>
+      <li><a href="proyectos.html">Proyectos</a></li>
+      <li><a href="reporte-agua.html" aria-current="page">Reporte de agua</a></li>
+      <li><a href="nosotros.html">Nosotros</a></li>
+      <li><a href="nosotros.html#contacto">Contacto</a></li>
+      <li><a href="marcas.html">Media kit</a></li>
+      <li><a href="actualidad.html">Actualidad</a></li>
+    </ul>
+  </nav>
+
+  <main id="contenido" class="agua-wrap">
+    <header class="agua-hero">
+      <p class="s-tag section-kicker">Guadalajara y área metropolitana</p>
+      <h1 class="s-title section-title">DOCUMENTA LO QUE PASA CON EL <em>AGUA</em></h1>
+      <p>Comparte una foto, una nota y el lugar donde observaste un problema. Revisamos cada reporte antes de mostrarlo en el mapa.</p>
+      <p class="agua-notice"><strong>Esta herramienta ciudadana no es una denuncia formal.</strong> Si necesitas atención de una autoridad, usa los canales oficiales al final del formulario.</p>
+      <a href="#mapa-publico" class="btn btn-secondary agua-hero-link">Ver reportes publicados</a>
+    </header>
+
+    <section class="agua-card" aria-labelledby="formTitle">
+      <div class="agua-card-head">
+        <div>
+          <p class="agua-eyebrow">Reporte anónimo por defecto</p>
+          <h2 id="formTitle">Envía un reporte</h2>
+        </div>
+        <span id="pasoActual" aria-live="polite">Paso 1 de 4</span>
+      </div>
+      <ol class="agua-progress" aria-label="Pasos del reporte">
+        <li aria-current="step">Lugar</li><li>Foto</li><li>Descripción</li><li>Confirmación</li>
+      </ol>
+      <p class="agua-help">El lugar y la nota se guardan como borrador en este navegador. La foto y los datos de contacto no se guardan aquí.</p>
+
+      <form id="reporteAguaForm" novalidate>
+        <section class="agua-step" data-step="1" aria-labelledby="paso1Title">
+          <h3 id="paso1Title">1. Marca el lugar</h3>
+          <p>Usa tu ubicación o busca una dirección. Después mueve el pin al punto que quieras reportar.</p>
+          <button type="button" id="usarUbicacion" class="agua-button agua-secondary">Usar mi ubicación</button>
+          <div class="agua-field">
+            <label for="buscarDireccion">Buscar dirección o colonia</label>
+            <div class="agua-inline">
+              <input id="buscarDireccion" type="search" autocomplete="street-address" placeholder="Ej. colonia Americana, Guadalajara">
+              <button type="button" id="buscarDireccionBoton" class="agua-button agua-secondary">Buscar</button>
+            </div>
+            <ul id="resultadosDireccion" class="agua-results" aria-label="Resultados de búsqueda"></ul>
+          </div>
+          <div id="mapaPin" class="agua-map" role="application" aria-label="Mapa para ajustar la ubicación del reporte"></div>
+          <p id="ubicacionTexto" class="agua-help" aria-live="polite">Toca el mapa para poner el pin.</p>
+          <button type="button" id="confirmarUbicacion" class="agua-button agua-secondary">Confirmar este punto</button>
+          <div class="agua-field"><label for="calleTexto">Referencia de calle (opcional; no se publicará)</label><input id="calleTexto" name="calle_texto" maxlength="200" autocomplete="off"></div>
+        </section>
+
+        <section class="agua-step" data-step="2" aria-labelledby="paso2Title" hidden>
+          <h3 id="paso2Title">2. Agrega una foto</h3>
+          <p>La foto ayuda a documentar el problema. <strong>No fotografíes personas, rostros ni placas.</strong></p>
+          <div class="agua-field"><label for="fotoReporte">Foto del agua o del lugar</label><input id="fotoReporte" name="foto" type="file" accept="image/*" capture="environment" required></div>
+          <img id="fotoVista" class="agua-preview" alt="Vista previa de la foto elegida" hidden>
+          <p id="fotoTexto" class="agua-help" aria-live="polite">La imagen se reducirá a aproximadamente 1600 píxeles y se quitarán sus metadatos.</p>
+        </section>
+
+        <section class="agua-step" data-step="3" aria-labelledby="paso3Title" hidden>
+          <h3 id="paso3Title">3. Cuéntanos qué observaste</h3>
+          <div class="agua-field"><label for="categoriaReporte">Categoría</label><select id="categoriaReporte" name="categoria_id" required><option value="">Selecciona una categoría</option></select></div>
+          <div class="agua-field"><label for="notaReporte">Nota breve</label><textarea id="notaReporte" name="nota" rows="5" maxlength="500" required placeholder="Describe lo que viste u oliste"></textarea><span id="notaCuenta" class="agua-help">0 de 500 caracteres</span></div>
+          <div class="agua-field"><label for="fechaReporte">Fecha aproximada de observación</label><input id="fechaReporte" name="fecha_observacion" type="date" required></div>
+        </section>
+
+        <section class="agua-step" data-step="4" aria-labelledby="paso4Title" hidden>
+          <h3 id="paso4Title">4. Confirma el envío</h3>
+          <p class="agua-notice">Esto es documentación ciudadana y <strong>no es una denuncia formal</strong>. Para reportar ante una autoridad, consulta:</p>
+          <ul class="agua-links">
+            <li><a href="https://proepa.jalisco.gob.mx/denuncia.html" target="_blank" rel="noopener noreferrer">PROEPA Jalisco</a></li>
+            <li><a href="https://www.gob.mx/profepa/articulos/denuncia-ante-la-profepa?state=published" target="_blank" rel="noopener noreferrer">PROFEPA</a></li>
+            <li><a href="https://www.ceajalisco.gob.mx/" target="_blank" rel="noopener noreferrer">CEA Jalisco</a></li>
+            <li><a href="https://www.siapa.gob.mx/" target="_blank" rel="noopener noreferrer">SIAPA</a></li>
+            <li><a href="https://cedhj.org.mx/" target="_blank" rel="noopener noreferrer">CEDHJ</a></li>
+          </ul>
+          <p>El reporte es anónimo. Si quieres que podamos contactarte, deja un medio de contacto:</p>
+          <div class="agua-field"><label for="emailReporte">Correo (opcional)</label><input id="emailReporte" name="email" type="email" autocomplete="email"></div>
+          <div class="agua-field"><label for="telefonoReporte">Teléfono (opcional)</label><input id="telefonoReporte" name="telefono" type="tel" autocomplete="tel"></div>
+          <label class="agua-check"><input id="consentimientoContacto" type="checkbox"> Acepto que Cartografunk use estos datos solo para contactarme por este reporte.</label>
+          <p>Antes de enviar, lee el <a href="privacidad.html#reporte-agua" target="_blank" rel="noopener noreferrer">aviso de privacidad del reporte de agua</a>. Tu ubicación exacta y tu contacto no aparecen en el mapa. La ubicación pública se mueve a una cuadrícula de aproximadamente 150 m.</p>
+          <label class="agua-check"><input id="consentimientoPublicacion" type="checkbox" required> Acepto que mi nota, foto y ubicación aproximada puedan publicarse después de la revisión.</label>
+          <div id="turnstileWidget" class="agua-turnstile" aria-label="Verificación de seguridad"></div>
+          <p id="turnstileAyuda" class="agua-help">Cargando verificación de seguridad…</p>
+        </section>
+
+        <p id="formEstado" role="status" aria-live="polite" class="agua-status"></p>
+        <div class="agua-actions">
+          <button type="button" id="pasoAnterior" class="agua-button agua-secondary" hidden>Anterior</button>
+          <button type="button" id="pasoSiguiente" class="agua-button">Siguiente</button>
+          <button type="submit" id="enviarReporte" class="agua-button" hidden>Enviar reporte</button>
+        </div>
+      </form>
+      <div id="reporteExito" class="agua-success" role="status" hidden>
+        <h3>Recibimos tu reporte</h3>
+        <p>Guarda tu folio: <strong id="folioReporte"></strong></p>
+        <p>Lo revisaremos antes de publicarlo en el mapa.</p>
+      </div>
+    </section>
+
+    <section id="mapa-publico" class="agua-card" aria-labelledby="mapaTitle">
+      <div class="agua-card-head"><div><p class="agua-eyebrow">Mapa público</p><h2 id="mapaTitle">Reportes revisados</h2></div></div>
+      <p>Solo aparecen reportes publicados. El pin muestra una ubicación aproximada.</p>
+      <div id="mapaPublico" class="agua-map agua-map-public" role="application" aria-label="Mapa de reportes publicados"></div>
+      <p id="mapaEstado" class="agua-help" role="status" aria-live="polite">Cargando reportes…</p>
+    </section>
+  </main>
+  <footer class="agua-footer">
+    <a href="index.html" class="footer-logo">CARTOGRAFUNK</a>
+    <span class="footer-copy">© 2022 · MX · MAPAS PA' QUE SE LO GOCEN</span>
+    <a href="privacidad.html" class="footer-copy">Privacidad</a>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
+  <script src="assets/js/supabase-config.js"></script>
+  <script src="assets/js/reporte-agua-config.js"></script>
+  <script src="assets/js/reporte-agua.js"></script>
+</body>
+</html>
