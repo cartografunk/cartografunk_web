@@ -89,8 +89,6 @@
 .agua-actions { display: flex; justify-content: flex-end; gap: .7rem; margin-top: 1.6rem; }
 .agua-map { height: min(55vh, 440px); min-height: 300px; border: 1px solid var(--border); overflow: hidden; background: #dce8ea; }
 .agua-map-public { height: min(65vh, 520px); }
-.agua-pin-controls { display: flex; flex-wrap: wrap; gap: .5rem; margin: .8rem 0 1rem; }
-.agua-pin-controls .agua-button { flex: 1 1 9rem; padding: .6rem .75rem; letter-spacing: .04em; }
 .agua-help { margin: .65rem 0; color: var(--muted); font-size: .9rem; }
 .agua-results { list-style: none; margin: .4rem 0; padding: 0; }
 .agua-results button { width: 100%; margin: .2rem 0; border: 1px solid var(--border); padding: .65rem .8rem; background: var(--surface); color: var(--white); font: 400 var(--fs-ui)/1.5 var(--font-mono); text-align: left; cursor: pointer; }

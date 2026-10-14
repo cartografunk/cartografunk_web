@@ -85,21 +85,6 @@
     saveDraft();
   }
   pinMap.on('click', event => putPin(event.latlng.lat, event.latlng.lng, pinMap.getZoom()));
-  document.querySelectorAll('[data-mover-pin]').forEach(button => {
-    button.addEventListener('click', () => {
-      const inicio = state.lat === null || state.lng === null
-        ? pinMap.getCenter() : { lat: state.lat, lng: state.lng };
-      const pasoLat = 0.00009;
-      const pasoLng = pasoLat / Math.cos(inicio.lat * Math.PI / 180);
-      const movimiento = button.dataset.moverPin;
-      putPin(
-        inicio.lat + (movimiento === 'arriba' ? pasoLat : movimiento === 'abajo' ? -pasoLat : 0),
-        inicio.lng + (movimiento === 'derecha' ? pasoLng : movimiento === 'izquierda' ? -pasoLng : 0),
-        pinMap.getZoom(),
-      );
-      status('Pin movido. Confirma el punto antes de seguir.', 'success');
-    });
-  });
   $('confirmarUbicacion').addEventListener('click', () => {
     if (state.lat === null || state.lng === null) { status('Primero marca un punto en el mapa.'); return; }
     if (state.lat < areaProvisional.minLat || state.lat > areaProvisional.maxLat
