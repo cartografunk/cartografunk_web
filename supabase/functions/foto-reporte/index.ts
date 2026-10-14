@@ -1,17 +1,17 @@
 import { json, preflight, rpc, serviceConfig, serviceHeaders } from '../_shared/reporte-agua.ts'
 
-const FOLIO = /^AGUA-[0-9]{8}-[A-F0-9]{12}$/
+const PUBLIC_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 Deno.serve(async (request) => {
   const options = preflight(request, 'GET, OPTIONS')
   if (options) return options
   if (request.method !== 'GET') return json(request, { error: 'Método no permitido.' }, 405, 'GET, OPTIONS')
 
-  const folio = new URL(request.url).searchParams.get('folio') ?? ''
-  if (!FOLIO.test(folio)) return json(request, { error: 'Foto no disponible.' }, 404, 'GET, OPTIONS')
+  const publicId = new URL(request.url).searchParams.get('public_id') ?? ''
+  if (!PUBLIC_ID.test(publicId)) return json(request, { error: 'Foto no disponible.' }, 404, 'GET, OPTIONS')
 
   try {
-    const ruta = await rpc<string | null>('ruta_foto_reporte_agua', { p_folio: folio })
+    const ruta = await rpc<string | null>('ruta_foto_reporte_agua', { p_public_id: publicId })
     if (!ruta) return json(request, { error: 'Foto no disponible.' }, 404, 'GET, OPTIONS')
 
     const { url, key } = serviceConfig()

@@ -59,6 +59,9 @@
 .agua-eyebrow { margin: 0 0 .65rem; color: var(--purple-bright); font: 500 var(--fs-tag)/1.5 var(--font-mono); letter-spacing: .22em; text-transform: uppercase; }
 .agua-card h2 { margin: 0; font: 800 clamp(1.7rem, 3.5vw, 2.7rem)/1.05 var(--font-display); }
 .agua-card h3 { margin: 1rem 0 .7rem; font: 700 clamp(1.2rem, 2vw, 1.5rem)/1.2 var(--font-display); }
+#como-revisamos ul { max-width: 70ch; padding-left: 1.4rem; color: var(--muted); }
+#como-revisamos li { margin: .55rem 0; }
+#como-revisamos p { max-width: 75ch; }
 #pasoActual { color: var(--purple-bright); font: 500 var(--fs-ui)/1.5 var(--font-mono); letter-spacing: .08em; white-space: nowrap; text-transform: uppercase; }
 .agua-progress { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .6rem; list-style: none; counter-reset: paso; margin: 2rem 0 1.5rem; }
 .agua-progress li { counter-increment: paso; border-top: 2px solid var(--border); padding: .75rem 0; color: var(--muted); font: 400 var(--fs-ui)/1.45 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; }
@@ -86,6 +89,8 @@
 .agua-actions { display: flex; justify-content: flex-end; gap: .7rem; margin-top: 1.6rem; }
 .agua-map { height: min(55vh, 440px); min-height: 300px; border: 1px solid var(--border); overflow: hidden; background: #dce8ea; }
 .agua-map-public { height: min(65vh, 520px); }
+.agua-pin-controls { display: flex; flex-wrap: wrap; gap: .5rem; margin: .8rem 0 1rem; }
+.agua-pin-controls .agua-button { flex: 1 1 9rem; padding: .6rem .75rem; letter-spacing: .04em; }
 .agua-help { margin: .65rem 0; color: var(--muted); font-size: .9rem; }
 .agua-results { list-style: none; margin: .4rem 0; padding: 0; }
 .agua-results button { width: 100%; margin: .2rem 0; border: 1px solid var(--border); padding: .65rem .8rem; background: var(--surface); color: var(--white); font: 400 var(--fs-ui)/1.5 var(--font-mono); text-align: left; cursor: pointer; }
@@ -105,6 +110,7 @@
 .agua-page .leaflet-popup-content-wrapper,
 .agua-page .leaflet-popup-tip { background: #fff; color: #172b34; }
 .agua-page .leaflet-popup-content { max-width: 220px; overflow-wrap: anywhere; }
+.agua-popup-label { display: block; margin-bottom: .45rem; color: #365974; font-weight: 700; }
 .agua-page .leaflet-popup-content img { display: block; max-width: 100%; margin-top: .6rem; }
 
 @media (max-width: 900px) {

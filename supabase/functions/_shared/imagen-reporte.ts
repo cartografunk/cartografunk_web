@@ -68,15 +68,15 @@ function webpSeguro(bytes: Uint8Array): boolean {
       || decoder.decode(bytes.slice(8, 12)) !== 'WEBP') return false
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
   if (view.getUint32(4, true) !== bytes.length - 8) return false
-  const permitidos = new Set(['VP8 ', 'VP8L', 'VP8X', 'ALPH', 'ANIM', 'ANMF'])
+  const permitidos = new Set(['VP8 ', 'VP8L', 'VP8X', 'ALPH'])
   let offset = 12
   let encontroImagen = false
   while (offset + 8 <= bytes.length) {
     const tipo = decoder.decode(bytes.slice(offset, offset + 4))
     const length = view.getUint32(offset + 4, true)
     if (!permitidos.has(tipo) || length > bytes.length - offset - 8) return false
-    if (tipo === 'VP8X' && (length < 10 || (bytes[offset + 8] & 0x2c) !== 0)) return false
-    if (tipo === 'VP8 ' || tipo === 'VP8L' || tipo === 'ANMF') encontroImagen = true
+    if (tipo === 'VP8X' && (length < 10 || (bytes[offset + 8] & 0x2e) !== 0)) return false
+    if (tipo === 'VP8 ' || tipo === 'VP8L') encontroImagen = true
     offset += 8 + length + (length % 2)
   }
   return encontroImagen && offset === bytes.length

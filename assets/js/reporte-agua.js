@@ -4,22 +4,63 @@
   if (!form || !config || !window.L) return;
 
   const $ = id => document.getElementById(id);
+  const fotoAyudaInicial = $('fotoTexto').textContent;
   const draftKey = 'cartografunk.reporteAgua.borrador.v1';
   const center = [20.674, -103.35];
   const areaProvisional = { minLat: 20.35, maxLat: 21, minLng: -103.85, maxLng: -102.95 };
   const state = { step: 1, lat: null, lng: null, locationConfirmed: false, photo: null, photoUrl: null, turnstile: '', widget: null, sending: false };
   const steps = [...document.querySelectorAll('.agua-step')];
   const progress = [...document.querySelectorAll('.agua-progress li')];
-  const today = new Date();
-  $('fechaReporte').value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  const todayParts = Object.fromEntries(new Intl.DateTimeFormat('es-MX', {
+    timeZone: 'America/Mexico_City', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(new Date()).map(part => [part.type, part.value]));
+  const today = `${todayParts.year}-${todayParts.month}-${todayParts.day}`;
+  $('fechaReporte').max = today;
+  $('fechaReporte').value = today;
 
   const pinMap = L.map('mapaPin', { scrollWheelZoom: false }).setView(center, 12);
   const publicMap = L.map('mapaPublico', { scrollWheelZoom: false }).setView(center, 11);
   for (const map of [pinMap, publicMap]) {
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      maxZoom: 20,
+      attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
     }).addTo(map);
+  }
+  function baseStatus(message) {
+    $('mapaBaseEstado').textContent = message;
+    $('mapaPublicoBaseEstado').textContent = message;
+  }
+  async function activarGoogle() {
+    const mapsKey = window.CARTOGRAFUNK_GOOGLE_MAPS_BROWSER_KEY?.trim();
+    if (!mapsKey) { baseStatus('Mapa alternativo disponible.'); return; }
+    const googleLayers = [];
+    let authFailed = false;
+    window.gm_authFailure = () => {
+      authFailed = true;
+      for (const [map, layer] of googleLayers) map.removeLayer(layer);
+      baseStatus('Google Maps no está disponible. Mostramos un mapa alternativo.');
+    };
+    try {
+      await new Promise((resolve, reject) => {
+        const callback = '__cartografunkGoogleMapsReady';
+        const script = document.createElement('script');
+        const timer = setTimeout(() => { window[callback] = () => {}; reject(new Error('Tiempo de espera agotado')); }, 15000);
+        window[callback] = () => { clearTimeout(timer); delete window[callback]; resolve(); };
+        script.onerror = () => { clearTimeout(timer); delete window[callback]; reject(new Error('No se pudo cargar Google Maps')); };
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(mapsKey)}&v=weekly&language=es&region=MX&loading=async&callback=${callback}`;
+        script.async = true;
+        document.head.append(script);
+      });
+      if (authFailed || !window.google?.maps || !L.gridLayer.googleMutant) throw new Error('Google Maps no disponible');
+      for (const map of [pinMap, publicMap]) {
+        const layer = L.gridLayer.googleMutant({ type: 'roadmap', maxZoom: 20 }).addTo(map);
+        googleLayers.push([map, layer]);
+      }
+      baseStatus('');
+    } catch {
+      for (const [map, layer] of googleLayers) map.removeLayer(layer);
+      baseStatus('Google Maps no está disponible. Mostramos un mapa alternativo.');
+    }
   }
   let pin = null;
 
@@ -40,10 +81,25 @@
       });
     } else pin.setLatLng([lat, lng]);
     pinMap.setView([lat, lng], zoom);
-    $('ubicacionTexto').textContent = `Pin en ${lat.toFixed(5)}, ${lng.toFixed(5)}. Muévelo si hace falta y confirma el punto.`;
+    $('ubicacionTexto').textContent = 'Pin colocado. Muévelo si hace falta y confirma el punto.';
     saveDraft();
   }
   pinMap.on('click', event => putPin(event.latlng.lat, event.latlng.lng, pinMap.getZoom()));
+  document.querySelectorAll('[data-mover-pin]').forEach(button => {
+    button.addEventListener('click', () => {
+      const inicio = state.lat === null || state.lng === null
+        ? pinMap.getCenter() : { lat: state.lat, lng: state.lng };
+      const pasoLat = 0.00009;
+      const pasoLng = pasoLat / Math.cos(inicio.lat * Math.PI / 180);
+      const movimiento = button.dataset.moverPin;
+      putPin(
+        inicio.lat + (movimiento === 'arriba' ? pasoLat : movimiento === 'abajo' ? -pasoLat : 0),
+        inicio.lng + (movimiento === 'derecha' ? pasoLng : movimiento === 'izquierda' ? -pasoLng : 0),
+        pinMap.getZoom(),
+      );
+      status('Pin movido. Confirma el punto antes de seguir.', 'success');
+    });
+  });
   $('confirmarUbicacion').addEventListener('click', () => {
     if (state.lat === null || state.lng === null) { status('Primero marca un punto en el mapa.'); return; }
     if (state.lat < areaProvisional.minLat || state.lat > areaProvisional.maxLat
@@ -51,7 +107,7 @@
       status('El punto está fuera del área provisional de Guadalajara. Ajusta el pin.'); return;
     }
     state.locationConfirmed = true;
-    $('ubicacionTexto').textContent = `Punto confirmado: ${state.lat.toFixed(5)}, ${state.lng.toFixed(5)}.`;
+    $('ubicacionTexto').textContent = 'Punto confirmado. La ubicación exacta no aparecerá en el mapa público.';
     status('Punto confirmado. Ya puedes seguir.', 'success');
   });
 
@@ -93,7 +149,8 @@
     }
     if (step === 3) {
       const note = $('notaReporte').value.trim();
-      if (!$('categoriaReporte').value || !note || note.length > 500 || !$('fechaReporte').value) {
+      if (!$('categoriaReporte').value || !note || note.length > 500
+          || !$('fechaReporte').value || $('fechaReporte').value > today) {
         status('Selecciona una categoría, escribe una nota y elige la fecha.'); return false;
       }
     }
@@ -218,6 +275,29 @@
       $('notaCuenta').textContent = `${$('notaReporte').value.length} de 500 caracteres`;
     } catch { /* Un borrador dañado no debe impedir el formulario. */ }
   }
+  $('borrarBorrador').addEventListener('click', () => {
+    try { localStorage.removeItem(draftKey); } catch { /* El navegador puede bloquear almacenamiento local. */ }
+    form.reset();
+    state.lat = null;
+    state.lng = null;
+    state.locationConfirmed = false;
+    state.photo = null;
+    state.turnstile = '';
+    if (state.photoUrl) URL.revokeObjectURL(state.photoUrl);
+    state.photoUrl = null;
+    if (pin) { pin.remove(); pin = null; }
+    pinMap.setView(center, 12);
+    $('fechaReporte').value = today;
+    $('notaCuenta').textContent = '0 de 500 caracteres';
+    $('fotoVista').hidden = true;
+    $('fotoVista').removeAttribute('src');
+    $('fotoTexto').textContent = fotoAyudaInicial;
+    $('ubicacionTexto').textContent = 'Toca el mapa para poner el pin.';
+    $('resultadosDireccion').replaceChildren();
+    if (state.widget !== null && window.turnstile) window.turnstile.reset(state.widget);
+    showStep(1, false);
+    status('Borrador borrado.', 'success');
+  });
   form.addEventListener('input', event => {
     if (event.target.id === 'notaReporte') $('notaCuenta').textContent = `${$('notaReporte').value.length} de 500 caracteres`;
     saveDraft();
@@ -304,6 +384,9 @@
 
   function popupContent(row) {
     const box = document.createElement('div');
+    const label = document.createElement('small');
+    label.className = 'agua-popup-label';
+    label.textContent = 'Reporte ciudadano · no verificado';
     const title = document.createElement('strong');
     title.textContent = row.categoria_nombre;
     const note = document.createElement('p');
@@ -312,15 +395,15 @@
     date.textContent = new Date(row.fecha_observacion).toLocaleDateString('es-MX', { timeZone: 'UTC' });
     const photo = document.createElement('div');
     photo.textContent = 'Cargando foto…';
-    box.append(title, note, date, photo);
-    fetch(`${config.url}/functions/v1/foto-reporte?folio=${encodeURIComponent(row.folio)}`, {
+    box.append(label, title, note, date, photo);
+    fetch(`${config.url}/functions/v1/foto-reporte?public_id=${encodeURIComponent(row.public_id)}`, {
       headers: { apikey: config.publishableKey },
     }).then(async response => {
       if (!response.ok) throw new Error('Foto no disponible');
       const body = await response.json();
       const img = document.createElement('img');
       img.src = body.url;
-      img.alt = `Foto del reporte ${row.folio}`;
+      img.alt = 'Foto de una observación ciudadana del agua';
       img.loading = 'lazy';
       img.onerror = () => { photo.textContent = 'No se pudo cargar la foto.'; };
       photo.replaceChildren(img);
@@ -335,7 +418,7 @@
     try {
       for (let page = 0; page < 20; page++) {
         const from = page * 500;
-        const response = await fetch(`${config.url}/rest/v1/reportes_agua_publicos?select=folio,geom_publica,categoria_nombre,nota,fecha_observacion&order=created_at.desc&limit=500&offset=${from}`, {
+        const response = await fetch(`${config.url}/rest/v1/reportes_agua_publicos?select=public_id,geom_publica,categoria_nombre,nota,fecha_observacion&order=created_at.desc&limit=500&offset=${from}`, {
           headers: { apikey: config.publishableKey },
         });
         if (!response.ok) throw new Error('No se pudo cargar el mapa.');
@@ -361,4 +444,5 @@
   loadTurnstile();
   loadPublicMap();
   showStep(1, false);
+  activarGoogle();
 })();

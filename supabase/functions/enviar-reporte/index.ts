@@ -7,6 +7,10 @@ import { validarFoto } from '../_shared/imagen-reporte.ts'
 type Categoria = { id: string; codigo: string; nombre: string }
 const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const MAX_MULTIPART = 6 * 1024 * 1024
+const hostnamesTurnstile = new Set([
+  'cartografunk.com', 'www.cartografunk.com', 'cartografunk.github.io',
+  'localhost', '127.0.0.1',
+])
 
 function texto(data: FormData, key: string): string {
   const value = data.get(key)
@@ -50,8 +54,16 @@ async function verificarTurnstile(token: string): Promise<boolean> {
     body: new URLSearchParams({ secret, response: token }),
   })
   if (!response.ok) throw new Error('No se pudo verificar Turnstile')
-  const result = await response.json() as { success?: boolean }
-  return result.success === true
+  const result = await response.json() as { success?: boolean; action?: string; hostname?: string }
+  return result.success === true && result.action === 'enviar_reporte'
+    && typeof result.hostname === 'string' && hostnamesTurnstile.has(result.hostname)
+}
+
+function hoyEnGuadalajara(): string {
+  const parts = Object.fromEntries(new Intl.DateTimeFormat('es-MX', {
+    timeZone: 'America/Mexico_City', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(new Date()).map(part => [part.type, part.value]))
+  return `${parts.year}-${parts.month}-${parts.day}`
 }
 
 Deno.serve(async (request) => {
@@ -81,9 +93,11 @@ Deno.serve(async (request) => {
     const categoriaId = texto(data, 'categoria_id')
     const nota = texto(data, 'nota')
     const calle = texto(data, 'calle_texto')
-    const fecha = new Date(texto(data, 'fecha_observacion'))
-    const email = texto(data, 'email')
-    const telefono = texto(data, 'telefono')
+    const fechaTexto = texto(data, 'fecha_observacion')
+    const fecha = new Date(`${fechaTexto}T12:00:00Z`)
+    const contactoAutorizado = texto(data, 'consentimiento_contacto') === 'si'
+    const email = contactoAutorizado ? texto(data, 'email') : ''
+    const telefono = contactoAutorizado ? texto(data, 'telefono') : ''
     const token = texto(data, 'turnstile_token')
     const foto = data.get('foto')
 
@@ -91,7 +105,9 @@ Deno.serve(async (request) => {
     if (!ID.test(categoriaId) || nota.length < 1 || nota.length > 500 || calle.length > 200) {
       return json(request, { error: 'Revisa la categoría, la nota y la calle.' }, 400)
     }
-    if (Number.isNaN(fecha.getTime()) || fecha.getTime() > Date.now() + 86400000
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(fechaTexto)
+        || Number.isNaN(fecha.getTime()) || fecha.toISOString().slice(0, 10) !== fechaTexto
+        || fechaTexto > hoyEnGuadalajara()
         || fecha.getTime() < Date.now() - 366 * 86400000) {
       return json(request, { error: 'Revisa la fecha aproximada.' }, 400)
     }
@@ -99,8 +115,7 @@ Deno.serve(async (request) => {
         || (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) {
       return json(request, { error: 'Revisa los datos de contacto.' }, 400)
     }
-    if (texto(data, 'consentimiento_publicacion') !== 'si'
-        || ((email || telefono) && texto(data, 'consentimiento_contacto') !== 'si')) {
+    if (texto(data, 'consentimiento_publicacion') !== 'si') {
       return json(request, { error: 'Falta tu consentimiento.' }, 400)
     }
     if (!token || token.length > 2048 || !(foto instanceof File)) {
@@ -117,7 +132,11 @@ Deno.serve(async (request) => {
     try {
       validada = await validarFoto(foto)
     } catch (error) {
-      return json(request, { error: error instanceof Error ? error.message : 'La foto no es válida.' }, 400)
+      const message = error instanceof Error && [
+        'La foto debe pesar menos de 5 MB.',
+        'La foto debe ser JPEG, PNG o WebP, sin metadatos de ubicación.',
+      ].includes(error.message) ? error.message : 'La foto no es válida.'
+      return json(request, { error: message }, 400)
     }
 
     const id = crypto.randomUUID()
@@ -143,7 +162,7 @@ Deno.serve(async (request) => {
         p_foto_ruta: ruta,
         p_email: email || null,
         p_telefono: telefono || null,
-        p_consentimiento_contacto_at: email || telefono ? new Date().toISOString() : null,
+        p_consentimiento_contacto_at: contactoAutorizado && (email || telefono) ? new Date().toISOString() : null,
       })
       return json(request, { folio }, 201)
     } catch (error) {

@@ -1,4 +1,4 @@
-import { cp, mkdir, rm } from "node:fs/promises";
+import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import path from "node:path";
 
@@ -43,6 +43,20 @@ for (const dir of directories) {
   if (existsSync(path.join(root, dir))) {
     await cp(path.join(root, dir), path.join(dist, dir), { recursive: true });
   }
+}
+
+const browserMapsKey = process.env.GOOGLE_MAPS_BROWSER_KEY?.trim();
+if (browserMapsKey) {
+  const waterConfigPath = path.join(dist, "assets/js/reporte-agua-config.js");
+  const waterConfig = await readFile(waterConfigPath, "utf8");
+  const keyAssignment = "window.CARTOGRAFUNK_GOOGLE_MAPS_BROWSER_KEY = '';";
+  if (!waterConfig.includes(keyAssignment)) {
+    throw new Error("No se encontró la configuración de Google Maps en reporte-agua-config.js.");
+  }
+  await writeFile(
+    waterConfigPath,
+    waterConfig.replace(keyAssignment, `window.CARTOGRAFUNK_GOOGLE_MAPS_BROWSER_KEY = ${JSON.stringify(browserMapsKey)};`),
+  );
 }
 
 await mkdir(path.join(dist, "data"), { recursive: true });

@@ -8,7 +8,9 @@ los datos del reporte y su estado de moderación. `colonia_id` es texto nullable
 y todavía no tiene llave foránea. `reporte_contacto` guarda el contacto opcional
 y la fecha de consentimiento, separado del reporte.
 
-El navegador solo puede leer `public.reportes_agua_publicos`. Un trigger copia
+El navegador solo puede leer `public.reportes_agua_publicos`. La migración
+`20261014205636_reporte_agua_public_id.sql` agrega un `public_id` aleatorio y
+quita el folio y el ID interno de esa tabla. Un trigger copia
 allí los campos seguros de reportes `publicado` y retira la fila si cambia su
 estado. Las tablas privadas tienen RLS activado y no conceden acceso a `anon`
 ni `authenticated`. Tampoco hay inserción directa desde el navegador; la
@@ -16,7 +18,7 @@ Edge Function de la Fase 2 usará `service_role` mediante una RPC restringida
 para escribir, sin exponer el esquema privado en la Data API.
 
 Las fotos se guardan en el bucket privado `reporte-agua-fotos`. La Edge Function
-`foto-reporte` comprueba el estado antes de entregar una URL firmada por dos
+`foto-reporte` recibe `public_id` y comprueba el estado antes de entregar una URL firmada por dos
 minutos. La migración no depende de `colonias`, `calles` ni
 `colonia_de_punto`.
 

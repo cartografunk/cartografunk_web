@@ -103,6 +103,13 @@ Build output directory: dist
 Root directory: leave empty
 ```
 
+Para el mapa de reportes de agua, agrega `GOOGLE_MAPS_BROWSER_KEY` a las variables
+del entorno de build de Cloudflare. Debe ser una clave de navegador con Maps
+JavaScript API habilitada y restringida por referencias HTTP a
+`https://cartografunk.com/*` y `https://www.cartografunk.com/*`. El build la
+inserta en `dist/assets/js/reporte-agua-config.js`; no uses aquí la clave
+privada de Geocoding guardada en Supabase.
+
 If Cloudflare shows a Workers-style setup instead of Pages, keep:
 
 ```text

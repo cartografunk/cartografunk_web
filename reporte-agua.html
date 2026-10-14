@@ -33,11 +33,11 @@
 
   <main id="contenido" class="agua-wrap">
     <header class="agua-hero">
-      <p class="s-tag section-kicker">Guadalajara y área metropolitana</p>
-      <h1 class="s-title section-title">Contaminación del agua potable: Guadalajara</h1>
-      <p>Comparte una foto, una nota y el lugar donde observaste un problema</p>
-      <p class="agua-notice"><strong>Esta herramienta ciudadana no es una denuncia formal </br>
-      </strong> La idea es crear una base de datos sobre la contaminación del agua potable en Guadalajara mediante monitoreo ciudadano</p>
+      <p class="s-tag section-kicker">Guadalajara y zona metropolitana</p>
+      <h1 class="s-title section-title">Reporte ciudadano del agua en Guadalajara</h1>
+      <p>Si viste, oliste o notaste algo extraño en el agua, puedes documentarlo aquí con una foto, una nota y la ubicación. Los reportes revisados forman un mapa abierto para entender mejor lo que ocurre en la ciudad.</p>
+      <p class="agua-notice"><strong>Qué es y qué no es.</strong> Es una herramienta de documentación ciudadana. No sustituye una denuncia ante las autoridades ni un análisis de laboratorio: los reportes son observaciones de personas y no acreditan por sí solos la calidad del agua ni la responsabilidad de nadie. Si hay un riesgo inmediato para la salud, acude a las autoridades o llama al 911.</p>
+      <p>Tu reporte es anónimo. No te pedimos nombre; dejar un medio de contacto es opcional.</p>
       <a href="#mapa-publico" class="btn btn-secondary agua-hero-link">Ver reportes publicados</a>
     </header>
 
@@ -52,13 +52,15 @@
       <ol class="agua-progress" aria-label="Pasos del reporte">
         <li aria-current="step">Lugar</li><li>Foto</li><li>Descripción</li><li>Confirmación</li>
       </ol>
-      <p class="agua-help">El lugar y la nota se guardan como borrador en este navegador. La foto y los datos de contacto no se guardan aquí.</p>
+      <p class="agua-help">Mientras escribes, el lugar y la nota se guardan como borrador solo en este navegador, por si pierdes señal. La foto y el contacto no se guardan. Puedes borrar el borrador cuando quieras.</p>
+      <button type="button" id="borrarBorrador" class="agua-button agua-secondary">Borrar borrador</button>
 
       <form id="reporteAguaForm" novalidate>
         <section class="agua-step" data-step="1" aria-labelledby="paso1Title">
           <h3 id="paso1Title">1. Marca el lugar</h3>
-          <p>Usa tu ubicación o busca una dirección. Después mueve el pin al punto que quieras reportar.</p>
+          <p>Usa tu ubicación o busca una dirección, y mueve el pin al punto que quieres reportar. Guardamos la ubicación exacta solo para revisar el reporte; en el mapa público se muestra desplazada a una cuadrícula de unos 150 m.</p>
           <button type="button" id="usarUbicacion" class="agua-button agua-secondary">Usar mi ubicación</button>
+          <p class="agua-help">Tu navegador te pedirá permiso. Si prefieres no compartirla, busca una dirección o toca el mapa.</p>
           <div class="agua-field">
             <label for="buscarDireccion">Buscar dirección o colonia</label>
             <div class="agua-inline">
@@ -68,29 +70,37 @@
             <ul id="resultadosDireccion" class="agua-results" aria-label="Resultados de búsqueda"></ul>
           </div>
           <div id="mapaPin" class="agua-map" role="application" aria-label="Mapa para ajustar la ubicación del reporte"></div>
+          <p id="mapaBaseEstado" class="agua-help" role="status" aria-live="polite"></p>
           <p id="ubicacionTexto" class="agua-help" aria-live="polite">Toca el mapa para poner el pin.</p>
+          <div class="agua-pin-controls" role="group" aria-label="Mover el pin con teclado">
+            <button type="button" class="agua-button agua-secondary" data-mover-pin="arriba">Arriba ↑</button>
+            <button type="button" class="agua-button agua-secondary" data-mover-pin="abajo">Abajo ↓</button>
+            <button type="button" class="agua-button agua-secondary" data-mover-pin="izquierda">Izquierda ←</button>
+            <button type="button" class="agua-button agua-secondary" data-mover-pin="derecha">Derecha →</button>
+          </div>
           <button type="button" id="confirmarUbicacion" class="agua-button agua-secondary">Confirmar este punto</button>
-          <div class="agua-field"><label for="calleTexto">Referencia de calle (opcional; no se publicará)</label><input id="calleTexto" name="calle_texto" maxlength="200" autocomplete="off"></div>
+          <div class="agua-field"><label for="calleTexto">Referencia de calle (opcional; solo para revisión, no se publica)</label><input id="calleTexto" name="calle_texto" maxlength="200" autocomplete="off"></div>
         </section>
 
         <section class="agua-step" data-step="2" aria-labelledby="paso2Title" hidden>
           <h3 id="paso2Title">2. Agrega una foto</h3>
-          <p>La foto ayuda a documentar el problema. <strong>No fotografíes personas, rostros ni placas.</strong></p>
+          <p>Una foto ayuda a documentar lo que observaste. Procura que no aparezcan personas, rostros, placas de vehículos ni números de casa.</p>
           <div class="agua-field"><label for="fotoReporte">Foto del agua o del lugar</label><input id="fotoReporte" name="foto" type="file" accept="image/*" capture="environment" required></div>
           <img id="fotoVista" class="agua-preview" alt="Vista previa de la foto elegida" hidden>
-          <p id="fotoTexto" class="agua-help" aria-live="polite">La imagen se reducirá a aproximadamente 1600 píxeles y se quitarán sus metadatos.</p>
+          <p id="fotoTexto" class="agua-help" aria-live="polite">Antes de enviarla, reducimos la imagen y eliminamos sus metadatos (por ejemplo, la ubicación del dispositivo). Si una foto muestra datos personales, podemos recortarla, difuminarla o no publicarla.</p>
         </section>
 
         <section class="agua-step" data-step="3" aria-labelledby="paso3Title" hidden>
           <h3 id="paso3Title">3. Cuéntanos qué observaste</h3>
+          <p>Cuéntanos qué viste, oliste o notaste distinto, dónde y desde cuándo. Describe hechos; evita nombres de personas o empresas y datos personales de cualquiera.</p>
           <div class="agua-field"><label for="categoriaReporte">Categoría</label><select id="categoriaReporte" name="categoria_id" required><option value="">Selecciona una categoría</option></select></div>
-          <div class="agua-field"><label for="notaReporte">Nota breve</label><textarea id="notaReporte" name="nota" rows="5" maxlength="500" required placeholder="Describe lo que viste u oliste"></textarea><span id="notaCuenta" class="agua-help">0 de 500 caracteres</span></div>
+          <div class="agua-field"><label for="notaReporte">Nota breve</label><textarea id="notaReporte" name="nota" rows="5" maxlength="500" required placeholder="Ej. El agua salió turbia y con olor fuerte desde el martes por la mañana."></textarea><span id="notaCuenta" class="agua-help">0 de 500 caracteres</span></div>
           <div class="agua-field"><label for="fechaReporte">Fecha aproximada de observación</label><input id="fechaReporte" name="fecha_observacion" type="date" required></div>
         </section>
 
         <section class="agua-step" data-step="4" aria-labelledby="paso4Title" hidden>
           <h3 id="paso4Title">4. Confirma el envío</h3>
-          <p class="agua-notice">Esto es documentación ciudadana y <strong>no es una denuncia formal</strong>. Para reportar ante una autoridad, consulta:</p>
+          <p class="agua-notice">Esto es documentación ciudadana y no es una denuncia formal. Si quieres que una autoridad actúe, puedes presentar tu denuncia o queja directamente:</p>
           <ul class="agua-links">
             <li><a href="https://proepa.jalisco.gob.mx/denuncia.html" target="_blank" rel="noopener noreferrer">PROEPA Jalisco</a></li>
             <li><a href="https://www.gob.mx/profepa/articulos/denuncia-ante-la-profepa?state=published" target="_blank" rel="noopener noreferrer">PROFEPA</a></li>
@@ -98,14 +108,14 @@
             <li><a href="https://www.siapa.gob.mx/" target="_blank" rel="noopener noreferrer">SIAPA</a></li>
             <li><a href="https://cedhj.org.mx/" target="_blank" rel="noopener noreferrer">CEDHJ</a></li>
           </ul>
-          <p>El reporte es anónimo. Si quieres que podamos contactarte, deja un medio de contacto:</p>
+          <p>Tu reporte es anónimo. Si quieres que podamos aclarar algo contigo o avisarte de su revisión, puedes dejar un correo o teléfono. Es opcional y nunca se publica.</p>
           <div class="agua-field"><label for="emailReporte">Correo (opcional)</label><input id="emailReporte" name="email" type="email" autocomplete="email"></div>
           <div class="agua-field"><label for="telefonoReporte">Teléfono (opcional)</label><input id="telefonoReporte" name="telefono" type="tel" autocomplete="tel"></div>
-          <label class="agua-check"><input id="consentimientoContacto" type="checkbox"> Acepto que Cartografunk use estos datos solo para contactarme por este reporte.</label>
-          <p>Antes de enviar, lee el <a href="privacidad.html#reporte-agua" target="_blank" rel="noopener noreferrer">aviso de privacidad del reporte de agua</a>. Tu ubicación exacta y tu contacto no aparecen en el mapa. La ubicación pública se mueve a una cuadrícula de aproximadamente 150 m.</p>
-          <label class="agua-check"><input id="consentimientoPublicacion" type="checkbox" required> Acepto que mi nota, foto y ubicación aproximada puedan publicarse después de la revisión.</label>
+          <label class="agua-check"><input id="consentimientoContacto" type="checkbox"> Autorizo a Cartografunk a usar estos datos solo para contactarme sobre este reporte.</label>
+          <p>Responsable: Cartografunk. Usamos tus datos para revisar y, en su caso, publicar tu reporte, y para prevenir abusos. Lee la <a href="privacidad.html#reporte-agua" target="_blank" rel="noopener noreferrer">información de privacidad del reporte</a>.</p>
+          <label class="agua-check"><input id="consentimientoPublicacion" type="checkbox" required> Entiendo que, después de su revisión, mi nota, mi foto y una ubicación aproximada pueden publicarse en un mapa abierto, y que puedo pedir que se retire con mi folio.</label>
           <div id="turnstileWidget" class="agua-turnstile" aria-label="Verificación de seguridad"></div>
-          <p id="turnstileAyuda" class="agua-help">Cargando verificación de seguridad…</p>
+          <p id="turnstileAyuda" class="agua-help">Esta verificación (Cloudflare Turnstile) nos ayuda a evitar envíos automáticos.</p>
         </section>
 
         <p id="formEstado" role="status" aria-live="polite" class="agua-status"></p>
@@ -117,26 +127,49 @@
       </form>
       <div id="reporteExito" class="agua-success" role="status" hidden>
         <h3>Recibimos tu reporte</h3>
-        <p>Guarda tu folio: <strong id="folioReporte"></strong></p>
-        <p>Lo revisaremos antes de publicarlo en el mapa.</p>
+        <p>Tu folio es <strong id="folioReporte"></strong>. Guárdalo: con él puedes pedirnos que corrijamos o retiremos tu reporte en <a href="mailto:cartografunk@gmail.com">cartografunk@gmail.com</a>.</p>
+        <p>Lo revisamos manualmente antes de publicarlo, y no todos los reportes se publican. <a href="#como-revisamos">Cómo revisamos los reportes</a>.</p>
       </div>
     </section>
 
     <section id="mapa-publico" class="agua-card" aria-labelledby="mapaTitle">
       <div class="agua-card-head"><div><p class="agua-eyebrow">Mapa público</p><h2 id="mapaTitle">Reportes revisados</h2></div></div>
-      <p>Solo aparecen reportes publicados. El pin muestra una ubicación aproximada.</p>
+      <p>Aquí aparecen solo los reportes que pasaron una revisión. Son observaciones ciudadanas, no resultados de laboratorio, y la ubicación es aproximada (cuadrícula de unos 150 m). Un reporte no señala a ninguna persona, empresa o institución como responsable.</p>
       <div id="mapaPublico" class="agua-map agua-map-public" role="application" aria-label="Mapa de reportes publicados"></div>
+      <p id="mapaPublicoBaseEstado" class="agua-help" role="status" aria-live="polite"></p>
       <p id="mapaEstado" class="agua-help" role="status" aria-live="polite">Cargando reportes…</p>
+    </section>
+
+    <section id="como-revisamos" class="agua-card" aria-labelledby="revisionTitle">
+      <div class="agua-card-head"><div><p class="agua-eyebrow">Criterios de moderación</p><h2 id="revisionTitle">Cómo revisamos los reportes</h2></div></div>
+      <p>Cada reporte lo revisa una persona antes de aparecer en el mapa. Esto es lo que buscamos.</p>
+      <h3>Publicamos reportes que:</h3>
+      <ul>
+        <li>Describen hechos observables: qué se vio, olió o notó distinto, dónde y cuándo.</li>
+        <li>Tienen una ubicación dentro de Guadalajara y su zona metropolitana.</li>
+        <li>Traen fotos del agua o del lugar, sin personas identificables.</li>
+      </ul>
+      <h3>No publicamos, o los editamos antes de publicar, reportes que:</h3>
+      <ul>
+        <li>Muestran rostros, placas, números de casa o datos de contacto de otras personas.</li>
+        <li>Nombran a personas o empresas como responsables sin sustento, o contienen insultos o amenazas.</li>
+        <li>Son publicidad, spam, duplicados o no tienen relación con el agua.</li>
+      </ul>
+      <p><strong>Qué hacemos con las fotos:</strong> podemos recortarlas o difuminarlas cuando muestren datos personales. No alteramos lo que muestra el agua.</p>
+      <p><strong>Qué significa “reporte ciudadano”:</strong> es lo que una persona observó. No hemos verificado el reporte en campo ni en laboratorio, y no sustituye el análisis de las autoridades. Si en algún momento un reporte se contrasta con datos oficiales o muestreos, lo indicaremos aparte.</p>
+      <p>Si quieres corregir o retirar tu reporte, escríbenos a <a href="mailto:cartografunk@gmail.com">cartografunk@gmail.com</a> con tu folio.</p>
     </section>
   </main>
   <footer class="agua-footer">
     <a href="index.html" class="footer-logo">CARTOGRAFUNK</a>
-    <span class="footer-copy">© 2022 · MX · MAPAS PA' QUE SE LO GOCEN</span>
+    <span class="footer-copy">© 2026 Cartografunk · México</span>
     <a href="privacidad.html" class="footer-copy">Privacidad</a>
+    <a href="#como-revisamos" class="footer-copy">Cómo revisamos los reportes</a>
   </footer>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
+  <script src="https://unpkg.com/leaflet.gridlayer.googlemutant@0.16.0/dist/Leaflet.GoogleMutant.js"></script>
   <script src="assets/js/supabase-config.js"></script>
   <script src="assets/js/reporte-agua-config.js"></script>
   <script src="assets/js/reporte-agua.js"></script>
