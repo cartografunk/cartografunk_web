@@ -220,10 +220,12 @@
     } finally { image.close(); }
   }
 
-  $('fotoReporte').addEventListener('change', async event => {
-    state.photo = null;
+  for (const input of [$('fotoReporte'), $('fotoCamara')]) input.addEventListener('change', async event => {
     const file = event.target.files?.[0];
     if (!file) return;
+    const otherInput = input === $('fotoReporte') ? $('fotoCamara') : $('fotoReporte');
+    otherInput.value = '';
+    state.photo = null;
     $('fotoTexto').textContent = 'Preparando la foto…';
     try {
       state.photo = await compressPhoto(file);
@@ -364,6 +366,26 @@
     } finally {
       state.sending = false;
       $('enviarReporte').disabled = false;
+    }
+  });
+
+  $('compartirReporteAgua').addEventListener('click', async () => {
+    const url = 'https://cartografunk.com/reporte-agua';
+    const message = '¿Conoces a alguien que tenga agua contaminada en su casa? Puede documentarlo aquí.';
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'Reporte ciudadano del agua en Guadalajara', text: message, url });
+        $('compartirEstado').textContent = 'Enlace compartido.';
+        return;
+      } catch (error) {
+        if (error.name === 'AbortError') return;
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      $('compartirEstado').textContent = 'Enlace copiado. Ya puedes pegarlo y compartirlo.';
+    } catch {
+      $('compartirEstado').textContent = `Copia este enlace para compartirlo: ${url}`;
     }
   });
 

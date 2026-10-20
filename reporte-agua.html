@@ -79,7 +79,12 @@
         <section class="agua-step" data-step="2" aria-labelledby="paso2Title" hidden>
           <h3 id="paso2Title">2. Agrega una foto</h3>
           <p>Una foto ayuda a documentar lo que observaste. Cada reporte admite una sola foto; si tienes más, envía otro reporte. Procura que no aparezcan personas, rostros, placas de vehículos ni números de casa.</p>
-          <div class="agua-field"><label for="fotoReporte">Foto del agua o del lugar</label><input id="fotoReporte" name="foto" type="file" accept="image/*" capture="environment" required></div>
+          <div class="agua-field agua-photo-choices">
+            <label for="fotoReporte">Elegir una foto del dispositivo</label>
+            <input id="fotoReporte" name="foto" type="file" accept="image/jpeg,image/png,image/webp">
+            <label for="fotoCamara">O tomar una foto ahora</label>
+            <input id="fotoCamara" type="file" accept="image/*" capture="environment">
+          </div>
           <img id="fotoVista" class="agua-preview" alt="Vista previa de la foto elegida" hidden>
           <p id="fotoTexto" class="agua-help" aria-live="polite">Antes de enviarla, reducimos la imagen y eliminamos sus metadatos (por ejemplo, la ubicación del dispositivo). Si una foto muestra datos personales, podemos recortarla, difuminarla o no publicarla.</p>
         </section>
@@ -123,6 +128,12 @@
         <h3>Recibimos tu reporte</h3>
         <p>Tu folio es <strong id="folioReporte"></strong>. Guárdalo: con él puedes pedirnos que corrijamos o retiremos tu reporte en <a href="mailto:cartografunk@gmail.com">cartografunk@gmail.com</a>.</p>
         <p>Lo revisamos manualmente antes de publicarlo, y no todos los reportes se publican. <a href="#como-revisamos">Cómo revisamos los reportes</a>.</p>
+        <div class="agua-share">
+          <h4>¿Conoces a alguien que tenga agua contaminada en su casa?</h4>
+          <p>Compártele esta herramienta para que pueda documentar lo que observó.</p>
+          <button type="button" id="compartirReporteAgua" class="agua-button">Compartir</button>
+          <p id="compartirEstado" class="agua-help" role="status" aria-live="polite"></p>
+        </div>
       </div>
     </section>
 
