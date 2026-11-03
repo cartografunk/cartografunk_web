@@ -58,3 +58,19 @@ def candidaturas_por_distrito(sec: pd.DataFrame, discand: pd.DataFrame) -> pd.Da
                 d.loc[mascara, list(columnas)].apply(pd.to_numeric, errors="coerce").fillna(0).sum(axis=1)
             )
     return d
+
+
+def resolver_candidatura(df: pd.DataFrame, partido: str) -> pd.Series:
+    """Nombre de la columna de candidatura activa que contiene al partido por fila."""
+    if partido not in PARTIDOS:
+        raise ValueError(f"Partido desconocido: {partido}")
+    resultado = pd.Series(pd.NA, index=df.index, dtype="string")
+    coalicion = next((nombre for nombre in COALICIONES if partido in nombre.split("_")), None)
+    if coalicion is not None and f"cand_{coalicion}" in df.columns:
+        activa = df[f"cand_{coalicion}"].notna()
+        resultado.loc[activa] = f"cand_{coalicion}"
+    individual = f"cand_{partido}"
+    if individual in df.columns:
+        activa = resultado.isna() & df[individual].notna()
+        resultado.loc[activa] = individual
+    return resultado
