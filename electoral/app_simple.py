@@ -19,9 +19,10 @@ import pydeck as pdk
 import streamlit as st
 
 from electoral.agregacion import agregar
-from electoral.clasificacion import CLASES, Umbrales, clasificar
+from electoral.analisis_demo import MIEMBROS_COALICION, analizar_candidatura, aportes_coalicion
+from electoral.clasificacion import CLASES, Umbrales
 from electoral.config import (
-    CANDIDATURAS, DIPUTACIONES_PARQUET, GEOMETRIA_PARQUET, NOTAS_CALIDAD_DEMO,
+    DIPUTACIONES_PARQUET, GEOMETRIA_PARQUET, NOTAS_CALIDAD_DEMO,
     REGLAS_METODOLOGIA_DEMO,
     PRESIDENCIA_PARQUET, SENADURIAS_PARQUET,
 )
@@ -30,16 +31,8 @@ from electoral.exportacion import construir_excel
 from electoral.fidelidad import PARTIDOS, analizar_fidelidad, panel
 from electoral.precalcular_fidelidad import SALIDAS
 from electoral.priorizacion import cubrir_meta, meta_distrital, preparar_priorizacion, presupuestar
-from electoral.reparto_distrito import repartir_distrito
-from electoral.reparto_fraccionario import repartir_fraccionario
-from electoral.rentabilidad import rentabilidad
 
 
-CANDS = [f"cand_{nombre}" for nombre in CANDIDATURAS]
-MIEMBROS = {
-    "cand_PAN_PRI_PRD": ["PAN", "PRI", "PRD"],
-    "cand_PVEM_PT_MORENA": ["PVEM", "PT", "MORENA"],
-}
 NOMBRES = {
     "cand_PAN_PRI_PRD": "PAN-PRI-PRD",
     "cand_PVEM_PT_MORENA": "PVEM-PT-MORENA",
@@ -66,8 +59,13 @@ ETIQUETAS_RESULTADO = {"ganada": "Ganada", "empate": "Empate", "perdida": "Perdi
 
 
 @st.cache_data
-def cargar_resultados() -> pd.DataFrame:
-    return pd.read_parquet(PRESIDENCIA_PARQUET)
+def cargar_resultados(eleccion: str) -> pd.DataFrame:
+    rutas = {
+        "Presidencia 2024": PRESIDENCIA_PARQUET,
+        "Diputaciones MR 2024": DIPUTACIONES_PARQUET,
+        "Senadurías MR 2024": SENADURIAS_PARQUET,
+    }
+    return pd.read_parquet(rutas[eleccion])
 
 
 @st.cache_resource
@@ -83,7 +81,8 @@ def cargar_poligonos_estado(estado: int) -> tuple[dict, tuple[float, float, floa
     return json.loads(poligonos.to_json(drop_id=True)), tuple(poligonos.total_bounds)
 
 
-def preparar_mapa(geojson: dict, resultados: pd.DataFrame) -> tuple[dict, int]:
+def preparar_mapa(geojson: dict, resultados: pd.DataFrame, aportes: pd.DataFrame | None = None,
+                  partidos: tuple[str, ...] = ()) -> tuple[dict, int]:
     """Agrega etiquetas y colores a la copia del GeoJSON estatal."""
     por_seccion = {
         seccion: (clase, margen, faltante, votos)
@@ -92,6 +91,16 @@ def preparar_mapa(geojson: dict, resultados: pd.DataFrame) -> tuple[dict, int]:
         ].itertuples(index=False, name=None)
     }
     sin_fila = 0
+    por_partido = {}
+    if aportes is not None:
+        por_partido = {
+            fila["ID_SECCION"]: " | ".join(
+                f"{partido}: {int(fila[f'rep_{partido}']):,} votos "
+                f"({fila[f'pct_candidatura_{partido}']:.1f}% candidatura)"
+                for partido in partidos
+            )
+            for _, fila in aportes.iterrows()
+        }
     for feature in geojson["features"]:
         propiedades = feature["properties"]
         seccion = propiedades["ID_SECCION"]
@@ -106,6 +115,8 @@ def preparar_mapa(geojson: dict, resultados: pd.DataFrame) -> tuple[dict, int]:
             f"{f'{distancia:+.1f} pp' if distancia is not None else 'sin dato'} | "
             f"votos para ganar: {int(votos) if pd.notna(votos) else '-'}"
         )
+        if seccion in por_partido:
+            propiedades["txt"] += " | " + por_partido[seccion]
     return geojson, sin_fila
 
 
@@ -116,14 +127,6 @@ def cargar_elecciones() -> dict[str, pd.DataFrame]:
         "diputaciones": pd.read_parquet(DIPUTACIONES_PARQUET),
         "senadurias": pd.read_parquet(SENADURIAS_PARQUET),
     }
-
-
-@st.cache_data(show_spinner="Calculando estimación por partido…")
-def cargar_reparto_estado(estado: int) -> tuple[pd.DataFrame, pd.DataFrame]:
-    secciones = cargar_resultados().loc[
-        lambda d: d["ID_ESTADO"].eq(estado) & d["SECCION"].ne(0)
-    ]
-    return repartir_distrito(secciones), repartir_fraccionario(secciones)
 
 
 @st.cache_data(show_spinner="Calculando fidelidad por partido…")
@@ -166,12 +169,41 @@ def preparar_excel_demo(resultados: pd.DataFrame, parametros: dict) -> bytes:
     return construir_excel(resultados, parametros)
 
 
-st.set_page_config(page_title="Rentabilidad electoral", layout="wide")
-st.title("Rentabilidad electoral · Presidencia 2024")
+st.set_page_config(page_title="Rentabilidad electoral 2024", layout="wide")
+st.title("Rentabilidad electoral 2024")
 
-sec = cargar_resultados()
+col_eleccion, col_candidatura, col_partidos, col_estado = st.columns([1.4, 1.3, 1.5, 1.3])
+with col_eleccion:
+    eleccion = st.selectbox("Elección", [
+        "Presidencia 2024", "Diputaciones MR 2024", "Senadurías MR 2024",
+    ])
+sec = cargar_resultados(eleccion)
+CANDS = [col for col in sec if col.startswith("cand_") and sec[col].notna().any()]
+with col_candidatura:
+    evaluar = st.selectbox(
+        "Candidatura a evaluar", CANDS,
+        index=CANDS.index("cand_PVEM_PT_MORENA") if "cand_PVEM_PT_MORENA" in CANDS else 0,
+        format_func=lambda col: NOMBRES.get(col, col.removeprefix("cand_").replace("_", "-")),
+    )
+miembros = MIEMBROS_COALICION.get(evaluar, ())
+with col_partidos:
+    if miembros:
+        elegidos = st.multiselect(
+            "Partidos de la coalición", ["Todos", *miembros], default=["Todos"],
+            key=f"partidos_{evaluar}",
+        )
+        partidos = tuple(miembros if "Todos" in elegidos else elegidos)
+    else:
+        partidos = ()
+        st.caption("Candidatura individual: sin reparto de coalición.")
 estados = sorted(sec.loc[sec["estado"].ne("extranjero"), "ID_ESTADO"].unique())
 nombres_estados = sec.drop_duplicates("ID_ESTADO").set_index("ID_ESTADO")["NOMBRE_ESTADO"].to_dict()
+with col_estado:
+    estado = st.selectbox(
+        "Estado (clave INE)", estados,
+        index=estados.index(14) if 14 in estados else 0,
+        format_func=lambda clave: f"{clave:02d} · {nombres_estados[clave]}",
+    )
 
 tab_que, tab_mapa, tab_prioridad, tab_fidelidad, tab_calidad = st.tabs([
     "Qué es la rentabilidad", "Mapa y análisis", "Priorización",
@@ -179,22 +211,21 @@ tab_que, tab_mapa, tab_prioridad, tab_fidelidad, tab_calidad = st.tabs([
 ])
 with tab_que:
     st.subheader("Cómo leer la rentabilidad")
-    for regla in REGLAS_METODOLOGIA_DEMO:
+    st.caption(f"Elección seleccionada: {eleccion}.")
+    for regla in REGLAS_METODOLOGIA_DEMO[:-1]:
         st.write(f"• {regla}")
+    st.write(f"• Es un diagnóstico sobre {eleccion}, no un pronóstico.")
     st.caption("Las categorías describen secciones; no son un pronóstico de la elección.")
 
 with tab_mapa:
-    with st.sidebar:
-        evaluar = st.selectbox("Candidatura a evaluar", CANDS, index=1, format_func=NOMBRES.get)
-        st.caption("El ranking compara candidaturas. La estimación por partido aparece debajo del mapa.")
-        estado = st.selectbox(
-            "Estado (clave INE)", estados,
-            index=estados.index(14) if 14 in estados else 0,
-            format_func=lambda clave: f"{clave:02d} · {nombres_estados[clave]}",
-        )
+    st.caption(f"Elección seleccionada: {eleccion}. El mapa y las clases corresponden a la candidatura.")
     umbrales = Umbrales()
     estado_sec = sec.loc[sec["ID_ESTADO"].eq(estado) & sec["estado"].ne("extranjero")]
-    res = clasificar(rentabilidad(estado_sec, CANDS, evaluar), umbrales)
+    res = analizar_candidatura(estado_sec, evaluar, umbrales)
+    aportes, resumen_partidos = (
+        aportes_coalicion(res, evaluar, partidos)
+        if partidos else (None, None)
+    )
 
     conteos = res["clase"].value_counts(sort=False).reindex(CLASES, fill_value=0)
     for columna, clase in zip(st.columns(len(CLASES)), CLASES):
@@ -209,7 +240,7 @@ with tab_mapa:
     st.markdown(" &nbsp;&nbsp; ".join(leyenda), unsafe_allow_html=True)
 
     geojson_estado, limites = cargar_poligonos_estado(estado)
-    mapa, sin_fila = preparar_mapa(geojson_estado, res)
+    mapa, sin_fila = preparar_mapa(geojson_estado, res, aportes, partidos)
     st.caption(f"{sin_fila} polígonos del MGE sin fila de resultados en este estado; se muestran en gris.")
     minx, miny, maxx, maxy = limites
     capa = pdk.Layer(
@@ -257,6 +288,12 @@ with tab_mapa:
 
     st.subheader("Distritos del estado")
     distritos = agregar(res, "distrito", CANDS, evaluar, umbrales)
+    distritos_activos = estado_sec.loc[
+        estado_sec[evaluar].notna(), "ID_DISTRITO_FEDERAL"
+    ].unique()
+    distritos = distritos.loc[
+        distritos["ID_DISTRITO_FEDERAL"].isin(distritos_activos)
+    ].copy()
     columnas_distrito = [
         "ID_DISTRITO_FEDERAL", "n_secciones", "n_con_resultado", "n_sin_resultado",
         *CANDS, "resultado", "clase", "margen_pct", "faltante_pct",
@@ -267,7 +304,7 @@ with tab_mapa:
         "n_secciones": "Secciones",
         "n_con_resultado": "Con resultado",
         "n_sin_resultado": "Sin resultado",
-        **{columna: f"{NOMBRES[columna]} · votos" for columna in CANDS},
+        **{columna: f"{NOMBRES.get(columna, columna.removeprefix('cand_').replace('_', '-'))} · votos" for columna in CANDS},
         "resultado": "Resultado",
         "clase": "Clasificación",
         "margen_pct": "Margen (pp)",
@@ -279,50 +316,46 @@ with tab_mapa:
     tabla_distritos["Clasificación"] = tabla_distritos["Clasificación"].astype("object").map(ETIQUETAS_CLASE)
     st.dataframe(tabla_distritos, width="stretch")
 
-    st.header("¿Y por partido?")
-    if evaluar == "cand_MC":
-        st.info("MC compitió solo, así que no hay nada que repartir")
-    else:
-        st.warning("Es un estimado: la regla oficial no está verificada")
-        miembros = MIEMBROS[evaluar]
-        reparto_distritos, reparto_secciones = cargar_reparto_estado(estado)
-        reparto_distritos = reparto_distritos.loc[reparto_distritos["ID_DISTRITO_FEDERAL"].ne(0)].copy()
-        validos = res.loc[res["estado"].eq("con_resultado")].groupby(
-            "ID_DISTRITO_FEDERAL"
-        )["NUM_VOTOS_VALIDOS"].sum()
-        reparto_distritos["Votos válidos"] = reparto_distritos["ID_DISTRITO_FEDERAL"].map(validos)
-        columnas_reparto = {"ID_DISTRITO_FEDERAL": "Distrito federal"}
-        for miembro in miembros:
-            columna = f"rep_{miembro}"
-            reparto_distritos[f"{miembro} (%)"] = (
-                100 * reparto_distritos[columna] / reparto_distritos["Votos válidos"].where(
-                    reparto_distritos["Votos válidos"].gt(0)
-                )
-            ).round(1)
-            columnas_reparto[columna] = f"{miembro} (votos estimados)"
-        st.dataframe(reparto_distritos[
-            ["ID_DISTRITO_FEDERAL", "Votos válidos", *[f"rep_{p}" for p in miembros],
-             *[f"{p} (%)" for p in miembros]]
-        ].rename(columns=columnas_reparto), width="stretch")
-
-        cercanas = rescatables.head(10)[["ID_SECCION", "MUNICIPIO", "votos_para_ganar"]].merge(
-            reparto_secciones[["ID_SECCION", *[f"frac_{p}" for p in miembros]]],
-            on="ID_SECCION", how="left", validate="one_to_one",
-        )
-        st.caption("Diez secciones más cercanas a ganar; votos estimados por partido, redondeados.")
-        st.dataframe(cercanas.rename(columns={
-            "ID_SECCION": "Sección", "MUNICIPIO": "Municipio",
-            "votos_para_ganar": "Votos para ganar",
-            **{f"frac_{p}": p for p in miembros},
-        }).round(1), width="stretch")
+    if miembros:
+        st.header("Aporte de partidos dentro de la candidatura")
+        st.warning("Reparto de coaliciones experimental (A_propios); la regla oficial no está verificada.")
+        if partidos:
+            st.subheader("Estado seleccionado")
+            st.dataframe(resumen_partidos.round(1), hide_index=True, width="stretch")
+            st.subheader("Secciones por partido")
+            columnas_comunes = [
+                "ID_SECCION", "MUNICIPIO", "resultado", "clase", "margen_votos",
+                "faltante_votos", "votos_para_ganar",
+            ]
+            tablas = []
+            for partido in partidos:
+                tabla = aportes[columnas_comunes + [
+                    f"rep_{partido}", f"pct_candidatura_{partido}", f"pct_validos_{partido}",
+                ]].copy()
+                tabla.insert(2, "Partido", partido)
+                tabla = tabla.rename(columns={
+                    "ID_SECCION": "Sección", "MUNICIPIO": "Municipio",
+                    "resultado": "Resultado de candidatura", "clase": "Clase de candidatura",
+                    "margen_votos": "Margen de candidatura", "faltante_votos": "Faltante de candidatura",
+                    "votos_para_ganar": "Votos para ganar candidatura",
+                    f"rep_{partido}": "Votos atribuidos",
+                    f"pct_candidatura_{partido}": "% de candidatura",
+                    f"pct_validos_{partido}": "% de votos válidos",
+                })
+                tablas.append(tabla)
+            st.dataframe(pd.concat(tablas, ignore_index=True).round(1), hide_index=True, width="stretch")
+            st.caption("votos por partido estimados")
+        else:
+            st.info("Selecciona al menos un partido o Todos para ver su aporte.")
 
     st.caption(
-        "Presidencia 2024: candidaturas calculadas con columnas de _SEC.csv. "
+        f"{eleccion}: candidaturas calculadas con columnas de _SEC.csv. "
         "Geometría MGE 2024 simplificada a 25 m; EPSG:32614 es una hipótesis de trabajo."
     )
 
 with tab_prioridad:
     st.subheader("Priorización de secciones")
+    st.caption(f"Elección seleccionada: {eleccion}.")
     st.caption("Costo estimado por voto: ejemplo, ajústalo para tu escenario.")
     costo_global = st.number_input("Costo estimado por voto (pesos)", min_value=0.0, value=20.0, step=1.0)
     base_prioridad = preparar_priorizacion(res, costo_global)
@@ -337,7 +370,7 @@ with tab_prioridad:
         "costo_por_voto", "costo_estimado", "descartar",
     ]].rename(columns=columnas_editor)
     editado = st.data_editor(
-        editor, hide_index=True, width="stretch", key=f"prioridad_{estado}_{evaluar}",
+        editor, hide_index=True, width="stretch", key=f"prioridad_{eleccion}_{estado}_{evaluar}",
         disabled=["Sección", "Municipio", "Votos para ganar", "Abstención", "Costo estimado"],
         column_config={"Costo por voto": st.column_config.NumberColumn(min_value=0.0, step=1.0)},
     )
@@ -372,7 +405,8 @@ with tab_prioridad:
             st.write(f"Secciones no descartadas necesarias, en orden de costo: {n_necesarias:,}.")
 
     parametros_excel = {
-        "candidatura": NOMBRES[evaluar], "estado": f"{estado:02d} · {nombres_estados[estado]}",
+        "candidatura": NOMBRES.get(evaluar, evaluar.removeprefix("cand_").replace("_", "-")),
+        "eleccion": eleccion, "estado": f"{estado:02d} · {nombres_estados[estado]}",
         "fecha": date.today().isoformat(), "umbrales": umbrales,
         "distritos": distritos, "priorizacion": tabla_presupuesto,
         "presupuesto": presupuesto,
@@ -380,12 +414,13 @@ with tab_prioridad:
     st.download_button(
         "Descargar diagnóstico en Excel",
         preparar_excel_demo(res, parametros_excel),
-        file_name=f"rentabilidad_{estado:02d}_{evaluar.removeprefix('cand_')}.xlsx",
+        file_name=f"rentabilidad_{eleccion.split()[0].lower()}_{estado:02d}_{evaluar.removeprefix('cand_')}.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
 
 with tab_fidelidad:
     st.subheader("Apoyo mínimo observado 2024")
+    st.caption("Elecciones: Presidencia, Diputaciones MR y Senadurías MR de 2024.")
     st.write(
         "Es el menor porcentaje de votos del partido observado en una sección "
         "entre Presidencia, Diputaciones y Senadurías de 2024. No asegura que "
@@ -453,5 +488,12 @@ with tab_fidelidad:
 
 with tab_calidad:
     st.subheader("Notas de calidad de datos")
-    for nota in NOTAS_CALIDAD_DEMO:
+    st.caption(f"Elección seleccionada: {eleccion}.")
+    notas = NOTAS_CALIDAD_DEMO if eleccion == "Presidencia 2024" else (
+        "La geometría MGE 2024 usa EPSG:32614 como supuesto de trabajo.",
+        "Las candidaturas individuales y coaliciones activas varían por distrito.",
+        "Las secciones sin candidatura activa quedan sin clasificación para esa candidatura.",
+        "El reparto de coaliciones por partido es experimental (A_propios).",
+    )
+    for nota in notas:
         st.write(f"• {nota}")

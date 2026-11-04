@@ -59,7 +59,7 @@ def construir_excel(resultados: pd.DataFrame, parametros: dict) -> bytes:
         ("Sólida (puntos)", umbrales.solida_pp),
         ("Alcanzable (votos)", umbrales.votos_alcanzables),
         *[(clase, int(conteos.get(clase, 0))) for clase in CLASES],
-        ("Nota", "Diagnóstico sobre Presidencia 2024; no es un pronóstico."),
+        ("Nota", f"Diagnóstico sobre {parametros.get('eleccion', 'Presidencia 2024')}; no es un pronóstico."),
     ], columns=["Concepto", "Valor"])
     metodologia = pd.DataFrame({"Regla": REGLAS_METODOLOGIA_DEMO})
     secciones = _secciones(resultados)
