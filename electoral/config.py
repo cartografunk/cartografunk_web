@@ -34,3 +34,13 @@ CANDIDATURAS = {
     ),
     "MC": ("MC",),
 }
+
+NOTAS_CALIDAD_DEMO = (
+    "56 secciones sin resultado en Presidencia 2024.",
+    "249 polígonos sin fila de resultados; aparecen en gris.",
+    "32 filas de voto en el extranjero están fuera del mapa.",
+    "19 secciones siguen con más votos en lista que personas en lista nominal; la diferencia no está explicada.",
+    "La geometría usa EPSG:32614 como supuesto de trabajo; el CRS original no está confirmado por metadatos.",
+    "La Presidencia no se gana por sección ni por distrito: estas escalas sirven para explorar resultados.",
+    "CPV no integrado.",
+)

@@ -20,12 +20,13 @@ import streamlit as st
 from electoral.agregacion import agregar
 from electoral.clasificacion import CLASES, Umbrales, clasificar
 from electoral.config import (
-    CANDIDATURAS, DIPUTACIONES_PARQUET, GEOMETRIA_PARQUET,
+    CANDIDATURAS, DIPUTACIONES_PARQUET, GEOMETRIA_PARQUET, NOTAS_CALIDAD_DEMO,
     PRESIDENCIA_PARQUET, SENADURIAS_PARQUET,
 )
 from electoral.estadisticas_fidelidad import correlaciones_pares, icc_por_partido
 from electoral.fidelidad import PARTIDOS, analizar_fidelidad, panel
 from electoral.precalcular_fidelidad import SALIDAS
+from electoral.priorizacion import cubrir_meta, meta_distrital, preparar_priorizacion, presupuestar
 from electoral.reparto_distrito import repartir_distrito
 from electoral.reparto_fraccionario import repartir_fraccionario
 from electoral.rentabilidad import rentabilidad
@@ -164,8 +165,26 @@ sec = cargar_resultados()
 estados = sorted(sec.loc[sec["estado"].ne("extranjero"), "ID_ESTADO"].unique())
 nombres_estados = sec.drop_duplicates("ID_ESTADO").set_index("ID_ESTADO")["NOMBRE_ESTADO"].to_dict()
 
-tab_rentabilidad, tab_fidelidad = st.tabs(["Rentabilidad", "Apoyo mínimo 2024"])
-with tab_rentabilidad:
+tab_que, tab_mapa, tab_prioridad, tab_fidelidad, tab_calidad = st.tabs([
+    "Qué es la rentabilidad", "Mapa y análisis", "Priorización",
+    "Apoyo mínimo 2024", "Notas de calidad de datos",
+])
+with tab_que:
+    st.subheader("Cómo leer la rentabilidad")
+    st.write(
+        "Si la candidatura ganó una sección, el margen es su ventaja sobre el segundo lugar. "
+        "Si perdió, el faltante es la distancia al primer lugar. Para superar al primero "
+        "se necesita un voto más que el faltante; en un empate, se necesita uno."
+    )
+    st.write(
+        "La abstención es la lista nominal menos los votos en lista, después de descontar "
+        "los votos de casillas especiales. Una pérdida es competitiva si el faltante es "
+        "menor a 5 puntos porcentuales, intermedia entre 5 y menos de 15, y lejana "
+        "desde 15. Una victoria es sólida desde 15 puntos."
+    )
+    st.caption("Las categorías describen secciones; no son un pronóstico de la elección.")
+
+with tab_mapa:
     with st.sidebar:
         evaluar = st.selectbox("Candidatura a evaluar", CANDS, index=1, format_func=NOMBRES.get)
         st.caption("El ranking compara candidaturas. La estimación por partido aparece debajo del mapa.")
@@ -174,17 +193,7 @@ with tab_rentabilidad:
             index=estados.index(14) if 14 in estados else 0,
             format_func=lambda clave: f"{clave:02d} · {nombres_estados[clave]}",
         )
-        st.markdown("**Umbrales (puntos porcentuales)**")
-        competitiva = st.slider("Competitiva: faltante menor a", 1.0, 10.0, 5.0, 0.5)
-        lejana = st.slider("Lejana / sólida desde", 10.0, 30.0, 15.0, 1.0)
-        votos_alcanzables = st.slider("Alcanzable en votos (≤)", 10, 300, 100, 10)
-
-    umbrales = Umbrales(
-        solida_pp=lejana,
-        competitiva_pp=competitiva,
-        lejana_pp=lejana,
-        votos_alcanzables=votos_alcanzables,
-    )
+    umbrales = Umbrales()
     estado_sec = sec.loc[sec["ID_ESTADO"].eq(estado) & sec["estado"].ne("extranjero")]
     res = clasificar(rentabilidad(estado_sec, CANDS, evaluar), umbrales)
 
@@ -313,6 +322,56 @@ with tab_rentabilidad:
         "Geometría MGE 2024 simplificada a 25 m; EPSG:32614 es una hipótesis de trabajo."
     )
 
+with tab_prioridad:
+    st.subheader("Priorización de secciones")
+    st.caption("Costo estimado por voto: ejemplo, ajústalo para tu escenario.")
+    costo_global = st.number_input("Costo estimado por voto (pesos)", min_value=0.0, value=20.0, step=1.0)
+    base_prioridad = preparar_priorizacion(res, costo_global)
+    columnas_editor = {
+        "ID_SECCION": "Sección", "MUNICIPIO": "Municipio",
+        "votos_para_ganar": "Votos para ganar", "abstencion": "Abstención",
+        "costo_por_voto": "Costo por voto", "costo_estimado": "Costo estimado",
+        "descartar": "Descartar",
+    }
+    editor = base_prioridad[[
+        "ID_SECCION", "MUNICIPIO", "votos_para_ganar", "abstencion",
+        "costo_por_voto", "costo_estimado", "descartar",
+    ]].rename(columns=columnas_editor)
+    editado = st.data_editor(
+        editor, hide_index=True, width="stretch", key=f"prioridad_{estado}_{evaluar}",
+        disabled=["Sección", "Municipio", "Votos para ganar", "Abstención", "Costo estimado"],
+        column_config={"Costo por voto": st.column_config.NumberColumn(min_value=0.0, step=1.0)},
+    )
+    tabla_prioridad = base_prioridad.copy()
+    tabla_prioridad["costo_por_voto"] = editado["Costo por voto"].to_numpy()
+    tabla_prioridad["descartar"] = editado["Descartar"].to_numpy()
+    presupuesto = st.number_input("Presupuesto (pesos)", min_value=0.0, value=10000.0, step=100.0)
+    tabla_presupuesto, gastado = presupuestar(tabla_prioridad, presupuesto)
+    st.write(f"Secciones que caben: {int(tabla_presupuesto['seleccionada'].sum()):,}. Total gastado: ${gastado:,.2f}.")
+    st.dataframe(tabla_presupuesto[[
+        "ID_SECCION", "costo_estimado", "descartar", "seleccionada",
+    ]].rename(columns={
+        "ID_SECCION": "Sección", "costo_estimado": "Costo estimado actualizado",
+        "descartar": "Descartar", "seleccionada": "Dentro del presupuesto",
+    }), width="stretch")
+
+    distritos_disponibles = sorted(distritos["ID_DISTRITO_FEDERAL"].astype(int).tolist())
+    distrito_meta = st.selectbox(
+        "Distrito federal para la meta", distritos_disponibles,
+        index=distritos_disponibles.index(2) if 2 in distritos_disponibles else 0,
+    )
+    meta = meta_distrital(distritos, distrito_meta)
+    st.caption("Supuesto, no pronóstico: los votos nuevos salen de la abstención.")
+    if meta is None:
+        st.info("La candidatura ya ganó este distrito; no hay faltante por cubrir.")
+    else:
+        n_necesarias, capacidad = cubrir_meta(tabla_presupuesto, distrito_meta, meta)
+        st.write(f"Meta del distrito: {meta:,} votos. Capacidad disponible: {capacidad:,.0f} votos.")
+        if n_necesarias is None:
+            st.warning("La abstención disponible de las secciones no descartadas no alcanza la meta.")
+        else:
+            st.write(f"Secciones no descartadas necesarias, en orden de costo: {n_necesarias:,}.")
+
 with tab_fidelidad:
     st.subheader("Apoyo mínimo observado 2024")
     st.write(
@@ -379,3 +438,8 @@ with tab_fidelidad:
     st.dataframe(icc.loc[icc["partido"].eq(partido_fid)], width="stretch")
     st.dataframe(correlaciones.loc[correlaciones["partido"].eq(partido_fid)], width="stretch")
     st.caption("Apoyo mínimo observado 2024: diagnóstico exploratorio, no seguimiento de personas ni de años distintos.")
+
+with tab_calidad:
+    st.subheader("Notas de calidad de datos")
+    for nota in NOTAS_CALIDAD_DEMO:
+        st.write(f"• {nota}")
