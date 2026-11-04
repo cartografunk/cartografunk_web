@@ -7,36 +7,79 @@ def mostrar_portada(eleccion: str) -> None:
     """Presenta el alcance y las fórmulas sin ejecutar cálculos adicionales."""
     st.html("""
 <style>
-.le-hero{position:relative;isolation:isolate;overflow:hidden;background:radial-gradient(circle at 86% 0%,#302042 0%,#1a1729 50%,#141323 100%);color:#f7f5fa;border:1px solid #513865;border-radius:18px;padding:clamp(26px,3vw,42px);font-family:Arial,Helvetica,sans-serif}
-.le-hero:after{content:"";position:absolute;left:0;right:0;bottom:0;height:6px;background:linear-gradient(90deg,#3c84bb 0 34%,#e9bd53 34% 67%,#d45851 67%)}
-.le-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(270px,.8fr);align-items:center;gap:22px}
-.le-title{font-size:clamp(3.25rem,6vw,6.8rem);line-height:.91;letter-spacing:-.065em;margin:8px 0 12px;font-weight:900;max-width:11ch}
-.le-title span{color:#e1b8ff}
-.le-map{width:100%;min-height:220px;opacity:.78;transform:rotate(-4deg);filter:drop-shadow(0 12px 18px rgba(0,0,0,.2));background:url('/app/static/mexico_estados.svg') center/contain no-repeat}
-.le-rail{display:flex;gap:22px;flex-wrap:wrap;border-top:1px solid #584569;padding-top:18px;margin-top:14px;font-size:13px;color:#e1d7e8}
-.le-rail strong{color:#d990ff;margin-right:7px;font-variant-numeric:tabular-nums}
-@media(max-width:760px){.le-hero{padding:26px 22px}.le-grid{grid-template-columns:1fr}.le-title{font-size:clamp(3rem,12vw,5rem);margin:8px 0}.le-map{width:300px;max-width:100%;min-height:180px;margin:0 auto}.le-rail{gap:10px 22px}}
+@import url('https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@700;800&display=swap');
+.le-stage{--le-ink:#f8f3fa;--le-muted:#c9bed0;--le-rule:#63546a;position:relative;overflow:hidden;
+  min-height:510px;background:#1b1525;color:var(--le-ink);font-family:Arial,Helvetica,sans-serif}
+.le-stage:before{content:"";position:absolute;inset:0 0 0 46%;background:#291d36;clip-path:polygon(14% 0,100% 0,100% 100%,0 100%)}
+.le-stage:after{content:"";position:absolute;left:0;right:0;bottom:0;height:8px;
+  background:linear-gradient(90deg,#4b9bd1 0 33.333%,#e9c258 33.333% 66.666%,#d75a58 66.666%)}
+.le-stage-inner{position:relative;z-index:1;display:grid;grid-template-columns:1.06fr .94fr;min-height:510px}
+.le-stage-copy{padding:clamp(32px,4vw,58px);display:flex;flex-direction:column;justify-content:space-between}
+.le-stage h1{font-family:'Libre Franklin',Arial,sans-serif;font-size:clamp(4.15rem,7.5vw,7.4rem);line-height:.9;letter-spacing:-.04em;margin:0;
+  font-weight:800;max-width:9ch;text-wrap:balance}
+.le-stage h1 span{display:block;color:#e3bbf3}
+.le-stage-lead{font-size:clamp(1.12rem,1.6vw,1.45rem);line-height:1.35;max-width:30ch;margin:32px 0 0;color:#f0e7f2}
+.le-stage-foot{border-top:1px solid var(--le-rule);padding-top:17px;margin-top:42px;
+  display:flex;justify-content:space-between;gap:15px;color:var(--le-muted);font-size:13px;line-height:1.35}
+.le-stage-foot strong{color:#fff;font-weight:700}
+.le-stage-map{position:relative;min-height:400px;display:flex;align-items:center;justify-content:center;
+  background:url('/app/static/mexico_estados.svg') center 43%/118% auto no-repeat}
+.le-stage-map:before{content:"";position:absolute;inset:9% 7% 17%;border:1px solid rgba(226,202,237,.15)}
+.le-stage-map:after{content:"";position:absolute;left:8%;top:11%;height:78%;border-left:1px solid rgba(226,202,237,.15)}
+.le-map-label{position:absolute;z-index:1;left:10%;bottom:12%;padding:10px 14px;background:#f5eff4;
+  color:#211829;font-size:13px;font-weight:700;letter-spacing:.025em}
+.le-map-label small{display:block;font-size:10px;letter-spacing:.12em;color:#65576b;margin-bottom:3px}
+.le-overview{margin:24px 0 10px;padding:0 0 24px;border-bottom:1px solid #5c4a65;color:#f5eff6}
+.le-overview-head{font-size:clamp(1.55rem,2.7vw,2.75rem);line-height:1.12;letter-spacing:-.025em;
+  max-width:29ch;font-weight:700;margin:0 0 22px}
+.le-methods{display:grid;grid-template-columns:1.15fr .9fr .9fr;gap:0;border-top:1px solid #5c4a65}
+.le-method{padding:18px 25px 5px 0;min-width:0}
+.le-method+.le-method{border-left:1px solid #5c4a65;padding-left:25px}
+.le-method b{display:block;color:#f9f3fa;font-size:17px;line-height:1.2;margin-bottom:10px}
+.le-method p{font-size:14px;line-height:1.45;color:#d4c8da;margin:0}
+.le-method em{display:block;font-style:normal;font-family:Georgia,serif;color:#efca77;
+  font-size:clamp(1.5rem,2.2vw,2.25rem);line-height:1.15;margin-bottom:13px}
+@media(max-width:800px){.le-stage-inner{grid-template-columns:1fr}.le-stage{min-height:0}
+  .le-stage-copy{padding:30px 26px 18px}.le-stage h1{font-size:clamp(3.6rem,12vw,6rem)}
+  .le-stage-lead{margin-top:22px}.le-stage-foot{margin-top:28px}
+  .le-stage-map{min-height:265px;background-size:92% auto}.le-map-label{left:8%;bottom:7%}
+  .le-methods{grid-template-columns:1fr}.le-method,.le-method+.le-method{border-left:0;padding:16px 0;border-bottom:1px solid #5c4a65}}
+@media(max-width:460px){.le-stage h1{font-size:clamp(3.15rem,13vw,4.5rem)}
+  .le-stage-map{min-height:220px}.le-stage-foot{flex-direction:column;gap:5px}}
 </style>
-<section class="le-hero" aria-label="Presentación del Laboratorio Electoral">
-  <div class="le-grid">
-    <div>
-      <h2 class="le-title">Laboratorio<br><span>Electoral</span></h2>
+<section class="le-stage" aria-label="Presentación del Laboratorio Electoral">
+  <div class="le-stage-inner">
+    <div class="le-stage-copy">
+      <div><h1>Laboratorio<span>Electoral</span></h1>
+      <p class="le-stage-lead">Explora ventajas, derrotas ajustadas y apoyo mínimo en cada sección</p></div>
+      <div class="le-stage-foot"><span><strong>Tres elecciones federales</strong> - cobertura actual 2024</span>
+        <span>Más años y CPV en preparación</span></div>
     </div>
-    <div class="le-map" aria-label="Contornos estatales de México"></div>
+    <div class="le-stage-map" role="img" aria-label="Contornos estatales de México">
+      <div class="le-map-label"><small>UNIDAD DE ANÁLISIS</small>Sección electoral</div>
+    </div>
   </div>
-  <div class="le-rail"><span><strong>01</strong> Rentabilidad</span><span><strong>02</strong> Apoyo mínimo</span><span><strong>03</strong> Priorización</span><span><strong>04</strong> CPV - próximo</span></div>
+</section>
+<section class="le-overview" aria-label="Métodos del laboratorio">
+  <h2 class="le-overview-head">Tres preguntas, una misma geografía</h2>
+  <div class="le-methods">
+    <div class="le-method"><em>¿Dónde estuvo cerca?</em><b>Rentabilidad electoral</b>
+      <p>Compara candidaturas, mide la ventaja o el faltante y clasifica cada sección</p></div>
+    <div class="le-method"><em>¿Qué apoyo se repite?</em><b>Apoyo mínimo</b>
+      <p>Observa el porcentaje menor de cada partido entre las tres boletas de 2024</p></div>
+    <div class="le-method"><em>¿Por dónde empezar?</em><b>Priorización</b>
+      <p>Ordena secciones y prueba metas con tus propios supuestos de costo</p></div>
+  </div>
 </section>
 """)
-
-    st.markdown("### Tres formas de leer el territorio")
     st.caption(
-        f"Cobertura actual: {eleccion}. Los resultados de otros años aún no están integrados. "
-        "Diagnóstico exploratorio con datos agregados, tablas y descarga."
+        f"Cobertura seleccionada: {eleccion}. Diagnóstico exploratorio con datos agregados. "
+        "Los resultados de otros años aún no están integrados."
     )
 
     rent, apoyo, prioridad = st.tabs([
-        "01 - Rentabilidad electoral", "02 - Apoyo mínimo (base electoral)",
-        "03 - Priorización",
+        "Rentabilidad electoral", "Apoyo mínimo (base electoral)",
+        "Priorización",
     ])
     with rent:
         st.subheader("Rentabilidad electoral")
@@ -123,7 +166,7 @@ def mostrar_portada(eleccion: str) -> None:
     st.html("""
 <aside style="border-left:3px solid #b44fff;background:#1b1627;border-radius:8px;
   padding:15px 19px;color:#e5daec;font-family:Arial,Helvetica,sans-serif;line-height:1.45">
-  <strong style="color:#e1b8ff;letter-spacing:.08em;font-size:12px">04 - PRÓXIMO CRUCE</strong><br>
+  <strong style="color:#e1b8ff;letter-spacing:.08em;font-size:12px">PRÓXIMO CRUCE</strong><br>
   Datos sociodemográficos del Censo de Población y Vivienda (CPV).
   Aún no están integrados en este laboratorio.
 </aside>
