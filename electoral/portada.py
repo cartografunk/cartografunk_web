@@ -83,47 +83,68 @@ def mostrar_portada(eleccion: str) -> None:
     ])
     with rent:
         st.subheader("Rentabilidad electoral")
+        st.markdown("#### Votos de la candidatura")
         st.write(
-            "El cálculo compara candidaturas en cada sección. Para una coalición, se suman "
-            "los votos marcados por cada partido integrante y por cada combinación de esos partidos. "
-            "Una candidatura individual conserva sus propios votos. Cada marca entra una sola vez "
-            "en el total de su candidatura."
+            "En cada sección se cuentan los votos marcados por los partidos de la candidatura "
+            "y por sus combinaciones. Cada marca se suma una vez."
         )
-        st.latex(r"V_{c,s}=\sum_{p\in P_c}V_{p,s}+\sum_{m\in M_c}V_{m,s}")
-        st.caption(
-            "V: votos de la candidatura c en la sección s. P: partidos integrantes. "
-            "M: combinaciones de la misma candidatura registradas para esa elección y unidad."
+        st.latex(
+            r"\begin{aligned}V_{c,s}&=\sum_{p\in P_c}V_{p,s}\\"
+            r"&+\sum_{m\in M_c}V_{m,s}\end{aligned}"
         )
-        st.write(
-            "Después se ordenan las candidaturas activas de la sección. "
-            "V₁ es el total más alto y V₂ el segundo más alto. "
-            "Hay victoria solo si supera a V₂; si comparte el primer lugar, hay empate."
+        st.markdown(
+            "**$c$** - candidatura que se analiza; **$s$** - sección electoral.  \n"
+            "**$P_c$** - partidos que integran esa candidatura; **$M_c$** - combinaciones de esos partidos.  \n"
+            "**$V_{p,s}$** - votos marcados por el partido $p$; **$V_{m,s}$** - votos marcados por la "
+            "combinación $m$. **$V_{c,s}$** es la suma de la candidatura."
         )
+
+        st.markdown("#### Primer y segundo lugar")
+        st.write("Se ordenan los votos de las candidaturas activas en la sección")
         st.latex(r"V_{1,s}=\max_c V_{c,s}")
-        st.write(
-            "En caso de victoria, el margen mide la ventaja sobre el segundo lugar. "
-            "En caso de derrota o empate, el faltante mide la distancia al primer lugar "
-            "(cero votos cuando hay empate)."
+        st.markdown(
+            "**$V_{1,s}$** - votos de la candidatura en primer lugar en la sección $s$.  \n"
+            "**$V_{2,s}$** - votos del segundo lugar. Hay **Victoria** cuando la candidatura "
+            "evaluada supera al segundo lugar; si dos candidaturas comparten el primer lugar, hay **Empate**."
         )
+
+        st.markdown("#### Distancia en votos")
+        st.write("Si hubo victoria, el margen es la ventaja sobre el segundo lugar")
         st.latex(r"M_s=V_{c,s}-V_{2,s}\quad(\mathrm{victoria})")
+        st.write("Si hubo derrota o empate, el faltante es la distancia al primer lugar")
         st.latex(r"F_s=V_{1,s}-V_{c,s}\quad(\mathrm{derrota\ o\ empate})")
-        st.write(
-            "El margen y el faltante en puntos porcentuales dividen esa diferencia entre "
-            "los votos válidos de la sección. Para superar al primer lugar se necesita "
-            "el faltante más un voto. En un empate, se necesita uno."
+        st.markdown(
+            "**$M_s$** - margen de victoria en votos; **$F_s$** - votos que faltaron para igualar "
+            "el primer lugar. En un empate, **$F_s=0$**."
         )
+
+        st.markdown("#### Distancia en puntos porcentuales")
+        st.write("Las dos distancias se dividen entre los votos válidos de la misma sección")
         st.latex(r"m_s=100\frac{M_s}{V_{\mathrm{validos},s}}")
         st.latex(r"f_s=100\frac{F_s}{V_{\mathrm{validos},s}}")
+        st.markdown(
+            "**$m_s$** - margen en puntos porcentuales; **$f_s$** - faltante en puntos porcentuales.  \n"
+            "**$V_{\\mathrm{validos},s}$** - total de votos válidos de la sección (`NUM_VOTOS_VALIDOS`)."
+        )
+
+        st.markdown("#### Votos para ganar")
+        st.write("Para superar al primer lugar se necesita un voto más que el faltante")
         st.latex(r"G_s=F_s+1")
+        st.markdown(
+            "**$G_s$** - votos adicionales para ganar en una sección con derrota o empate. "
+            "Si hubo empate, **$G_s=1$**."
+        )
+
         st.markdown("#### Abstención corregida")
         st.write(
             "Para comparar esa meta con la abstención, se descuentan del total los votos "
             "de casillas especiales, que tienen lista nominal igual a cero."
         )
         st.latex(r"A_s=LN_s-(V_{\mathrm{total},s}-V_{S,s})")
-        st.caption(
-            "LN: lista nominal de la sección. V total: votos registrados. "
-            "V S: votos de casillas especiales no anuladas."
+        st.markdown(
+            "**$A_s$** - abstención corregida; **$LN_s$** - lista nominal; "
+            "**$V_{\\mathrm{total},s}$** - total de votos registrados; **$V_{S,s}$** - votos de casillas "
+            "especiales no anuladas en esa sección."
         )
         st.caption(
             "Clases actuales: victoria sólida desde 15 pp de margen; derrota competitiva por debajo "
