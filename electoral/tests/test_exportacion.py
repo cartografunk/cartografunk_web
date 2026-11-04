@@ -45,7 +45,9 @@ resumen={a:b for a,b in list(libro['Resumen'].values)[1:]}
 print(json.dumps({
     'hojas':libro.sheetnames,
     'secciones':libro['Secciones'].max_row-1,
-    'competitivas':resumen['perdida_competitiva'],
+    'competitivas':resumen['Derrota competitiva'],
+    'clases_visibles':[libro['Secciones']['C2'].value,libro['Secciones']['C3'].value],
+    'distrito_visible':[libro['Distritos']['E2'].value,libro['Distritos']['F2'].value],
     'priorizacion':libro['Priorización'].max_row-1,
     'descartada':True in list(libro['Priorización'].values)[1],
     'congelada':libro['Secciones'].freeze_panes=='A2',
@@ -66,6 +68,8 @@ print(json.dumps({
     assert medido == {
         "hojas": ["Resumen", "Metodología", "Secciones", "Priorización", "Distritos", "Calidad"],
         "secciones": 2, "competitivas": 1, "priorizacion": 1,
+        "clases_visibles": ["Victoria sólida", "Derrota competitiva"],
+        "distrito_visible": ["Derrota", "Derrota competitiva"],
         "descartada": True, "congelada": True, "negrita": True,
         "porcentaje": True, "externos": 0,
         "supuesto": True, "columnas_supuestos": 3,

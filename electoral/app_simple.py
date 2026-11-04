@@ -28,6 +28,7 @@ from electoral.config import (
     PRESIDENCIA_PARQUET, SENADURIAS_PARQUET,
 )
 from electoral.estadisticas_fidelidad import correlaciones_pares, icc_por_partido
+from electoral.etiquetas import ETIQUETAS_CLASE, ETIQUETAS_RESULTADO
 from electoral.exportacion import construir_excel
 from electoral.fidelidad import PARTIDOS, analizar_fidelidad, panel
 from electoral.limites import limites_estado
@@ -50,17 +51,6 @@ COLORES = {
     "perdida_lejana": [215, 48, 39],
 }
 GRIS = [200, 200, 200]
-ETIQUETAS_CLASE = {
-    "ganada_solida": "Ganada sólida",
-    "ganada_ajustada": "Ganada ajustada",
-    "empate": "Empate",
-    "perdida_competitiva": "Perdida competitiva",
-    "perdida_intermedia": "Perdida intermedia",
-    "perdida_lejana": "Perdida lejana",
-}
-ETIQUETAS_RESULTADO = {"ganada": "Ganada", "empate": "Empate", "perdida": "Perdida"}
-
-
 @st.cache_data
 def cargar_resultados(eleccion: str) -> pd.DataFrame:
     rutas = {
@@ -340,12 +330,12 @@ with tab_mapa:
             f"Gris: {sin_fila} polígonos sin fila de resultados. Trazos locales simplificados."
         )
 
-        st.subheader("Secciones más cercanas a ganar")
+        st.subheader("Secciones más cercanas a la victoria")
         with st.expander("Cómo leer las tablas"):
             st.markdown(
                 "**Clasificación:** cercanía de la candidatura evaluada al primer lugar. "
-                "**Margen (pp):** ventaja sobre el segundo lugar cuando gana. "
-                "**Faltante (pp):** distancia al primer lugar cuando pierde. "
+                "**Margen (pp):** ventaja sobre el segundo lugar en caso de victoria. "
+                "**Faltante (pp):** distancia al primer lugar en caso de derrota o empate. "
                 "**Votos para ganar:** votos adicionales necesarios para superar al primer lugar; en un empate es 1. "
                 "**Abstención:** lista nominal menos votos en lista, descontando las casillas especiales. "
                 "**Alcanzable con abstención:** indica si los votos para ganar caben en esa abstención positiva."
@@ -393,7 +383,7 @@ with tab_mapa:
             "margen_pct": "Margen (pp)",
             "faltante_pct": "Faltante (pp)",
             "votos_para_ganar": "Votos para ganar",
-            "n_perdida_competitiva": "Secciones perdidas competitivas",
+            "n_perdida_competitiva": "Secciones con derrota competitiva",
         })
         tabla_distritos["Resultado"] = tabla_distritos["Resultado"].map(ETIQUETAS_RESULTADO)
         tabla_distritos["Clasificación"] = tabla_distritos["Clasificación"].astype("object").map(ETIQUETAS_CLASE)
@@ -425,6 +415,12 @@ with tab_mapa:
                         f"pct_candidatura_{partido}": "% de candidatura",
                         f"pct_validos_{partido}": "% de votos válidos",
                     })
+                    tabla["Resultado de candidatura"] = tabla["Resultado de candidatura"].map(
+                        ETIQUETAS_RESULTADO
+                    )
+                    tabla["Clase de candidatura"] = tabla["Clase de candidatura"].astype(
+                        "object"
+                    ).map(ETIQUETAS_CLASE)
                     tablas.append(tabla)
                 st.dataframe(pd.concat(tablas, ignore_index=True).round(1), hide_index=True, width="stretch")
                 st.caption("votos por partido estimados")
@@ -499,7 +495,7 @@ with tab_prioridad:
                 meta = meta_distrital(distritos, distrito_meta)
                 st.caption("Supuesto, no pronóstico: los votos nuevos salen de la abstención.")
                 if meta is None:
-                    st.info("La candidatura ya ganó este distrito; no hay faltante por cubrir.")
+                    st.info("La candidatura ya obtuvo la victoria en este distrito; no hay faltante por cubrir.")
                 else:
                     n_necesarias, capacidad = cubrir_meta(tabla_presupuesto, distrito_meta, meta)
                     st.write(f"Meta del distrito: {meta:,} votos. Capacidad disponible: {capacidad:,.0f} votos.")

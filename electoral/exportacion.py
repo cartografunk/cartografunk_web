@@ -6,6 +6,7 @@ import pandas as pd
 
 from electoral.clasificacion import CLASES, Umbrales
 from electoral.config import NOTAS_CALIDAD_DEMO, REGLAS_METODOLOGIA_DEMO
+from electoral.etiquetas import ETIQUETAS_CLASE, ETIQUETAS_RESULTADO
 
 
 def _secciones(resultados: pd.DataFrame) -> pd.DataFrame:
@@ -17,7 +18,9 @@ def _secciones(resultados: pd.DataFrame) -> pd.DataFrame:
         "votos_para_ganar": "Votos para ganar", "abstencion": "Abstención",
         "participacion_pct": "Participación (%)",
     }
-    return d[list(columnas)].rename(columns=columnas)
+    salida = d[list(columnas)].rename(columns=columnas)
+    salida["Clase"] = salida["Clase"].astype("object").replace(ETIQUETAS_CLASE)
+    return salida
 
 
 def _priorizacion(tabla: pd.DataFrame, presupuesto: float) -> pd.DataFrame:
@@ -44,7 +47,10 @@ def _distritos(tabla: pd.DataFrame) -> pd.DataFrame:
         "margen_pct": "Margen (%)", "faltante_pct": "Faltante (%)",
         "votos_para_ganar": "Votos para ganar",
     }
-    return tabla[list(columnas)].rename(columns=columnas).copy()
+    salida = tabla[list(columnas)].rename(columns=columnas).copy()
+    salida["Resultado"] = salida["Resultado"].replace(ETIQUETAS_RESULTADO)
+    salida["Clase"] = salida["Clase"].astype("object").replace(ETIQUETAS_CLASE)
+    return salida
 
 
 def construir_excel(resultados: pd.DataFrame, parametros: dict) -> bytes:
@@ -59,7 +65,7 @@ def construir_excel(resultados: pd.DataFrame, parametros: dict) -> bytes:
         ("Lejana (puntos)", umbrales.lejana_pp),
         ("Sólida (puntos)", umbrales.solida_pp),
         ("Alcanzable (votos)", umbrales.votos_alcanzables),
-        *[(clase, int(conteos.get(clase, 0))) for clase in CLASES],
+        *[(ETIQUETAS_CLASE[clase], int(conteos.get(clase, 0))) for clase in CLASES],
         ("Nota", f"Diagnóstico sobre {parametros.get('eleccion', 'Presidencia 2024')}; no es un pronóstico."),
     ], columns=["Concepto", "Valor"])
     metodologia = pd.DataFrame({"Regla": REGLAS_METODOLOGIA_DEMO})

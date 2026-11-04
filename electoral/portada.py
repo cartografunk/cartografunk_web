@@ -54,16 +54,16 @@ def mostrar_portada(eleccion: str) -> None:
         st.write(
             "Después se ordenan las candidaturas activas de la sección. "
             "V₁ es el total más alto y V₂ el segundo más alto. "
-            "La candidatura gana solo si supera a V₂; si comparte el primer lugar, empata."
+            "Hay victoria solo si supera a V₂; si comparte el primer lugar, hay empate."
         )
         st.latex(r"V_{1,s}=\max_c V_{c,s}")
         st.write(
-            "Si gana, el margen mide la ventaja sobre el segundo lugar. "
-            "Si pierde o empata, el faltante mide la distancia al primer lugar "
+            "En caso de victoria, el margen mide la ventaja sobre el segundo lugar. "
+            "En caso de derrota o empate, el faltante mide la distancia al primer lugar "
             "(cero votos cuando hay empate)."
         )
-        st.latex(r"M_s=V_{c,s}-V_{2,s}\quad(\mathrm{si\ gana})")
-        st.latex(r"F_s=V_{1,s}-V_{c,s}\quad(\mathrm{si\ no\ gana})")
+        st.latex(r"M_s=V_{c,s}-V_{2,s}\quad(\mathrm{victoria})")
+        st.latex(r"F_s=V_{1,s}-V_{c,s}\quad(\mathrm{derrota\ o\ empate})")
         st.write(
             "El margen y el faltante en puntos porcentuales dividen esa diferencia entre "
             "los votos válidos de la sección. Para superar al primer lugar se necesita "
@@ -83,8 +83,8 @@ def mostrar_portada(eleccion: str) -> None:
             "V S: votos de casillas especiales no anuladas."
         )
         st.caption(
-            "Clases actuales: victoria sólida desde 15 pp de margen; pérdida competitiva por debajo "
-            "de 5 pp, intermedia de 5 a menos de 15 pp y lejana desde 15 pp."
+            "Clases actuales: victoria sólida desde 15 pp de margen; derrota competitiva por debajo "
+            "de 5 pp, derrota intermedia de 5 a menos de 15 pp y derrota lejana desde 15 pp."
         )
     with apoyo:
         st.subheader("Apoyo mínimo observado")
@@ -108,7 +108,7 @@ def mostrar_portada(eleccion: str) -> None:
     with prioridad:
         st.subheader("Priorización de secciones")
         st.write(
-            "El simulador ordena secciones perdidas o empatadas que tienen abstención positiva. "
+            "El simulador ordena secciones con derrota o empate que tienen abstención positiva. "
             "Puedes indicar un costo estimado por voto, cambiarlo por sección, descartar secciones "
             "y probar un presupuesto. Son supuestos tuyos para comparar escenarios."
         )

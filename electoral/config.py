@@ -47,16 +47,16 @@ NOTAS_CALIDAD_DEMO = (
     "32 filas de voto en el extranjero están fuera del mapa.",
     "19 secciones siguen con más votos en lista que personas en lista nominal; la diferencia no está explicada.",
     "La geometría usa EPSG:32614 como supuesto de trabajo; el CRS original no está confirmado por metadatos.",
-    "La Presidencia no se gana por sección ni por distrito: estas escalas sirven para explorar resultados.",
+    "La victoria presidencial no se determina por sección ni por distrito: estas escalas sirven para explorar resultados.",
     "CPV no integrado.",
 )
 
 REGLAS_METODOLOGIA_DEMO = (
-    "Si la candidatura ganó, el margen es su ventaja sobre el segundo lugar.",
-    "Si perdió, el faltante es la distancia al primer lugar.",
+    "En caso de victoria, el margen es la ventaja sobre el segundo lugar.",
+    "En caso de derrota, el faltante es la distancia al primer lugar.",
     "Votos para ganar = faltante + 1; en empate se necesita 1 voto.",
     "Abstención = lista nominal menos votos en lista, descontando casillas especiales.",
-    "Pérdida competitiva: faltante menor a 5 puntos; intermedia: de 5 a menos de 15; lejana: desde 15.",
-    "Victoria sólida: margen de al menos 15 puntos; la demás victoria es ajustada.",
+    "Derrota competitiva: faltante menor a 5 puntos; intermedia: de 5 a menos de 15; lejana: desde 15.",
+    "Victoria sólida: margen de al menos 15 puntos; las demás victorias son ajustadas.",
     "Es un diagnóstico sobre Presidencia 2024, no un pronóstico.",
 )
