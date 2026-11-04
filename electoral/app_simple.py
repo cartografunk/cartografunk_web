@@ -4,6 +4,7 @@ Ejecutar desde la raíz del proyecto: streamlit run electoral/demo_app.py
 """
 
 import json
+from datetime import date
 from io import BytesIO
 import sys
 from pathlib import Path
@@ -21,9 +22,11 @@ from electoral.agregacion import agregar
 from electoral.clasificacion import CLASES, Umbrales, clasificar
 from electoral.config import (
     CANDIDATURAS, DIPUTACIONES_PARQUET, GEOMETRIA_PARQUET, NOTAS_CALIDAD_DEMO,
+    REGLAS_METODOLOGIA_DEMO,
     PRESIDENCIA_PARQUET, SENADURIAS_PARQUET,
 )
 from electoral.estadisticas_fidelidad import correlaciones_pares, icc_por_partido
+from electoral.exportacion import construir_excel
 from electoral.fidelidad import PARTIDOS, analizar_fidelidad, panel
 from electoral.precalcular_fidelidad import SALIDAS
 from electoral.priorizacion import cubrir_meta, meta_distrital, preparar_priorizacion, presupuestar
@@ -158,6 +161,11 @@ def _excel_fidelidad(tabla: pd.DataFrame) -> bytes:
     return buffer.getvalue()
 
 
+@st.cache_data(show_spinner="Preparando Excel…")
+def preparar_excel_demo(resultados: pd.DataFrame, parametros: dict) -> bytes:
+    return construir_excel(resultados, parametros)
+
+
 st.set_page_config(page_title="Rentabilidad electoral", layout="wide")
 st.title("Rentabilidad electoral · Presidencia 2024")
 
@@ -171,17 +179,8 @@ tab_que, tab_mapa, tab_prioridad, tab_fidelidad, tab_calidad = st.tabs([
 ])
 with tab_que:
     st.subheader("Cómo leer la rentabilidad")
-    st.write(
-        "Si la candidatura ganó una sección, el margen es su ventaja sobre el segundo lugar. "
-        "Si perdió, el faltante es la distancia al primer lugar. Para superar al primero "
-        "se necesita un voto más que el faltante; en un empate, se necesita uno."
-    )
-    st.write(
-        "La abstención es la lista nominal menos los votos en lista, después de descontar "
-        "los votos de casillas especiales. Una pérdida es competitiva si el faltante es "
-        "menor a 5 puntos porcentuales, intermedia entre 5 y menos de 15, y lejana "
-        "desde 15. Una victoria es sólida desde 15 puntos."
-    )
+    for regla in REGLAS_METODOLOGIA_DEMO:
+        st.write(f"• {regla}")
     st.caption("Las categorías describen secciones; no son un pronóstico de la elección.")
 
 with tab_mapa:
@@ -371,6 +370,19 @@ with tab_prioridad:
             st.warning("La abstención disponible de las secciones no descartadas no alcanza la meta.")
         else:
             st.write(f"Secciones no descartadas necesarias, en orden de costo: {n_necesarias:,}.")
+
+    parametros_excel = {
+        "candidatura": NOMBRES[evaluar], "estado": f"{estado:02d} · {nombres_estados[estado]}",
+        "fecha": date.today().isoformat(), "umbrales": umbrales,
+        "distritos": distritos, "priorizacion": tabla_presupuesto,
+        "presupuesto": presupuesto,
+    }
+    st.download_button(
+        "Descargar diagnóstico en Excel",
+        preparar_excel_demo(res, parametros_excel),
+        file_name=f"rentabilidad_{estado:02d}_{evaluar.removeprefix('cand_')}.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
 
 with tab_fidelidad:
     st.subheader("Apoyo mínimo observado 2024")

@@ -44,3 +44,13 @@ NOTAS_CALIDAD_DEMO = (
     "La Presidencia no se gana por sección ni por distrito: estas escalas sirven para explorar resultados.",
     "CPV no integrado.",
 )
+
+REGLAS_METODOLOGIA_DEMO = (
+    "Si la candidatura ganó, el margen es su ventaja sobre el segundo lugar.",
+    "Si perdió, el faltante es la distancia al primer lugar.",
+    "Votos para ganar = faltante + 1; en empate se necesita 1 voto.",
+    "Abstención = lista nominal menos votos en lista, descontando casillas especiales.",
+    "Pérdida competitiva: faltante menor a 5 puntos; intermedia: de 5 a menos de 15; lejana: desde 15.",
+    "Victoria sólida: margen de al menos 15 puntos; la demás victoria es ajustada.",
+    "Es un diagnóstico sobre Presidencia 2024, no un pronóstico.",
+)
