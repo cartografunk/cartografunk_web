@@ -25,10 +25,16 @@ from electoral.config import (
 )
 from electoral.estadisticas_fidelidad import correlaciones_pares, icc_por_partido
 from electoral.fidelidad import PARTIDOS, analizar_fidelidad, panel
+from electoral.reparto_distrito import repartir_distrito
+from electoral.reparto_fraccionario import repartir_fraccionario
 from electoral.rentabilidad import rentabilidad
 
 
 CANDS = [f"cand_{nombre}" for nombre in CANDIDATURAS]
+MIEMBROS = {
+    "cand_PAN_PRI_PRD": ["PAN", "PRI", "PRD"],
+    "cand_PVEM_PT_MORENA": ["PVEM", "PT", "MORENA"],
+}
 NOMBRES = {
     "cand_PAN_PRI_PRD": "PAN-PRI-PRD",
     "cand_PVEM_PT_MORENA": "PVEM-PT-MORENA",
@@ -107,6 +113,14 @@ def cargar_elecciones() -> dict[str, pd.DataFrame]:
     }
 
 
+@st.cache_data(show_spinner="Calculando estimación por partido…")
+def cargar_reparto_estado(estado: int) -> tuple[pd.DataFrame, pd.DataFrame]:
+    secciones = cargar_resultados().loc[
+        lambda d: d["ID_ESTADO"].eq(estado) & d["SECCION"].ne(0)
+    ]
+    return repartir_distrito(secciones), repartir_fraccionario(secciones)
+
+
 @st.cache_data(show_spinner="Calculando fidelidad por partido…")
 def cargar_analisis_fidelidad(ambito: str, estado: int) -> pd.DataFrame:
     elecciones = cargar_elecciones()
@@ -149,7 +163,7 @@ tab_rentabilidad, tab_fidelidad = st.tabs(["Rentabilidad", "Fidelidad"])
 with tab_rentabilidad:
     with st.sidebar:
         evaluar = st.selectbox("Candidatura a evaluar", CANDS, index=1, format_func=NOMBRES.get)
-        st.caption("Se comparan candidaturas. Los votos de coalición no se reparten entre partidos en este demo.")
+        st.caption("El ranking compara candidaturas. La estimación por partido aparece debajo del mapa.")
         estado = st.selectbox(
             "Estado (clave INE)", estados,
             index=estados.index(14) if 14 in estados else 0,
@@ -251,6 +265,43 @@ with tab_rentabilidad:
     tabla_distritos["Resultado"] = tabla_distritos["Resultado"].map(ETIQUETAS_RESULTADO)
     tabla_distritos["Clasificación"] = tabla_distritos["Clasificación"].astype("object").map(ETIQUETAS_CLASE)
     st.dataframe(tabla_distritos, width="stretch")
+
+    st.header("¿Y por partido?")
+    if evaluar == "cand_MC":
+        st.info("MC compitió solo, así que no hay nada que repartir")
+    else:
+        st.warning("Es un estimado: la regla oficial no está verificada")
+        miembros = MIEMBROS[evaluar]
+        reparto_distritos, reparto_secciones = cargar_reparto_estado(estado)
+        reparto_distritos = reparto_distritos.loc[reparto_distritos["ID_DISTRITO_FEDERAL"].ne(0)].copy()
+        validos = res.loc[res["estado"].eq("con_resultado")].groupby(
+            "ID_DISTRITO_FEDERAL"
+        )["NUM_VOTOS_VALIDOS"].sum()
+        reparto_distritos["Votos válidos"] = reparto_distritos["ID_DISTRITO_FEDERAL"].map(validos)
+        columnas_reparto = {"ID_DISTRITO_FEDERAL": "Distrito federal"}
+        for miembro in miembros:
+            columna = f"rep_{miembro}"
+            reparto_distritos[f"{miembro} (%)"] = (
+                100 * reparto_distritos[columna] / reparto_distritos["Votos válidos"].where(
+                    reparto_distritos["Votos válidos"].gt(0)
+                )
+            ).round(1)
+            columnas_reparto[columna] = f"{miembro} (votos estimados)"
+        st.dataframe(reparto_distritos[
+            ["ID_DISTRITO_FEDERAL", "Votos válidos", *[f"rep_{p}" for p in miembros],
+             *[f"{p} (%)" for p in miembros]]
+        ].rename(columns=columnas_reparto), width="stretch")
+
+        cercanas = rescatables.head(10)[["ID_SECCION", "MUNICIPIO", "votos_para_ganar"]].merge(
+            reparto_secciones[["ID_SECCION", *[f"frac_{p}" for p in miembros]]],
+            on="ID_SECCION", how="left", validate="one_to_one",
+        )
+        st.caption("Diez secciones más cercanas a ganar; votos estimados por partido, redondeados.")
+        st.dataframe(cercanas.rename(columns={
+            "ID_SECCION": "Sección", "MUNICIPIO": "Municipio",
+            "votos_para_ganar": "Votos para ganar",
+            **{f"frac_{p}": p for p in miembros},
+        }).round(1), width="stretch")
 
     st.caption(
         "Presidencia 2024: candidaturas calculadas con columnas de _SEC.csv. "
