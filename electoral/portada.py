@@ -7,60 +7,81 @@ def mostrar_portada(eleccion: str) -> None:
     """Presenta el alcance y las fórmulas sin ejecutar cálculos adicionales."""
     st.html("""
 <style>
-.le-hero{position:relative;isolation:isolate;overflow:hidden;background:radial-gradient(circle at 86% 0%,#302042 0%,#1a1729 50%,#141323 100%);color:#f7f5fa;border:1px solid #513865;border-radius:18px;padding:clamp(26px,4vw,56px);min-height:340px;font-family:Arial,Helvetica,sans-serif}
+.le-hero{position:relative;isolation:isolate;overflow:hidden;background:radial-gradient(circle at 86% 0%,#302042 0%,#1a1729 50%,#141323 100%);color:#f7f5fa;border:1px solid #513865;border-radius:18px;padding:clamp(26px,3vw,42px);font-family:Arial,Helvetica,sans-serif}
 .le-hero:after{content:"";position:absolute;left:0;right:0;bottom:0;height:6px;background:linear-gradient(90deg,#3c84bb 0 34%,#e9bd53 34% 67%,#d45851 67%)}
-.le-kicker{font-size:12px;font-weight:800;letter-spacing:.19em;color:#c4a7d9;text-transform:uppercase}
 .le-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(270px,.8fr);align-items:center;gap:22px}
-.le-title{font-size:clamp(3.25rem,6vw,6.8rem);line-height:.91;letter-spacing:-.065em;margin:28px 0 22px;font-weight:900;max-width:11ch}
+.le-title{font-size:clamp(3.25rem,6vw,6.8rem);line-height:.91;letter-spacing:-.065em;margin:8px 0 12px;font-weight:900;max-width:11ch}
 .le-title span{color:#e1b8ff}
-.le-lead{font-size:clamp(1.05rem,1.65vw,1.38rem);line-height:1.42;max-width:58ch;color:#e8e0ed;margin:0 0 18px}
-.le-map{width:100%;min-height:280px;opacity:.78;transform:rotate(-4deg);filter:drop-shadow(0 12px 18px rgba(0,0,0,.2));background:url('/app/static/mexico_estados.svg') center/contain no-repeat}
+.le-map{width:100%;min-height:220px;opacity:.78;transform:rotate(-4deg);filter:drop-shadow(0 12px 18px rgba(0,0,0,.2));background:url('/app/static/mexico_estados.svg') center/contain no-repeat}
 .le-rail{display:flex;gap:22px;flex-wrap:wrap;border-top:1px solid #584569;padding-top:18px;margin-top:14px;font-size:13px;color:#e1d7e8}
 .le-rail strong{color:#d990ff;margin-right:7px;font-variant-numeric:tabular-nums}
-@media(max-width:760px){.le-hero{padding:26px 22px;min-height:0}.le-grid{grid-template-columns:1fr}.le-title{font-size:clamp(3rem,12vw,5rem);margin:20px 0}.le-map{width:300px;max-width:100%;min-height:200px;margin:0 auto}.le-rail{gap:10px 22px}}
+@media(max-width:760px){.le-hero{padding:26px 22px}.le-grid{grid-template-columns:1fr}.le-title{font-size:clamp(3rem,12vw,5rem);margin:8px 0}.le-map{width:300px;max-width:100%;min-height:180px;margin:0 auto}.le-rail{gap:10px 22px}}
 </style>
 <section class="le-hero" aria-label="Presentación del Laboratorio Electoral">
-  <div class="le-kicker">Cartografunk · Análisis territorial 2024</div>
   <div class="le-grid">
     <div>
-      <h2 class="le-title">Laboratorio<br><span>Electoral.</span></h2>
-      <p class="le-lead">Del voto al territorio: cálculos y cruces de datos para explorar resultados y diseñar estrategias electorales con evidencia agregada.</p>
+      <h2 class="le-title">Laboratorio<br><span>Electoral</span></h2>
     </div>
     <div class="le-map" aria-label="Contornos estatales de México"></div>
   </div>
-  <div class="le-rail"><span><strong>01</strong> Rentabilidad</span><span><strong>02</strong> Apoyo mínimo</span><span><strong>03</strong> Priorización</span><span><strong>04</strong> CPV · próximo</span></div>
+  <div class="le-rail"><span><strong>01</strong> Rentabilidad</span><span><strong>02</strong> Apoyo mínimo</span><span><strong>03</strong> Priorización</span><span><strong>04</strong> CPV - próximo</span></div>
 </section>
 """)
 
     st.markdown("### Tres formas de leer el territorio")
     st.caption(
-        f"{eleccion} · Resultados agregados, tablas y descarga. Diagnóstico exploratorio: "
-        "no sigue personas entre elecciones ni predice el voto."
+        f"Cobertura actual: {eleccion}. Los resultados de otros años aún no están integrados. "
+        "Diagnóstico exploratorio con datos agregados, tablas y descarga."
     )
 
     rent, apoyo, prioridad = st.tabs([
-        "01 · Rentabilidad electoral", "02 · Apoyo mínimo (base electoral)",
-        "03 · Priorización",
+        "01 - Rentabilidad electoral", "02 - Apoyo mínimo (base electoral)",
+        "03 - Priorización",
     ])
     with rent:
         st.subheader("Rentabilidad electoral")
         st.write(
-            "La unidad del ranking es la candidatura. Sus votos reúnen las columnas individuales "
-            "de sus integrantes y las combinaciones marcadas en la boleta. La comparación se hace "
-            "dentro de cada sección; en Diputaciones y Senadurías solo se evalúan candidaturas activas."
+            "El cálculo compara candidaturas en cada sección. Para una coalición, se suman "
+            "los votos marcados por cada partido integrante y por cada combinación de esos partidos. "
+            "Una candidatura individual conserva sus propios votos. Cada marca entra una sola vez "
+            "en el total de su candidatura."
         )
-        st.latex(r"V_{c,s}=\sum_{p\in c}V_{p,s}+\sum_{k\in c}V_{k,s}")
-        st.latex(r"M_s=V_{c,s}-V_{2,s}\quad(\mathrm{ganada})")
-        st.latex(r"F_s=V_{1,s}-V_{c,s}\quad(\mathrm{perdida\ o\ empate})")
+        st.latex(r"V_{c,s}=\sum_{p\in P_c}V_{p,s}+\sum_{m\in M_c}V_{m,s}")
+        st.caption(
+            "V: votos de la candidatura c en la sección s. P: partidos integrantes. "
+            "M: combinaciones de la misma candidatura registradas para esa elección y unidad."
+        )
         st.write(
-            "El margen o faltante en puntos porcentuales es 100 veces la diferencia de votos "
-            "dividida entre los votos válidos de la sección. Para superar el primer lugar, "
-            "una candidatura que pierde o empata necesita el faltante más un voto."
+            "Después se ordenan las candidaturas activas de la sección. "
+            "V₁ es el total más alto y V₂ el segundo más alto. "
+            "La candidatura gana solo si supera a V₂; si comparte el primer lugar, empata."
+        )
+        st.latex(r"V_{1,s}=\max_c V_{c,s}")
+        st.write(
+            "Si gana, el margen mide la ventaja sobre el segundo lugar. "
+            "Si pierde o empata, el faltante mide la distancia al primer lugar "
+            "(cero votos cuando hay empate)."
+        )
+        st.latex(r"M_s=V_{c,s}-V_{2,s}\quad(\mathrm{si\ gana})")
+        st.latex(r"F_s=V_{1,s}-V_{c,s}\quad(\mathrm{si\ no\ gana})")
+        st.write(
+            "El margen y el faltante en puntos porcentuales dividen esa diferencia entre "
+            "los votos válidos de la sección. Para superar al primer lugar se necesita "
+            "el faltante más un voto. En un empate, se necesita uno."
         )
         st.latex(r"m_s=100\frac{M_s}{V_{\mathrm{validos},s}}")
         st.latex(r"f_s=100\frac{F_s}{V_{\mathrm{validos},s}}")
         st.latex(r"G_s=F_s+1")
+        st.markdown("#### Abstención corregida")
+        st.write(
+            "Para comparar esa meta con la abstención, se descuentan del total los votos "
+            "de casillas especiales, que tienen lista nominal igual a cero."
+        )
         st.latex(r"A_s=LN_s-(V_{\mathrm{total},s}-V_{S,s})")
+        st.caption(
+            "LN: lista nominal de la sección. V total: votos registrados. "
+            "V S: votos de casillas especiales no anuladas."
+        )
         st.caption(
             "Clases actuales: victoria sólida desde 15 pp de margen; pérdida competitiva por debajo "
             "de 5 pp, intermedia de 5 a menos de 15 pp y lejana desde 15 pp."
@@ -102,7 +123,7 @@ def mostrar_portada(eleccion: str) -> None:
     st.html("""
 <aside style="border-left:3px solid #b44fff;background:#1b1627;border-radius:8px;
   padding:15px 19px;color:#e5daec;font-family:Arial,Helvetica,sans-serif;line-height:1.45">
-  <strong style="color:#e1b8ff;letter-spacing:.08em;font-size:12px">04 / PRÓXIMO CRUCE</strong><br>
+  <strong style="color:#e1b8ff;letter-spacing:.08em;font-size:12px">04 - PRÓXIMO CRUCE</strong><br>
   Datos sociodemográficos del Censo de Población y Vivienda (CPV).
   Aún no están integrados en este laboratorio.
 </aside>

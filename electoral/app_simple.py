@@ -221,17 +221,15 @@ def mostrar_resumen_clases(conteos: pd.Series) -> None:
 <section class="lab-metrics" aria-label="Secciones por clasificación">""" + tarjetas + "</section>")
 
 
-st.set_page_config(page_title="Laboratorio electoral · Cartografunk", layout="wide")
+st.set_page_config(page_title="Laboratorio electoral - Cartografunk", layout="wide")
 st.html("""
 <style>
 .lab-masthead{display:flex;align-items:center;justify-content:space-between;gap:16px;
   padding:4px 0 19px;border-bottom:1px solid #38204d;font-family:Arial,Helvetica,sans-serif}
 .lab-brand{font-size:13px;font-weight:800;letter-spacing:.18em;color:#e8d6f4}
-.lab-year{font-size:12px;font-weight:700;letter-spacing:.12em;color:#ad9fbb}
-@media(max-width:640px){.lab-masthead{padding-bottom:12px}.lab-brand{font-size:11px}.lab-year{font-size:10px}}
+@media(max-width:640px){.lab-masthead{padding-bottom:12px}.lab-brand{font-size:11px}}
 </style>
-<header class="lab-masthead"><span class="lab-brand">CARTOGRAFUNK / LABORATORIO ELECTORAL</span>
-<span class="lab-year">ELECCIONES FEDERALES · 2024</span></header>
+<header class="lab-masthead"><span class="lab-brand">CARTOGRAFUNK / LABORATORIO ELECTORAL</span></header>
 """)
 st.caption("Elige la elección, la candidatura y el territorio para explorar sus resultados.")
 
@@ -265,7 +263,7 @@ with col_estado:
     estado = st.selectbox(
         "Estado (clave INE)", estados,
         index=estados.index(22) if 22 in estados else 0,
-        format_func=lambda clave: f"{clave:02d} · {nombres_estados[clave]}",
+        format_func=lambda clave: f"{clave:02d} - {nombres_estados[clave]}",
     )
 
 tab_que, tab_mapa, tab_prioridad, tab_fidelidad, tab_calidad = st.tabs([
@@ -389,7 +387,7 @@ with tab_mapa:
             "n_secciones": "Secciones",
             "n_con_resultado": "Con resultado",
             "n_sin_resultado": "Sin resultado",
-            **{columna: f"{NOMBRES.get(columna, columna.removeprefix('cand_').replace('_', '-'))} · votos" for columna in CANDS},
+            **{columna: f"{NOMBRES.get(columna, columna.removeprefix('cand_').replace('_', '-'))} - votos" for columna in CANDS},
             "resultado": "Resultado",
             "clase": "Clasificación",
             "margen_pct": "Margen (pp)",
@@ -512,7 +510,7 @@ with tab_prioridad:
 
                 parametros_excel = {
                     "candidatura": NOMBRES.get(evaluar, evaluar.removeprefix("cand_").replace("_", "-")),
-                    "eleccion": eleccion, "estado": f"{estado:02d} · {nombres_estados[estado]}",
+                    "eleccion": eleccion, "estado": f"{estado:02d} - {nombres_estados[estado]}",
                     "fecha": date.today().isoformat(), "umbrales": umbrales,
                     "distritos": distritos, "priorizacion": tabla_presupuesto,
                     "presupuesto": presupuesto,
@@ -546,7 +544,7 @@ with tab_fidelidad:
             estado_fid = st.selectbox(
                 "Estado para ver secciones", estados,
                 index=estados.index(22) if 22 in estados else 0,
-                format_func=lambda clave: f"{clave:02d} · {nombres_estados[clave]}",
+                format_func=lambda clave: f"{clave:02d} - {nombres_estados[clave]}",
             )
 
         analisis = cargar_analisis_fidelidad(ambito_fid, estado_fid)
@@ -605,7 +603,7 @@ with tab_fidelidad:
         )
 
         icc, correlaciones = cargar_estadisticas_fidelidad(estado_fid)
-        st.subheader("Consistencia y relación entre boletas · estado seleccionado")
+        st.subheader("Consistencia y relación entre boletas - estado seleccionado")
         st.dataframe(icc.loc[icc["partido"].eq(partido_fid)], width="stretch")
         st.dataframe(correlaciones.loc[correlaciones["partido"].eq(partido_fid)], width="stretch")
         st.caption("Apoyo mínimo observado 2024: diagnóstico exploratorio, no seguimiento de personas ni de años distintos.")
@@ -620,4 +618,4 @@ with tab_calidad:
         "El reparto de coaliciones por partido es experimental (A_propios).",
     )
     for nota in notas:
-        st.write(f"• {nota}")
+        st.markdown(f"\\- {nota}")
