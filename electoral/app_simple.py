@@ -25,6 +25,7 @@ from electoral.config import (
 )
 from electoral.estadisticas_fidelidad import correlaciones_pares, icc_por_partido
 from electoral.fidelidad import PARTIDOS, analizar_fidelidad, panel
+from electoral.precalcular_fidelidad import SALIDAS
 from electoral.reparto_distrito import repartir_distrito
 from electoral.reparto_fraccionario import repartir_fraccionario
 from electoral.rentabilidad import rentabilidad
@@ -123,6 +124,10 @@ def cargar_reparto_estado(estado: int) -> tuple[pd.DataFrame, pd.DataFrame]:
 
 @st.cache_data(show_spinner="Calculando fidelidad por partido…")
 def cargar_analisis_fidelidad(ambito: str, estado: int) -> pd.DataFrame:
+    precalculado = PRESIDENCIA_PARQUET.parent / SALIDAS[ambito]
+    if precalculado.exists():
+        tabla = pd.read_parquet(precalculado)
+        return tabla.loc[tabla["ID_ESTADO"].eq(estado)] if ambito == "estado" else tabla
     elecciones = cargar_elecciones()
     if ambito == "estado":
         elecciones = {
@@ -159,7 +164,7 @@ sec = cargar_resultados()
 estados = sorted(sec.loc[sec["estado"].ne("extranjero"), "ID_ESTADO"].unique())
 nombres_estados = sec.drop_duplicates("ID_ESTADO").set_index("ID_ESTADO")["NOMBRE_ESTADO"].to_dict()
 
-tab_rentabilidad, tab_fidelidad = st.tabs(["Rentabilidad", "Fidelidad"])
+tab_rentabilidad, tab_fidelidad = st.tabs(["Rentabilidad", "Apoyo mínimo 2024"])
 with tab_rentabilidad:
     with st.sidebar:
         evaluar = st.selectbox("Candidatura a evaluar", CANDS, index=1, format_func=NOMBRES.get)
@@ -309,7 +314,12 @@ with tab_rentabilidad:
     )
 
 with tab_fidelidad:
-    st.subheader("Fidelidad por partido · 2024")
+    st.subheader("Apoyo mínimo observado 2024")
+    st.write(
+        "Es el menor porcentaje de votos del partido observado en una sección "
+        "entre Presidencia, Diputaciones y Senadurías de 2024. No asegura que "
+        "hayan votado las mismas personas en las tres boletas."
+    )
     st.caption("Clases: propuesta Scouter, umbrales provisionales. Reparto de coaliciones experimental (A_propios), solo 2024.")
     col_ambito, col_partido, col_estado = st.columns(3)
     with col_ambito:
@@ -337,9 +347,9 @@ with tab_fidelidad:
         "percentil_piso", "n_grupo", "clase", "volatil", "umbral_rango_pp",
         "primera_en_todas", "coalicion_distinta", "ambito",
     ]].sort_values(["volatil", "piso_pct"], ascending=[False, False]).rename(columns={
-        "ID_SECCION": "Sección", "partido": "Partido", "piso_pct": "Piso (%)",
-        "piso_votos": "Piso (votos)", "rango_pp": "Rango (pp)",
-        "percentil_piso": "Percentil del piso", "n_grupo": "Secciones del grupo",
+        "ID_SECCION": "Sección", "partido": "Partido", "piso_pct": "Apoyo mínimo (%)",
+        "piso_votos": "Apoyo mínimo (votos)", "rango_pp": "Variación (puntos)",
+        "percentil_piso": "Percentil del apoyo", "n_grupo": "Secciones del grupo",
         "clase": "Clase", "volatil": "Volátil", "umbral_rango_pp": "Umbral de rango (pp)",
         "primera_en_todas": "Primera en las tres", "coalicion_distinta": "Coalición distinta",
         "ambito": "Ámbito",
@@ -365,6 +375,7 @@ with tab_fidelidad:
     )
 
     icc, correlaciones = cargar_estadisticas_fidelidad(estado_fid)
-    st.subheader("ICC y correlaciones · estado seleccionado")
+    st.subheader("Consistencia y relación entre boletas · estado seleccionado")
     st.dataframe(icc.loc[icc["partido"].eq(partido_fid)], width="stretch")
     st.dataframe(correlaciones.loc[correlaciones["partido"].eq(partido_fid)], width="stretch")
+    st.caption("Apoyo mínimo observado 2024: diagnóstico exploratorio, no seguimiento de personas ni de años distintos.")
