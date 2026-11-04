@@ -6,8 +6,8 @@ Actualizado: 2026-11-04. Fuente principal: código y pruebas de esta rama. Las c
 
 | Elemento | Estado comprobado |
 | --- | --- |
-| Rama de trabajo | `demo-tres-elecciones`, derivada de `demo-11am` (`31464db`). |
-| Respaldos | `respaldo-antes-noche` apunta a `ab5b4ea`; `demo-11am`, `demo-11am-b` y `demo-11am-c` conservan sus commits originales. |
+| Rama de trabajo | `demo-tres-elecciones`, derivada de `demo-11am` (`31464db`) y publicada como `origin/demo-tres-elecciones`. |
+| Respaldos locales | `respaldo-antes-noche` apunta a `ab5b4ea`; `demo-11am`, `demo-11am-b` y `demo-11am-c` conservan sus commits originales. No se publicaron esas etiquetas. |
 | App vigente para el demo | `electoral/app_simple.py`: selector de Presidencia, Diputaciones MR y Senadurías MR de 2024; candidatura activa, mapa, clases, aportes de partidos de coalición, priorización y apoyo mínimo. |
 | App anterior | `electoral/demo_app.py`: demo de Presidencia 2024. |
 | Archivos de datos | `data/electoral/*.parquet`, generados localmente y no versionados; los ZIP de origen se indican en `electoral/config.py`. |
@@ -35,4 +35,4 @@ Resultado: **67 aprobadas, 0 omitidas**, 2 advertencias de GDAL. AppTest con `ti
 
 ## Acceso entre cuentas
 
-Esta documentación se comparte mediante Git cuando la rama se publica. No existe un `.mcp.json` en el repositorio. Los Parquet locales y las rutas `D:\` no se comparten por Git; su acceso desde otras cuentas o máquinas es **NO VERIFICADO**. No se ha implementado un servidor MCP para esos datos.
+Esta documentación se comparte mediante `origin/demo-tres-elecciones`. No existe un `.mcp.json` en el repositorio. Los Parquet locales y las rutas `D:\` no se comparten por Git; su acceso desde otras cuentas o máquinas es **NO VERIFICADO**. No se ha implementado un servidor MCP para esos datos.
