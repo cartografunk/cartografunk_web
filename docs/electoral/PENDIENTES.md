@@ -35,3 +35,14 @@ Esta lista recoge los `NO VERIFICADO` y `NO ENCONTRADO` de los reportes temporal
 | Interpretar la geometría del GPKG como EPSG:32614, simplificar a 25 m y escribir GeoParquet EPSG:4326. | [`geometria.py`](../../electoral/geometria.py), [`config.py`](../../electoral/config.py); `%TEMP%\cartografunk_ine_crs.json` registra 70 643/70 753 centroides dentro de su entidad con EPSG:32614; `%TEMP%\cartografunk_ine_geometry_quality.json` registra 249 polígonos sin fila de Presidencia. |
 
 Estas decisiones describen el comportamiento actual y las mediciones citadas; ninguna de las hipótesis marcadas `NO VERIFICADO` se eleva a conclusión documental.
+
+## Pendientes del demo actual
+
+| Punto | Evidencia y estado |
+| --- | --- |
+| La regla oficial de reparto de coaliciones por partido sigue **NO VERIFICADO**. El demo muestra `A_propios` por distrito y fracciones por sección como estimaciones. | [`app_simple.py`](../../electoral/app_simple.py), [`reparto_distrito.py`](../../electoral/reparto_distrito.py), [`reparto_fraccionario.py`](../../electoral/reparto_fraccionario.py). |
+| Las clases `Bastión` y `Base fuerte` de apoyo mínimo son propuestas provisionales; su relación con una fidelidad individual o histórica sigue **NO VERIFICADO**. | [`analizar_fidelidad()`](../../electoral/fidelidad.py) y [METODOLOGIA.md](METODOLOGIA.md), sección «Apoyo mínimo observado 2024». |
+| Fidelidad entre años y comparación de casillas de las tres boletas: **NO VERIFICADO** en el demo. Los archivos usados por la app son secciones de 2024 y casillas de Presidencia 2024. | [`config.py`](../../electoral/config.py) y [DATOS.md](DATOS.md). |
+| CPV no integrado; unión municipal validada **NO VERIFICADO**. | `%TEMP%\cartografunk_mza_20261103_claves_por_seccion.csv` registra discrepancias K1–K3; el demo no carga CPV. |
+| Las 19 secciones de Presidencia 2024 que siguen con votos sobre lista tras descontar casillas `S` no tienen explicación documental **NO VERIFICADO**. | `%TEMP%\electoral_reporte_cola6.md` y [`config.py`](../../electoral/config.py). |
+| La meta de carga inicial menor de 10 s no se cumplió: AppTest midió 27.92 s tras precalcular los dos ámbitos. El aspecto en navegador y el arranque del servidor siguen **NO VERIFICADO**. | `%TEMP%\electoral_reporte_demo.md`, paso 2. |
