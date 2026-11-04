@@ -88,24 +88,27 @@ def mostrar_portada(eleccion: str) -> None:
             "En cada sección se cuentan los votos marcados por los partidos de la candidatura "
             "y por sus combinaciones. Cada marca se suma una vez."
         )
-        st.latex(
-            r"\begin{aligned}V_{c,s}&=\sum_{p\in P_c}V_{p,s}\\"
-            r"&+\sum_{m\in M_c}V_{m,s}\end{aligned}"
-        )
+        st.latex(r"V_{c,s}=\sum_{p\in P_c}V_{p,s}+\sum_{m\in M_c}V_{m,s}")
         st.markdown(
-            "**$c$** - candidatura que se analiza; **$s$** - sección electoral.  \n"
-            "**$P_c$** - partidos que integran esa candidatura; **$M_c$** - combinaciones de esos partidos.  \n"
-            "**$V_{p,s}$** - votos marcados por el partido $p$; **$V_{m,s}$** - votos marcados por la "
-            "combinación $m$. **$V_{c,s}$** es la suma de la candidatura."
+            "**$c$** - candidatura que se analiza  \n"
+            "**$s$** - sección electoral  \n"
+            "**$P_c$** - partidos que integran esa candidatura  \n"
+            "**$M_c$** - combinaciones de esos partidos  \n"
+            "**$V_{p,s}$** - votos marcados por el partido $p$  \n"
+            "**$V_{m,s}$** - votos marcados por la combinación $m$  \n"
+            "**$V_{c,s}$** - suma de votos de la candidatura en la sección"
         )
 
         st.markdown("#### Primer y segundo lugar")
         st.write("Se ordenan los votos de las candidaturas activas en la sección")
         st.latex(r"V_{1,s}=\max_c V_{c,s}")
         st.markdown(
-            "**$V_{1,s}$** - votos de la candidatura en primer lugar en la sección $s$.  \n"
-            "**$V_{2,s}$** - votos del segundo lugar. Hay **Victoria** cuando la candidatura "
-            "evaluada supera al segundo lugar; si dos candidaturas comparten el primer lugar, hay **Empate**."
+            "**$V_{1,s}$** - votos de la candidatura en primer lugar en la sección $s$  \n"
+            "**$V_{2,s}$** - votos del segundo lugar"
+        )
+        st.write(
+            "Hay Victoria cuando la candidatura evaluada supera al segundo lugar. "
+            "Si dos candidaturas comparten el primer lugar, hay Empate."
         )
 
         st.markdown("#### Distancia en votos")
@@ -114,8 +117,8 @@ def mostrar_portada(eleccion: str) -> None:
         st.write("Si hubo derrota o empate, el faltante es la distancia al primer lugar")
         st.latex(r"F_s=V_{1,s}-V_{c,s}\quad(\mathrm{derrota\ o\ empate})")
         st.markdown(
-            "**$M_s$** - margen de victoria en votos; **$F_s$** - votos que faltaron para igualar "
-            "el primer lugar. En un empate, **$F_s=0$**."
+            "**$M_s$** - margen de victoria en votos  \n"
+            "**$F_s$** - votos que faltaron para igualar el primer lugar. En un empate, **$F_s=0$**"
         )
 
         st.markdown("#### Distancia en puntos porcentuales")
@@ -123,7 +126,8 @@ def mostrar_portada(eleccion: str) -> None:
         st.latex(r"m_s=100\frac{M_s}{V_{\mathrm{validos},s}}")
         st.latex(r"f_s=100\frac{F_s}{V_{\mathrm{validos},s}}")
         st.markdown(
-            "**$m_s$** - margen en puntos porcentuales; **$f_s$** - faltante en puntos porcentuales.  \n"
+            "**$m_s$** - margen en puntos porcentuales  \n"
+            "**$f_s$** - faltante en puntos porcentuales  \n"
             "**$V_{\\mathrm{validos},s}$** - total de votos válidos de la sección (`NUM_VOTOS_VALIDOS`)."
         )
 
@@ -142,9 +146,10 @@ def mostrar_portada(eleccion: str) -> None:
         )
         st.latex(r"A_s=LN_s-(V_{\mathrm{total},s}-V_{S,s})")
         st.markdown(
-            "**$A_s$** - abstención corregida; **$LN_s$** - lista nominal; "
-            "**$V_{\\mathrm{total},s}$** - total de votos registrados; **$V_{S,s}$** - votos de casillas "
-            "especiales no anuladas en esa sección."
+            "**$A_s$** - abstención corregida  \n"
+            "**$LN_s$** - lista nominal de la sección  \n"
+            "**$V_{\\mathrm{total},s}$** - total de votos registrados en la sección  \n"
+            "**$V_{S,s}$** - votos de casillas especiales no anuladas en esa sección"
         )
         st.caption(
             "Clases actuales: victoria sólida desde 15 pp de margen; derrota competitiva por debajo "
