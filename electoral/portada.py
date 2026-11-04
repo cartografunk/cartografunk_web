@@ -15,7 +15,7 @@ def mostrar_portada(eleccion: str) -> None:
   background:linear-gradient(90deg,#4b9bd1 0 33.333%,#e9c258 33.333% 66.666%,#d75a58 66.666%)}
 .le-stage-inner{position:relative;z-index:1;display:grid;grid-template-columns:1.06fr .94fr;min-height:510px}
 .le-stage-copy{padding:clamp(32px,4vw,58px);display:flex;flex-direction:column;justify-content:space-between}
-.le-stage h1{font-family:'Libre Franklin',Arial,sans-serif;font-size:clamp(4.15rem,7.5vw,7.4rem);line-height:.9;letter-spacing:-.04em;margin:0;
+.le-stage h1{font-family:'Libre Franklin',Arial,sans-serif;font-size:clamp(3.5rem,6.1vw,6rem);line-height:.9;letter-spacing:-.04em;margin:0;
   font-weight:800;max-width:9ch;text-wrap:balance}
 .le-stage h1 span{display:block;color:#e3bbf3}
 .le-stage-lead{font-size:clamp(1.12rem,1.6vw,1.45rem);line-height:1.35;max-width:30ch;margin:32px 0 0;color:#f0e7f2}
@@ -50,7 +50,7 @@ def mostrar_portada(eleccion: str) -> None:
 <section class="le-stage" aria-label="Presentación del Laboratorio Electoral">
   <div class="le-stage-inner">
     <div class="le-stage-copy">
-      <div><h1>Laboratorio<span>Electoral</span></h1>
+      <div><h1>LABORATORIO<span>ELECTORAL</span></h1>
       <p class="le-stage-lead">Explora ventajas, derrotas ajustadas y apoyo mínimo en cada sección</p></div>
       <div class="le-stage-foot"><span><strong>Tres elecciones federales</strong> - cobertura actual 2024</span>
         <span>Más años y CPV en preparación</span></div>

@@ -211,7 +211,7 @@ def mostrar_resumen_clases(conteos: pd.Series) -> None:
 <section class="lab-metrics" aria-label="Secciones por clasificación">""" + tarjetas + "</section>")
 
 
-st.set_page_config(page_title="Laboratorio electoral - Cartografunk", layout="wide")
+st.set_page_config(page_title="LABORATORIO ELECTORAL", layout="wide")
 st.html("""
 <style>
 .lab-masthead{display:flex;align-items:center;justify-content:space-between;gap:16px;
