@@ -1,6 +1,6 @@
-"""Demo estatal de rentabilidad electoral de Presidencia 2024.
+"""Demo estatal de rentabilidad electoral de tres elecciones federales de 2024.
 
-Ejecutar desde la raíz del proyecto: streamlit run electoral/demo_app.py
+Ejecutar desde la raíz del proyecto: streamlit run electoral/app_simple.py
 """
 
 import json
@@ -201,7 +201,7 @@ nombres_estados = sec.drop_duplicates("ID_ESTADO").set_index("ID_ESTADO")["NOMBR
 with col_estado:
     estado = st.selectbox(
         "Estado (clave INE)", estados,
-        index=estados.index(14) if 14 in estados else 0,
+        index=estados.index(22) if 22 in estados else 0,
         format_func=lambda clave: f"{clave:02d} · {nombres_estados[clave]}",
     )
 
@@ -355,72 +355,94 @@ with tab_mapa:
 
 with tab_prioridad:
     st.subheader("Priorización de secciones")
-    st.caption(f"Elección seleccionada: {eleccion}.")
-    st.caption("Costo estimado por voto: ejemplo, ajústalo para tu escenario.")
-    costo_global = st.number_input("Costo estimado por voto (pesos)", min_value=0.0, value=20.0, step=1.0)
-    base_prioridad = preparar_priorizacion(res, costo_global)
-    columnas_editor = {
-        "ID_SECCION": "Sección", "MUNICIPIO": "Municipio",
-        "votos_para_ganar": "Votos para ganar", "abstencion": "Abstención",
-        "costo_por_voto": "Costo por voto", "costo_estimado": "Costo estimado",
-        "descartar": "Descartar",
-    }
-    editor = base_prioridad[[
-        "ID_SECCION", "MUNICIPIO", "votos_para_ganar", "abstencion",
-        "costo_por_voto", "costo_estimado", "descartar",
-    ]].rename(columns=columnas_editor)
-    editado = st.data_editor(
-        editor, hide_index=True, width="stretch", key=f"prioridad_{eleccion}_{estado}_{evaluar}",
-        disabled=["Sección", "Municipio", "Votos para ganar", "Abstención", "Costo estimado"],
-        column_config={"Costo por voto": st.column_config.NumberColumn(min_value=0.0, step=1.0)},
-    )
-    tabla_prioridad = base_prioridad.copy()
-    tabla_prioridad["costo_por_voto"] = editado["Costo por voto"].to_numpy()
-    tabla_prioridad["descartar"] = editado["Descartar"].to_numpy()
-    presupuesto = st.number_input("Presupuesto (pesos)", min_value=0.0, value=10000.0, step=100.0)
-    tabla_presupuesto, gastado = presupuestar(tabla_prioridad, presupuesto)
-    st.write(f"Secciones que caben: {int(tabla_presupuesto['seleccionada'].sum()):,}. Total gastado: ${gastado:,.2f}.")
-    st.dataframe(tabla_presupuesto[[
-        "ID_SECCION", "costo_estimado", "descartar", "seleccionada",
-    ]].rename(columns={
-        "ID_SECCION": "Sección", "costo_estimado": "Costo estimado actualizado",
-        "descartar": "Descartar", "seleccionada": "Dentro del presupuesto",
-    }), width="stretch")
+    st.caption(f"Elección seleccionada: {eleccion}. Los costos y descartes son supuestos del usuario.")
+    with st.expander("Avanzado", expanded=False):
+        costo_global = st.number_input(
+            "Costo estimado por voto (pesos)", min_value=0.0, value=None,
+            step=1.0, placeholder="Ingresa tu costo estimado por voto",
+        )
+        if costo_global is not None:
+            st.session_state.setdefault("escenarios_prioridad", {})
+            clave_escenario = f"{eleccion}:{estado:02d}:{evaluar}"
+            base_prioridad = preparar_priorizacion(res, costo_global)
+            guardado = st.session_state["escenarios_prioridad"].get(clave_escenario)
+            if guardado is not None:
+                anteriores = guardado.set_index("ID_SECCION")
+                for columna in ("costo_por_voto", "descartar"):
+                    base_prioridad[columna] = base_prioridad["ID_SECCION"].map(
+                        anteriores[columna]
+                    ).fillna(base_prioridad[columna])
+                base_prioridad["costo_estimado"] = (
+                    base_prioridad["votos_para_ganar"] * base_prioridad["costo_por_voto"]
+                )
+            columnas_editor = {
+                "ID_SECCION": "Sección", "MUNICIPIO": "Municipio",
+                "votos_para_ganar": "Votos para ganar", "abstencion": "Abstención",
+                "costo_por_voto": "Costo por voto", "costo_estimado": "Costo estimado",
+                "descartar": "Descartar",
+            }
+            editor = base_prioridad[[
+                "ID_SECCION", "MUNICIPIO", "votos_para_ganar", "abstencion",
+                "costo_por_voto", "costo_estimado", "descartar",
+            ]].rename(columns=columnas_editor)
+            editado = st.data_editor(
+                editor, hide_index=True, width="stretch", key=f"prioridad_{eleccion}_{estado}_{evaluar}",
+                disabled=["Sección", "Municipio", "Votos para ganar", "Abstención", "Costo estimado"],
+                column_config={"Costo por voto": st.column_config.NumberColumn(min_value=0.0, step=1.0)},
+            )
+            tabla_prioridad = base_prioridad.copy()
+            tabla_prioridad["costo_por_voto"] = editado["Costo por voto"].to_numpy()
+            tabla_prioridad["descartar"] = editado["Descartar"].to_numpy()
+            st.session_state["escenarios_prioridad"][clave_escenario] = tabla_prioridad[
+                ["ID_SECCION", "costo_por_voto", "descartar"]
+            ].copy()
+            presupuesto = st.number_input("Presupuesto (pesos)", min_value=0.0, value=10000.0, step=100.0)
+            tabla_presupuesto, gastado = presupuestar(tabla_prioridad, presupuesto)
+            st.write(f"Secciones que caben: {int(tabla_presupuesto['seleccionada'].sum()):,}. Total gastado: ${gastado:,.2f}.")
+            st.dataframe(tabla_presupuesto[[
+                "ID_SECCION", "costo_estimado", "descartar", "seleccionada",
+            ]].rename(columns={
+                "ID_SECCION": "Sección", "costo_estimado": "Costo estimado actualizado",
+                "descartar": "Descartar", "seleccionada": "Dentro del presupuesto",
+            }), width="stretch")
 
-    distritos_disponibles = sorted(distritos["ID_DISTRITO_FEDERAL"].astype(int).tolist())
-    distrito_meta = st.selectbox(
-        "Distrito federal para la meta", distritos_disponibles,
-        index=distritos_disponibles.index(2) if 2 in distritos_disponibles else 0,
-    )
-    meta = meta_distrital(distritos, distrito_meta)
-    st.caption("Supuesto, no pronóstico: los votos nuevos salen de la abstención.")
-    if meta is None:
-        st.info("La candidatura ya ganó este distrito; no hay faltante por cubrir.")
-    else:
-        n_necesarias, capacidad = cubrir_meta(tabla_presupuesto, distrito_meta, meta)
-        st.write(f"Meta del distrito: {meta:,} votos. Capacidad disponible: {capacidad:,.0f} votos.")
-        if n_necesarias is None:
-            st.warning("La abstención disponible de las secciones no descartadas no alcanza la meta.")
-        else:
-            st.write(f"Secciones no descartadas necesarias, en orden de costo: {n_necesarias:,}.")
+            distritos_disponibles = sorted(distritos["ID_DISTRITO_FEDERAL"].astype(int).tolist())
+            distrito_meta = st.selectbox(
+                "Distrito federal para la meta", distritos_disponibles,
+                index=distritos_disponibles.index(2) if 2 in distritos_disponibles else 0,
+            )
+            meta = meta_distrital(distritos, distrito_meta)
+            st.caption("Supuesto, no pronóstico: los votos nuevos salen de la abstención.")
+            if meta is None:
+                st.info("La candidatura ya ganó este distrito; no hay faltante por cubrir.")
+            else:
+                n_necesarias, capacidad = cubrir_meta(tabla_presupuesto, distrito_meta, meta)
+                st.write(f"Meta del distrito: {meta:,} votos. Capacidad disponible: {capacidad:,.0f} votos.")
+                if n_necesarias is None:
+                    st.warning("La abstención disponible de las secciones no descartadas no alcanza la meta.")
+                else:
+                    st.write(f"Secciones no descartadas necesarias, en orden de costo: {n_necesarias:,}.")
 
-    parametros_excel = {
-        "candidatura": NOMBRES.get(evaluar, evaluar.removeprefix("cand_").replace("_", "-")),
-        "eleccion": eleccion, "estado": f"{estado:02d} · {nombres_estados[estado]}",
-        "fecha": date.today().isoformat(), "umbrales": umbrales,
-        "distritos": distritos, "priorizacion": tabla_presupuesto,
-        "presupuesto": presupuesto,
-    }
-    st.download_button(
-        "Descargar diagnóstico en Excel",
-        preparar_excel_demo(res, parametros_excel),
-        file_name=f"rentabilidad_{eleccion.split()[0].lower()}_{estado:02d}_{evaluar.removeprefix('cand_')}.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    )
+            parametros_excel = {
+                "candidatura": NOMBRES.get(evaluar, evaluar.removeprefix("cand_").replace("_", "-")),
+                "eleccion": eleccion, "estado": f"{estado:02d} · {nombres_estados[estado]}",
+                "fecha": date.today().isoformat(), "umbrales": umbrales,
+                "distritos": distritos, "priorizacion": tabla_presupuesto,
+                "presupuesto": presupuesto,
+            }
+            st.download_button(
+                "Descargar diagnóstico en Excel",
+                preparar_excel_demo(res, parametros_excel),
+                file_name=f"rentabilidad_{eleccion.split()[0].lower()}_{estado:02d}_{evaluar.removeprefix('cand_')}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
+
+    if costo_global is None:
+        st.info("Ingresa tu costo estimado por voto")
 
 with tab_fidelidad:
     st.subheader("Apoyo mínimo observado 2024")
-    st.caption("Elecciones: Presidencia, Diputaciones MR y Senadurías MR de 2024.")
+    st.caption("Elecciones: Presidencia, Diputaciones MR y Senadurías MR de 2024. Diagnóstico exploratorio, no seguimiento de personas ni de años distintos.")
     st.write(
         "Es el menor porcentaje de votos del partido observado en una sección "
         "entre Presidencia, Diputaciones y Senadurías de 2024. No asegura que "
@@ -435,7 +457,7 @@ with tab_fidelidad:
     with col_estado:
         estado_fid = st.selectbox(
             "Estado para ver secciones", estados,
-            index=estados.index(14) if 14 in estados else 0,
+            index=estados.index(22) if 22 in estados else 0,
             format_func=lambda clave: f"{clave:02d} · {nombres_estados[clave]}",
         )
 
@@ -461,12 +483,26 @@ with tab_fidelidad:
         "ambito": "Ámbito",
     })
     st.subheader("Secciones")
+    columnas_tabla = {
+        "Sección": st.column_config.TextColumn(width="medium"),
+        "Apoyo mínimo (%)": st.column_config.NumberColumn(width="medium", format="%.1f"),
+        "Apoyo mínimo (votos)": st.column_config.NumberColumn(width="medium"),
+        "Variación (puntos)": st.column_config.NumberColumn(width="medium", format="%.1f"),
+        "Percentil del apoyo": st.column_config.NumberColumn(width="medium", format="%.1f"),
+        "Secciones del grupo": st.column_config.NumberColumn(width="medium"),
+        "Umbral de rango (pp)": st.column_config.NumberColumn(width="medium", format="%.1f"),
+        "Primera en las tres": st.column_config.CheckboxColumn(width="medium"),
+        "Coalición distinta": st.column_config.CheckboxColumn(width="medium"),
+    }
     st.dataframe(
         tabla_fid.style.apply(
-            lambda fila: ["background-color: #fff0b3" if fila["Volátil"] else ""] * len(fila),
+            lambda fila: ["background-color: #fff0b3; color: #202020" if fila["Volátil"] else ""] * len(fila),
             axis=1,
-        ),
-        width="stretch",
+        ).format({
+            "Apoyo mínimo (%)": "{:.1f}", "Variación (puntos)": "{:.1f}",
+            "Percentil del apoyo": "{:.1f}", "Umbral de rango (pp)": "{:.1f}",
+        }),
+        column_config=columnas_tabla, hide_index=True, width="stretch",
     )
     archivo = f"fidelidad_{partido_fid}_{ambito_fid}_{estado_fid:02d}"
     descargas = st.columns(2)

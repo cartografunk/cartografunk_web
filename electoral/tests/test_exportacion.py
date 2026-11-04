@@ -52,6 +52,8 @@ print(json.dumps({
     'negrita':all(c.font.bold for c in libro['Secciones'][1]),
     'porcentaje':any(c.number_format=='0.0"%"' for c in libro['Secciones'][2]),
     'externos':len(libro._external_links),
+    'supuesto':resumen['Costos y descartes']=='supuesto del usuario',
+    'columnas_supuestos':sum('supuesto del usuario' in str(c.value) for c in libro['Priorización'][1]),
 }))
 """
     proceso = subprocess.run(
@@ -66,5 +68,6 @@ print(json.dumps({
         "secciones": 2, "competitivas": 1, "priorizacion": 1,
         "descartada": True, "congelada": True, "negrita": True,
         "porcentaje": True, "externos": 0,
+        "supuesto": True, "columnas_supuestos": 3,
     }
     pd.testing.assert_frame_equal(resultados, copia)

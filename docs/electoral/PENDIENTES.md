@@ -18,7 +18,7 @@ Esta lista recoge los `NO VERIFICADO` y `NO ENCONTRADO` de los reportes temporal
 
 | Punto | Fuente |
 | --- | --- |
-| Etiqueta local `demo-11am`; ya existía la rama `electoral-extension`, que se usó. | `%TEMP%\cola3_reporte.md`, primera línea de contenido; comprobación de `git tag -l demo-11am` y `git branch --show-current` en Prompt 6. |
+| En Prompt 6 no se encontró entonces la etiqueta local `demo-11am`; **esta observación histórica ya no describe el repositorio actual**. | `%TEMP%\cola3_reporte.md`; estado actualizado en [ESTADO_ACTUAL.md](ESTADO_ACTUAL.md). |
 | Una fila del distrito de coalición parcial donde `PT` sea individual y `MORENA` conserve `cand_PVEM_PT_MORENA`. | `%TEMP%\cola3_reporte.md`, sección B: reporta ejemplos separados `01-0338` y `02-0370` y marca el caso combinado `NO ENCONTRADO`. |
 
 ## Decisiones implementadas y evidencia
@@ -40,7 +40,7 @@ Estas decisiones describen el comportamiento actual y las mediciones citadas; ni
 
 | Punto | Evidencia y estado |
 | --- | --- |
-| La regla oficial de reparto de coaliciones por partido sigue **NO VERIFICADO**. El demo muestra `A_propios` por distrito y fracciones por sección como estimaciones. | [`app_simple.py`](../../electoral/app_simple.py), [`reparto_distrito.py`](../../electoral/reparto_distrito.py), [`reparto_fraccionario.py`](../../electoral/reparto_fraccionario.py). |
+| La regla oficial de reparto de coaliciones por partido sigue **NO VERIFICADO**. La app vigente muestra `A_propios` por sección como estimación de aportes de partidos, sin cambiar el resultado de la candidatura. | [`app_simple.py`](../../electoral/app_simple.py), [`analisis_demo.py`](../../electoral/analisis_demo.py), [`reparto.py`](../../electoral/reparto.py). |
 | Las clases `Bastión` y `Base fuerte` de apoyo mínimo son propuestas provisionales; su relación con una fidelidad individual o histórica sigue **NO VERIFICADO**. | [`analizar_fidelidad()`](../../electoral/fidelidad.py) y [METODOLOGIA.md](METODOLOGIA.md), sección «Apoyo mínimo observado 2024». |
 | Fidelidad entre años y comparación de casillas de las tres boletas: **NO VERIFICADO** en el demo. Los archivos usados por la app son secciones de 2024 y casillas de Presidencia 2024. | [`config.py`](../../electoral/config.py) y [DATOS.md](DATOS.md). |
 | CPV no integrado; unión municipal validada **NO VERIFICADO**. | `%TEMP%\cartografunk_mza_20261103_claves_por_seccion.csv` registra discrepancias K1–K3; el demo no carga CPV. |

@@ -1,6 +1,6 @@
 # Módulo electoral
 
-`electoral/` lee resultados de Presidencia, Diputaciones MR y Senadurías MR de 2024, construye candidaturas, calcula rentabilidad y clasifica secciones. También contiene un demo de Presidencia 2024 con mapa de secciones. Las rutas de los ZIP y de cuatro Parquet están en [`electoral/config.py`](../../electoral/config.py); la ruta del Parquet de casillas aparece en el comando de generación más abajo. Las reglas implementadas se describen en [METODOLOGIA.md](METODOLOGIA.md); el inventario de archivos está en [DATOS.md](DATOS.md).
+`electoral/` lee resultados de Presidencia, Diputaciones MR y Senadurías MR de 2024, construye candidaturas, calcula rentabilidad y clasifica secciones. La app vigente es [`app_simple.py`](../../electoral/app_simple.py), con mapa de secciones para las tres elecciones. El estado actual y las validaciones recientes están en [ESTADO_ACTUAL.md](ESTADO_ACTUAL.md). Las rutas de los ZIP y de cuatro Parquet están en [`electoral/config.py`](../../electoral/config.py); la ruta del Parquet de casillas aparece en el comando de generación más abajo. Las reglas implementadas se describen en [METODOLOGIA.md](METODOLOGIA.md); el inventario de archivos está en [DATOS.md](DATOS.md).
 
 ## Estructura comprobada
 
@@ -14,7 +14,9 @@
 | [`clasificacion.py`](../../electoral/clasificacion.py), [`agregacion.py`](../../electoral/agregacion.py) | Clases y sumas territoriales. |
 | [`reparto.py`](../../electoral/reparto.py), [`reparto_distrito.py`](../../electoral/reparto_distrito.py), [`reparto_fraccionario.py`](../../electoral/reparto_fraccionario.py) | Repartos experimentales de votos combinados. |
 | [`geometria.py`](../../electoral/geometria.py) | Lectura, simplificación y reproyección de la capa de secciones. |
-| [`demo_app.py`](../../electoral/demo_app.py) | Demo Streamlit de Presidencia 2024. |
+| [`app_simple.py`](../../electoral/app_simple.py) | App Streamlit actual de tres elecciones de 2024. |
+| [`analisis_demo.py`](../../electoral/analisis_demo.py) | Prepara clases por candidatura activa y aportes de partidos estimados. |
+| [`demo_app.py`](../../electoral/demo_app.py) | Demo anterior de Presidencia 2024. |
 | [`tests/`](../../electoral/tests/) | Pruebas con pytest. |
 
 ## Entorno y ejecución
@@ -23,10 +25,10 @@ Comandos PowerShell desde `C:\cartografunk_web`:
 
 ```powershell
 & 'D:\Conda\envs\cartografunk\python.exe' -B -m pytest electoral/tests -q -p no:cacheprovider
-& 'D:\Conda\envs\cartografunk\python.exe' -B -m streamlit run electoral/demo_app.py
+& 'D:\Conda\envs\cartografunk\python.exe' -B -m streamlit run electoral/app_simple.py
 ```
 
-El primer comando se verificó en la ejecución de Prompt 5: 40 pruebas aprobadas. El segundo corresponde al módulo [`demo_app.py`](../../electoral/demo_app.py), cuyo encabezado indica `streamlit run electoral/demo_app.py`; **el arranque de la app en este turno es NO VERIFICADO**.
+La suite de esta integración dio 67 pruebas aprobadas y 0 omitidas. AppTest terminó sin excepciones en tres combinaciones de elección, candidatura y estado; véase [ESTADO_ACTUAL.md](ESTADO_ACTUAL.md). **El arranque del servidor y el aspecto en navegador son NO VERIFICADO**.
 
 El código importa `pandas`, `numpy`, `geopandas`, `streamlit` y `pydeck`; el inventario de esquemas usa `pyarrow` y las pruebas usan `pytest`. Versiones comprobadas en `D:\Conda\envs\cartografunk\python.exe` mediante `importlib.metadata.version`: pandas 2.2.3, numpy 2.1.1, geopandas 1.1.4, shapely 2.1.2, streamlit 1.66.1, pydeck 0.9.3, pyarrow 24.0.0 y pytest 9.1.1. Los requisitos existentes en [`deploy_streamlit/requirements.txt`](../../deploy_streamlit/requirements.txt) y [`requirements-explorador.txt`](../../requirements-explorador.txt) se leyeron; ninguno declara pytest.
 

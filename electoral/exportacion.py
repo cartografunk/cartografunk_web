@@ -25,9 +25,10 @@ def _priorizacion(tabla: pd.DataFrame, presupuesto: float) -> pd.DataFrame:
         "ID_SECCION": "Sección", "MUNICIPIO": "Municipio",
         "ID_DISTRITO_FEDERAL": "Distrito federal",
         "votos_para_ganar": "Votos para ganar", "abstencion": "Abstención",
-        "costo_por_voto": "Costo por voto (pesos)",
-        "costo_estimado": "Costo estimado (pesos)",
-        "descartar": "Descartar", "seleccionada": "Dentro del presupuesto",
+        "costo_por_voto": "Costo por voto (pesos; supuesto del usuario)",
+        "costo_estimado": "Costo estimado (pesos; supuesto del usuario)",
+        "descartar": "Descartar (supuesto del usuario)",
+        "seleccionada": "Dentro del presupuesto",
     }
     d = tabla[list(columnas)].rename(columns=columnas).copy()
     d["Presupuesto (pesos)"] = presupuesto
@@ -71,6 +72,7 @@ def construir_excel(resultados: pd.DataFrame, parametros: dict) -> bytes:
         hojas["Priorización"] = _priorizacion(
             parametros["priorizacion"], float(parametros["presupuesto"])
         )
+        resumen.loc[len(resumen)] = ("Costos y descartes", "supuesto del usuario")
     hojas["Distritos"] = distritos
     hojas["Calidad"] = calidad
 
