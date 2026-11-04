@@ -17,6 +17,12 @@ GEOMETRIA_TOLERANCIA_M = 25.0
 GEOMETRIA_PARQUET = (
     Path(__file__).resolve().parents[1] / "data" / "electoral" / "secciones_2024_geom.parquet"
 )
+ENTIDADES_VISUAL_PARQUET = (
+    Path(__file__).resolve().parents[1] / "data" / "geometria" / "estatal.parquet"
+)
+MUNICIPIOS_VISUAL_PARQUET = (
+    Path(__file__).resolve().parents[1] / "data" / "geometria" / "municipal_visual_500m.parquet"
+)
 PRESIDENCIA_PARQUET = (
     Path(__file__).resolve().parents[1] / "data" / "electoral" / "presidencia_2024_seccion.parquet"
 )
