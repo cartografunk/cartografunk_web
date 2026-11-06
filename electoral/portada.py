@@ -53,7 +53,7 @@ def mostrar_portada(eleccion: str) -> None:
       <div><h1>LABORATORIO<span>ELECTORAL</span></h1>
       <p class="le-stage-lead">Explora ventajas, derrotas ajustadas y apoyo mínimo en cada sección</p></div>
       <div class="le-stage-foot"><span><strong>Tres elecciones federales</strong> - cobertura actual 2024</span>
-        <span>Más años y CPV en preparación</span></div>
+        <span>CPV 2020 por sección disponible cuando se carga el archivo local</span></div>
     </div>
     <div class="le-stage-map" role="img" aria-label="Contornos estatales de México">
       <div class="le-map-label"><small>UNIDAD DE ANÁLISIS</small>Sección electoral</div>
@@ -192,8 +192,8 @@ def mostrar_portada(eleccion: str) -> None:
     st.html("""
 <aside style="border-left:3px solid #b44fff;background:#1b1627;border-radius:8px;
   padding:15px 19px;color:#e5daec;font-family:Arial,Helvetica,sans-serif;line-height:1.45">
-  <strong style="color:#e1b8ff;letter-spacing:.08em;font-size:12px">PRÓXIMO CRUCE</strong><br>
-  Datos sociodemográficos del Censo de Población y Vivienda (CPV).
-  Aún no están integrados en este laboratorio.
+  <strong style="color:#e1b8ff;letter-spacing:.08em;font-size:12px">CRUCE SECCIONAL</strong><br>
+  El bloque «¿Por qué?» compara perfiles del CPV 2020 con votos de 2024 cuando el archivo local está disponible.
+  asociación, no causa.
 </aside>
 """)

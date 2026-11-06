@@ -78,7 +78,7 @@ def test_perfil_todas_las_variables_y_diferencia_estandarizada():
     assert internet["media_ganada_solida"] == 14.5
     assert internet["dif_est_ganada_solida_vs_perdida_lejana"] < 0
     assert perfil["n_por_clase"] == {"ganada_solida": 30, "perdida_competitiva": 30, "perdida_lejana": 29}
-    assert any("menor proporción" in frase for frase in perfil["frases"])
+    assert any("proporción menor" in frase and "«Victoria sólida»" in frase for frase in perfil["frases"])
 
 
 def test_perfil_apoyo_minimo_por_clase():

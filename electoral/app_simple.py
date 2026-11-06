@@ -290,14 +290,21 @@ with tab_mapa:
             clases_perfil = ("ganada_solida", "perdida_competitiva", "perdida_lejana")
             perfil = perfil_clases(res, cpv, estado, clases_perfil, "perdida_lejana", max_frases=3)
             st.write("Perfil CPV de las secciones por clase de candidatura:")
+            st.caption("Diferencias estandarizadas frente a las secciones de derrota lejana.")
             tabla_perfil = perfil["tabla"].drop(columns=[c for c in perfil["tabla"] if c.startswith("n_") or c == "variable"])
             st.dataframe(tabla_perfil.rename(columns={
-                "etiqueta": "Variable CPV", "media_ganada_solida": "Ganada sólida (%)",
-                "media_perdida_competitiva": "Pérdida competitiva (%)",
-                "media_perdida_lejana": "Pérdida lejana (%)",
-                "dif_est_ganada_solida_vs_perdida_lejana": "Dif. est. sólida vs lejana",
-                "dif_est_perdida_competitiva_vs_perdida_lejana": "Dif. est. competitiva vs lejana",
-            }), hide_index=True, width="stretch")
+                "etiqueta": "Variable", "media_ganada_solida": "Sólida %",
+                "media_perdida_competitiva": "Competitiva %",
+                "media_perdida_lejana": "Lejana %",
+                "dif_est_ganada_solida_vs_perdida_lejana": "Dif. est. sólida",
+                "dif_est_perdida_competitiva_vs_perdida_lejana": "Dif. est. competitiva",
+            }), hide_index=True, width="stretch", column_config={
+                "Variable": st.column_config.TextColumn(width="medium"),
+                **{c: st.column_config.NumberColumn(format="%.1f", width="small")
+                   for c in ("Sólida %", "Competitiva %", "Lejana %")},
+                **{c: st.column_config.NumberColumn(format="%.2f", width="small")
+                   for c in ("Dif. est. sólida", "Dif. est. competitiva")},
+            })
             for frase in perfil["frases"]:
                 st.write("• " + frase)
             with st.expander("Avanzado: asociaciones con resultados"):
@@ -599,13 +606,20 @@ with tab_fidelidad:
             st.caption("asociación, no causa · CPV 2020 vs votos 2024 · Cada fila es una sección; el estado solo filtra la muestra.")
             clases_apoyo = ("Bastión", "Base fuerte", "Resto")
             perfil_apoyo = perfil_clases(seleccion, cpv_fid, estado_fid, clases_apoyo, "Resto", max_frases=3)
+            st.caption("Diferencias estandarizadas frente a las secciones de Resto.")
             tabla_apoyo = perfil_apoyo["tabla"].drop(columns=[c for c in perfil_apoyo["tabla"] if c.startswith("n_") or c == "variable"])
             st.dataframe(tabla_apoyo.rename(columns={
-                "etiqueta": "Variable CPV", "media_Bastión": "Bastión (%)",
-                "media_Base fuerte": "Base fuerte (%)", "media_Resto": "Resto (%)",
-                "dif_est_Bastión_vs_Resto": "Dif. est. Bastión vs Resto",
-                "dif_est_Base fuerte_vs_Resto": "Dif. est. Base fuerte vs Resto",
-            }), hide_index=True, width="stretch")
+                "etiqueta": "Variable", "media_Bastión": "Bastión %",
+                "media_Base fuerte": "Base fuerte %", "media_Resto": "Resto %",
+                "dif_est_Bastión_vs_Resto": "Dif. est. Bastión",
+                "dif_est_Base fuerte_vs_Resto": "Dif. est. Base fuerte",
+            }), hide_index=True, width="stretch", column_config={
+                "Variable": st.column_config.TextColumn(width="medium"),
+                **{c: st.column_config.NumberColumn(format="%.1f", width="small")
+                   for c in ("Bastión %", "Base fuerte %", "Resto %")},
+                **{c: st.column_config.NumberColumn(format="%.2f", width="small")
+                   for c in ("Dif. est. Bastión", "Dif. est. Base fuerte")},
+            })
             for frase in perfil_apoyo["frases"]:
                 st.write("• " + frase)
             with st.expander("Avanzado: apoyo mínimo y CPV"):

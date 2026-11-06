@@ -8,6 +8,11 @@ import pandas as pd
 from electoral.cpv import ETIQUETAS
 
 OBJETIVOS = {"ventaja_firmada", "faltante_pct", "alcanzable_por_abstencion", "piso_pct"}
+NOMBRES_CLASE = {
+    "ganada_solida": "Victoria sólida", "perdida_competitiva": "Derrota competitiva",
+    "perdida_lejana": "Derrota lejana", "Bastión": "Bastión",
+    "Base fuerte": "Base fuerte", "Resto": "Resto",
+}
 
 
 def piso_candidatura(elecciones: dict[str, pd.DataFrame], candidatura: str) -> pd.DataFrame:
@@ -88,7 +93,10 @@ def perfil_clases(resultados: pd.DataFrame, censo: pd.DataFrame, estado: int,
         for _, fila in orden.iterrows():
             if pd.notna(fila[col]):
                 direccion = "mayor" if fila[col] > 0 else "menor"
-                frases.append(f"En secciones {clase.replace('_', ' ')} hay {direccion} proporción de {fila['etiqueta'].lower()} que en secciones {referencia.replace('_', ' ')}.")
+                frases.append(
+                    f"Las secciones de «{NOMBRES_CLASE.get(clase, clase)}» tienen una proporción "
+                    f"{direccion} de {fila['etiqueta'].lower()} que las de «{NOMBRES_CLASE.get(referencia, referencia)}»."
+                )
     return {"tabla": tabla, "frases": frases,
             "n_por_clase": {clase: int(base.clase.astype(str).eq(clase).sum()) for clase in clases}}
 
