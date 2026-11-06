@@ -1,5 +1,13 @@
 # Estado actual del módulo electoral
 
+## Adición del 2026-11-06
+
+Se integró el CPV 2020 del ECEG INEGI-INE por `ID_SECCION` en un Parquet local con 15 tasas. La coincidencia exacta de claves con cada Parquet seccional 2024 es de 67 736 secciones (96,030–96,074 %) y cubre 94,501–94,719 % de su lista nominal; detalle en [DATOS.md](DATOS.md). «¿Por qué?» ahora muestra el perfil CPV por clase de **sección**: ganada sólida, pérdida competitiva y pérdida lejana en la vista electoral; Bastión, Base fuerte y Resto en apoyo mínimo por partido. Cada variable tiene medias y diferencias estandarizadas; correlación y regresión se dejan en «Avanzado». El estado solo filtra la muestra. La equivalencia espacial de las secciones entre 2020/2021 y 2024 sigue **NO VERIFICADA**.
+
+El primer modelo de `explicacion.py` usaba `margen_pct` como objetivo y eliminaba sus nulos. Como `margen_pct` solo existe cuando la candidatura ganó, **sí filtraba de hecho el análisis a victorias**. El objetivo electoral actual es `ventaja_firmada = margen_pct` en victoria, `-faltante_pct` en derrota y `0` en empate. `faltante_pct` y `alcanzable_por_abstencion` se analizan únicamente en derrotas; `rescatable_vs_abst` no entra como variable. El modelo de apoyo mínimo usa `piso_pct` del partido seleccionado.
+
+La auditoría de secciones sin CPV por estado y clase está en [CPV_SIN_CRUCE.md](CPV_SIN_CRUCE.md) y su CSV de detalle. Validación de esta revisión: **75 pruebas aprobadas**, 2 advertencias de GDAL. AppTest con `timeout=180` abrió «Mapa y secciones» y «Apoyo mínimo»: ambos bloques «¿Por qué?» aparecieron sin excepciones. El aspecto en navegador sigue **NO VERIFICADO**. La cifra histórica de 67 pruebas del apartado inferior corresponde al estado previo a la integración CPV.
+
 Actualizado: 2026-11-04. Fuente principal: código y pruebas de esta rama. Las cifras de inventario históricas conservan sus fuentes en [DATOS.md](DATOS.md) y [PENDIENTES.md](PENDIENTES.md).
 
 ## Rama y aplicaciones
@@ -20,7 +28,7 @@ Los cambios funcionales de `demo-11am-b` (controles técnicos en «Avanzado») y
 - El selector de partidos aparece junto al de candidatura cuando se elige una coalición. Los votos atribuidos y porcentajes por sección y estado usan `repartir_coalicion(..., variante="A_propios")`. Es un reparto **experimental**; la regla oficial sigue NO VERIFICADA.
 - «Apoyo mínimo observado 2024» compara las tres boletas del mismo año. Sus clases son una propuesta provisional; no mide personas ni continuidad entre años. Véanse `electoral/fidelidad.py` y `electoral/estadisticas_fidelidad.py`.
 - El simulador espera un costo ingresado por el usuario antes de calcular. Conserva costos y descartes por sesión y los rotula como «supuesto del usuario» en el Excel.
-- El Censo de Población y Vivienda no está integrado en esta app. La equivalencia territorial INE–INEGI sigue NO VERIFICADA.
+- El CPV 2020 se incorporó por sección mediante ECEG. La equivalencia territorial exacta del seccionado ECEG con 2024 sigue NO VERIFICADA.
 
 ## Validación de esta integración
 

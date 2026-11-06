@@ -10,3 +10,6 @@ data/municipios.geojson
 data/municipios.geojson
 dist/
 .wrangler/
+data/electoral/eceg_2020_csv.zip
+data/electoral/cpv_2020_seccion.parquet
+data/electoral/cpv_2020_cobertura.json

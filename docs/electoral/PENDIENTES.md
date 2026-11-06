@@ -38,11 +38,14 @@ Estas decisiones describen el comportamiento actual y las mediciones citadas; ni
 
 ## Pendientes del demo actual
 
+La integración ECEG 2020 del 2026-11-06 cruza 67 736 secciones por `ID_SECCION` con cada una de las tres elecciones 2024. **NO VERIFICADO:** que la misma clave represente límites idénticos entre el seccionado ECEG 2020/2021 y el de 2024. Las asociaciones de `electoral/explicacion.py` son descriptivas entre secciones y no sustentan causalidad ni inferencias sobre votantes individuales.
+En la app revisada, «¿Por qué?» de apoyo mínimo usa `piso_pct` del **partido** mostrado en esa pestaña. La función auxiliar `piso_candidatura()` permanece disponible, pero no alimenta esa vista.
+
 | Punto | Evidencia y estado |
 | --- | --- |
 | La regla oficial de reparto de coaliciones por partido sigue **NO VERIFICADO**. La app vigente muestra `A_propios` por sección como estimación de aportes de partidos, sin cambiar el resultado de la candidatura. | [`app_simple.py`](../../electoral/app_simple.py), [`analisis_demo.py`](../../electoral/analisis_demo.py), [`reparto.py`](../../electoral/reparto.py). |
 | Las clases `Bastión` y `Base fuerte` de apoyo mínimo son propuestas provisionales; su relación con una fidelidad individual o histórica sigue **NO VERIFICADO**. | [`analizar_fidelidad()`](../../electoral/fidelidad.py) y [METODOLOGIA.md](METODOLOGIA.md), sección «Apoyo mínimo observado 2024». |
 | Fidelidad entre años y comparación de casillas de las tres boletas: **NO VERIFICADO** en el demo. Los archivos usados por la app son secciones de 2024 y casillas de Presidencia 2024. | [`config.py`](../../electoral/config.py) y [DATOS.md](DATOS.md). |
-| CPV no integrado; unión municipal validada **NO VERIFICADO**. | `%TEMP%\cartografunk_mza_20261103_claves_por_seccion.csv` registra discrepancias K1–K3; el demo no carga CPV. |
+| La unión municipal CPV sigue **NO VERIFICADA** y no se utiliza. El nuevo cruce ECEG es por sección; su equivalencia espacial 2020/2021–2024 sigue **NO VERIFICADA**. | `%TEMP%\cartografunk_mza_20261103_claves_por_seccion.csv` registra discrepancias K1–K3; [DATOS.md](DATOS.md) mide el nuevo cruce por clave. |
 | Las 19 secciones de Presidencia 2024 que siguen con votos sobre lista tras descontar casillas `S` no tienen explicación documental **NO VERIFICADO**. | `%TEMP%\electoral_reporte_cola6.md` y [`config.py`](../../electoral/config.py). |
 | La meta de carga inicial menor de 10 s no se cumplió: AppTest midió 27.92 s tras precalcular los dos ámbitos. El aspecto en navegador y el arranque del servidor siguen **NO VERIFICADO**. | `%TEMP%\electoral_reporte_demo.md`, paso 2. |

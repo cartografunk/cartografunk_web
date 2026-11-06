@@ -1,5 +1,37 @@
 # Archivos de data/electoral
 
+## CPV 2020 por sección: ECEG INEGI-INE (integración 2026-11-06)
+
+Fuente oficial: [Estadísticas Censales a Escalas Geoelectorales 2020, INEGI](https://www.inegi.org.mx/contenidos/programas/ccpv/2020/datosabiertos/geoelectorales/eceg_2020_csv.zip), miembro `conjunto_de_datos/INE_SECCION_2020.csv`; definiciones en `diccionario_de_datos/Descriptor_indicadores_ECEG_Seccion_2020.csv.csv` dentro del mismo ZIP. El [INE](https://central-estatico.ine.mx/2021/08/18/presentan-ine-e-inegi-la-herramienta-estadisticas-censales-a-escalas-geoelectorales-2020/) describe los indicadores a nivel de sección. Se construye con `D:\Conda\envs\cartografunk\python.exe -B scripts/build_eceg_2020.py` y se guarda localmente en `data/electoral/cpv_2020_seccion.parquet` (no versionado). Contiene 68 806 secciones únicas y 15 porcentajes; `ID_SECCION` se forma con entidad de dos dígitos, guion y sección de cuatro (`01-0338`). La unión es exacta por esa llave, sin imputación municipal. Valores no numéricos, denominadores cero y porcentajes fuera de 0–100 se dejan nulos.
+
+| Variable | Numerador / denominador ECEG | Lectura |
+| --- | --- | --- |
+| `pct_mujeres` | `POBFEM / POBTOT` | Mujeres en la población |
+| `pct_menores_18` | `P_0A17 / POBTOT` | Menores de 18 años |
+| `pct_60_mas` | `P_60YMAS / POBTOT` | Personas de 60 años o más |
+| `pct_18_24` | `P_18A24 / POBTOT` | Personas de 18 a 24 años |
+| `pct_lengua_indigena` | `P3YM_HLI / P_3YMAS` | Personas de 3+ que hablan lengua indígena |
+| `pct_afromexicana` | `POB_AFRO / POBTOT` | Personas que se consideran afromexicanas |
+| `pct_analfabeta` | `P15YM_AN / P_15YMAS` | Personas de 15+ analfabetas |
+| `pct_posbasica` | `P18YM_PB / P_18YMAS` | Personas de 18+ con educación posbásica |
+| `pct_pea` | `PEA / P_12YMAS` | Personas de 12+ económicamente activas |
+| `pct_sin_salud` | `PSINDER / POBTOT` | Personas sin afiliación a servicios de salud |
+| `pct_piso_tierra` | `VPH_PISOTI / VIVPAR_HAB` | Viviendas habitadas con piso de tierra |
+| `pct_sin_agua` | `VPH_AGUAFV / VIVPAR_HAB` | Viviendas habitadas sin agua entubada en su ámbito |
+| `pct_sin_drenaje` | `VPH_NODREN / VIVPAR_HAB` | Viviendas habitadas sin drenaje |
+| `pct_internet` | `VPH_INTER / VIVPAR_HAB` | Viviendas habitadas con Internet |
+| `pct_automovil` | `VPH_AUTOM / VIVPAR_HAB` | Viviendas habitadas con automóvil o camioneta |
+
+La cobertura por llave exacta frente a 2024 es:
+
+| Elección | Secciones cruzadas / total | Cobertura secciones | Lista nominal cruzada / total | Cobertura lista nominal |
+| --- | ---: | ---: | ---: | ---: |
+| Presidencia | 67 736 / 70 536 | 96,030 % | 93 054 427 / 98 468 994 | 94,501 % |
+| Diputaciones MR | 67 736 / 70 504 | 96,074 % | 93 027 586 / 98 214 289 | 94,719 % |
+| Senadurías MR | 67 736 / 70 536 | 96,030 % | 93 027 586 / 98 438 250 | 94,503 % |
+
+Estos porcentajes miden coincidencia de **claves**, no equivalencia espacial entre la cartografía ECEG 2020/2021 y la electoral 2024. La lista nominal es la columna local de cada Parquet 2024. La fecha de corte documental de esa columna sigue NO VERIFICADA. El archivo `data/electoral/cpv_2020_cobertura.json` reproduce el conteo local; no se versiona.
+
 Inventario leído el 2026-11-03 con pyarrow.parquet.ParquetFile, sin cargar geometría para obtener el esquema. Los tipos de la tabla son tipos Arrow del Parquet; geometry es WKB binario en el GeoParquet.
 
 Fuentes de las métricas: `C:\Users\HeyCe\AppData\Local\Temp\electoral_reporte_cola6.md` (lectura de los Parquet), `C:\Users\HeyCe\AppData\Local\Temp\cartografunk_ine_geometry_quality.json` (cruce MGE/resultados), `C:\Users\HeyCe\AppData\Local\Temp\cartografunk_ine_crs.json` (pruebas de CRS), `C:\Users\HeyCe\AppData\Local\Temp\cola3_reporte.md` (comparaciones SEC/DISPP).

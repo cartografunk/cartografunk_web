@@ -29,6 +29,7 @@ from electoral.config import (
 )
 from electoral.estadisticas_fidelidad import correlaciones_pares, icc_por_partido
 from electoral.etiquetas import ETIQUETAS_CLASE, ETIQUETAS_RESULTADO
+from electoral.explicacion import explicar, perfil_clases
 from electoral.exportacion import construir_excel
 from electoral.fidelidad import PARTIDOS, analizar_fidelidad, panel
 from electoral.limites import limites_estado
@@ -135,6 +136,12 @@ def cargar_elecciones() -> dict[str, pd.DataFrame]:
         "diputaciones": pd.read_parquet(DIPUTACIONES_PARQUET),
         "senadurias": pd.read_parquet(SENADURIAS_PARQUET),
     }
+
+
+@st.cache_data
+def cargar_cpv_seccion() -> pd.DataFrame | None:
+    ruta = PRESIDENCIA_PARQUET.parent / "cpv_2020_seccion.parquet"
+    return pd.read_parquet(ruta) if ruta.exists() else None
 
 
 @st.cache_data(show_spinner="Calculando fidelidad por partido…")
@@ -275,6 +282,40 @@ with tab_mapa:
         conteos = res["clase"].value_counts(sort=False).reindex(CLASES, fill_value=0)
         mostrar_resumen_clases(conteos)
         st.caption(f"{int(res['estado'].eq('sin_resultado').sum())} secciones sin resultado en este estado.")
+
+        cpv = cargar_cpv_seccion()
+        if cpv is not None:
+            st.subheader("¿Por qué?")
+            st.caption("asociación, no causa · CPV 2020 vs votos 2024 · Cada fila es una sección; el estado solo filtra la muestra.")
+            clases_perfil = ("ganada_solida", "perdida_competitiva", "perdida_lejana")
+            perfil = perfil_clases(res, cpv, estado, clases_perfil, "perdida_lejana", max_frases=3)
+            st.write("Perfil CPV de las secciones por clase de candidatura:")
+            tabla_perfil = perfil["tabla"].drop(columns=[c for c in perfil["tabla"] if c.startswith("n_") or c == "variable"])
+            st.dataframe(tabla_perfil.rename(columns={
+                "etiqueta": "Variable CPV", "media_ganada_solida": "Ganada sólida (%)",
+                "media_perdida_competitiva": "Pérdida competitiva (%)",
+                "media_perdida_lejana": "Pérdida lejana (%)",
+                "dif_est_ganada_solida_vs_perdida_lejana": "Dif. est. sólida vs lejana",
+                "dif_est_perdida_competitiva_vs_perdida_lejana": "Dif. est. competitiva vs lejana",
+            }), hide_index=True, width="stretch")
+            for frase in perfil["frases"]:
+                st.write("• " + frase)
+            with st.expander("Avanzado: asociaciones con resultados"):
+                st.caption("Correlación de Pearson y regresión ridge estandarizada (λ = 0,1). La ventaja firmada es positiva al ganar, negativa al perder y cero en empate. Faltante y alcanzabilidad usan solo derrotas; alcanzabilidad es 0/1. Las betas ajustadas pueden tener otra dirección que la correlación. Sin inferencia causal.")
+                for objetivo, titulo in (
+                    ("ventaja_firmada", "Ventaja firmada"),
+                    ("faltante_pct", "Faltante en derrotas"),
+                    ("alcanzable_por_abstencion", "Alcanzable por abstención en derrotas"),
+                ):
+                    informe = explicar(res, cpv, evaluar, estado, objetivo)
+                    st.markdown(f"**{titulo}** · {informe['n']:,} secciones")
+                    if informe["variables"]:
+                        st.dataframe(pd.DataFrame(informe["variables"]).rename(columns={
+                            "etiqueta": "Variable", "correlacion": "Correlación",
+                            "beta_estandarizada": "Beta estandarizada",
+                        })[["Variable", "Correlación", "Beta estandarizada"]], hide_index=True)
+                    else:
+                        st.info(informe["nota"])
 
         geojson_estado, limites = cargar_poligonos_estado(estado)
         mapa, sin_fila = preparar_mapa(geojson_estado, res, aportes, partidos)
@@ -551,6 +592,33 @@ with tab_fidelidad:
         for columna, clase in zip(st.columns(3), resumen.index):
             columna.metric(clase, int(resumen[clase]))
         st.caption(f"{len(seleccion):,} secciones con resultado y lista nominal ≥ 100 en las tres elecciones; {int(seleccion['volatil'].sum()):,} volátiles.")
+
+        cpv_fid = cargar_cpv_seccion()
+        if cpv_fid is not None:
+            st.subheader("¿Por qué?")
+            st.caption("asociación, no causa · CPV 2020 vs votos 2024 · Cada fila es una sección; el estado solo filtra la muestra.")
+            clases_apoyo = ("Bastión", "Base fuerte", "Resto")
+            perfil_apoyo = perfil_clases(seleccion, cpv_fid, estado_fid, clases_apoyo, "Resto", max_frases=3)
+            tabla_apoyo = perfil_apoyo["tabla"].drop(columns=[c for c in perfil_apoyo["tabla"] if c.startswith("n_") or c == "variable"])
+            st.dataframe(tabla_apoyo.rename(columns={
+                "etiqueta": "Variable CPV", "media_Bastión": "Bastión (%)",
+                "media_Base fuerte": "Base fuerte (%)", "media_Resto": "Resto (%)",
+                "dif_est_Bastión_vs_Resto": "Dif. est. Bastión vs Resto",
+                "dif_est_Base fuerte_vs_Resto": "Dif. est. Base fuerte vs Resto",
+            }), hide_index=True, width="stretch")
+            for frase in perfil_apoyo["frases"]:
+                st.write("• " + frase)
+            with st.expander("Avanzado: apoyo mínimo y CPV"):
+                st.caption("Correlación de Pearson y regresión ridge estandarizada (λ = 0,1) del piso_pct del partido; las betas ajustadas pueden diferir de la correlación.")
+                informe_apoyo = explicar(seleccion, cpv_fid, partido_fid, estado_fid, "piso_pct")
+                st.write(f"{informe_apoyo['n']:,} secciones completas")
+                if informe_apoyo["variables"]:
+                    st.dataframe(pd.DataFrame(informe_apoyo["variables"]).rename(columns={
+                        "etiqueta": "Variable", "correlacion": "Correlación",
+                        "beta_estandarizada": "Beta estandarizada",
+                    })[["Variable", "Correlación", "Beta estandarizada"]], hide_index=True)
+                else:
+                    st.info(informe_apoyo["nota"])
 
         tabla_fid = seleccion[[
             "ID_SECCION", "partido", "piso_pct", "piso_votos", "rango_pp",
