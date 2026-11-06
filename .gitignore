@@ -13,3 +13,6 @@ dist/
 data/electoral/eceg_2020_csv.zip
 data/electoral/cpv_2020_seccion.parquet
 data/electoral/cpv_2020_cobertura.json
+data/electoral/historico_secciones_ine_2025.accdb
+data/electoral/historico_secciones_ine_2025.csv
+data/electoral/historico_sample.csv

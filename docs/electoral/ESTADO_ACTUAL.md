@@ -8,6 +8,8 @@ El primer modelo de `explicacion.py` usaba `margen_pct` como objetivo y eliminab
 
 La auditoría de secciones sin CPV por estado y clase está en [CPV_SIN_CRUCE.md](CPV_SIN_CRUCE.md) y su CSV de detalle. Validación de esta revisión: **75 pruebas aprobadas**, 2 advertencias de GDAL. AppTest con `timeout=180` abrió «Mapa y secciones» y «Apoyo mínimo», además de Diputaciones y Senadurías: los bloques «¿Por qué?» aparecieron sin excepciones. La vista se inspeccionó en navegador a 1252 px y 390 px: la tabla se desplaza dentro de su marco en móvil, sin desbordamiento horizontal de la página. La portada ya describe el CPV como disponible cuando existe el archivo local. La cifra histórica de 67 pruebas del apartado inferior corresponde al estado previo a la integración CPV.
 
+El histórico oficial del INE registra primeros movimientos 2021–2023 para las **2 768 secciones territoriales** de 2024 sin clave ECEG. Esto acota la falta de cobertura por clave; la equivalencia de los polígonos de las **67 736 claves coincidentes sigue NO VERIFICADA**. El paquete local `deploy_streamlit/` contiene `explorador.py`, no `electoral/app_simple.py`; no hay un despliegue electoral configurado en ese paquete para revisar visualmente.
+
 Actualizado: 2026-11-04. Fuente principal: código y pruebas de esta rama. Las cifras de inventario históricas conservan sus fuentes en [DATOS.md](DATOS.md) y [PENDIENTES.md](PENDIENTES.md).
 
 ## Rama y aplicaciones

@@ -39,6 +39,7 @@ Estas decisiones describen el comportamiento actual y las mediciones citadas; ni
 ## Pendientes del demo actual
 
 La integración ECEG 2020 del 2026-11-06 cruza 67 736 secciones por `ID_SECCION` con cada una de las tres elecciones 2024. **NO VERIFICADO:** que la misma clave represente límites idénticos entre el seccionado ECEG 2020/2021 y el de 2024. Las asociaciones de `electoral/explicacion.py` son descriptivas entre secciones y no sustentan causalidad ni inferencias sobre votantes individuales.
+El [histórico de secciones del INE](CPV_SIN_CRUCE.md#origen-registrado-en-el-histórico-del-ine) permite rastrear las 2 768 claves territoriales sin CPV a primeros movimientos etiquetados 2021–2023. Eso explica la ausencia de claves nuevas; **NO VERIFICA** la igualdad de polígonos para las 67 736 claves que sí cruzan. El bloque «¿Por qué?» advierte que los límites seccionales pueden haber cambiado entre cortes.
 En la app revisada, «¿Por qué?» de apoyo mínimo usa `piso_pct` del **partido** mostrado en esa pestaña. La función auxiliar `piso_candidatura()` permanece disponible, pero no alimenta esa vista.
 
 | Punto | Evidencia y estado |

@@ -32,6 +32,8 @@ La cobertura por llave exacta frente a 2024 es:
 
 Estos porcentajes miden coincidencia de **claves**, no equivalencia espacial entre la cartografía ECEG 2020/2021 y la electoral 2024. La lista nominal es la columna local de cada Parquet 2024. La fecha de corte documental de esa columna sigue NO VERIFICADA. El archivo `data/electoral/cpv_2020_cobertura.json` reproduce el conteo local; no se versiona.
 
+La auditoría del [histórico oficial de secciones](CPV_SIN_CRUCE.md#origen-registrado-en-el-histórico-del-ine) identifica los primeros movimientos 2021–2023 de las 2 768 claves territoriales de 2024 sin CPV. Para 188 claves coincidentes, el número `MUNICIPIO` del ECEG difiere de `ID_MUNICIPIO` en el Parquet de Presidencia; no se interpreta como cambio territorial, porque el descriptor ECEG define su municipio conforme al Marco Geoestadístico y el Parquet electoral usa la clave INE. Para 13 105 claves coincidentes difiere el distrito federal, compatible con la nueva distritación, sin demostrar cambio de límites seccionales.
+
 Inventario leído el 2026-11-03 con pyarrow.parquet.ParquetFile, sin cargar geometría para obtener el esquema. Los tipos de la tabla son tipos Arrow del Parquet; geometry es WKB binario en el GeoParquet.
 
 Fuentes de las métricas: `C:\Users\HeyCe\AppData\Local\Temp\electoral_reporte_cola6.md` (lectura de los Parquet), `C:\Users\HeyCe\AppData\Local\Temp\cartografunk_ine_geometry_quality.json` (cruce MGE/resultados), `C:\Users\HeyCe\AppData\Local\Temp\cartografunk_ine_crs.json` (pruebas de CRS), `C:\Users\HeyCe\AppData\Local\Temp\cola3_reporte.md` (comparaciones SEC/DISPP).

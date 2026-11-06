@@ -6,6 +6,19 @@ Medición local del 2026-11-06. Se comparó `ID_SECCION` con `data/electoral/cpv
 
 En cada elección, las mismas **2 768 secciones territoriales** de 2024 no tienen clave ECEG; el número por estado también es igual en las tres. La tabla cuenta secciones únicas, sin multiplicarlas por candidaturas.
 
+### Origen registrado en el histórico del INE
+
+Se descargó el [Histórico de Secciones del INE, corte diciembre de 2025](https://cartografia.ine.mx/mapoteca/historicos/HISTORICO_SECC_ELECT_PEF_1994-PEF2024_Corte_diciembre2025.accdb) desde el [SIGE](https://cartografia.ine.mx/sige8/estadisticos-Geoelectorales). El archivo registra altas, bajas y movimientos parciales desde 1994; no es una geometría comparable por sí mismo. Las 2 768 claves sin CPV aparecen en él y su campo `PRIMER_MOVIMIENTO` menciona exactamente uno de los años 2021, 2022 o 2023. Se extrajo con `scripts/export_historico_ine.ps1` y se auditó con `scripts/audit_eceg_historico.py`; la [tabla por estado y año](cpv_sin_cruce_origen.csv) conserva los conteos y la lista nominal de Presidencia 2024.
+
+| Año mencionado en `PRIMER_MOVIMIENTO` | Secciones sin CPV | Lista nominal 2024 |
+| ---: | ---: | ---: |
+| 2021 | 947 | 1 727 533 |
+| 2022 | 1 370 | 2 768 364 |
+| 2023 | 451 | 694 709 |
+| **Total** | **2 768** | **5 190 606** |
+
+La [metodología de ECEG](https://gaia.inegi.org.mx/mdm6/docs/geoelectorales/Metodolog%C3%ADa_de_Estad%C3%ADsticas_Censales_a_escalas_Geoelectorales.pdf) indica que usó el marco seccional del INE de enero de 2021. Estos movimientos registrados son coherentes con la ausencia de las claves en ECEG. El año es una etiqueta textual del primer movimiento, **no una fecha exacta de entrada en vigor**. El histórico incluso llena `Distrito_PEF2021` para algunas secciones cuya descripción dice «nueva por reseccionamiento 2022»; por ello no se usa esa columna como prueba de existencia en 2021. Tampoco puede deducirse de este archivo que todas las claves coincidentes conserven límites idénticos.
+
 | Estado | Sin CPV | Estado | Sin CPV | Estado | Sin CPV | Estado | Sin CPV |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | 01 | 52 | 09 | 64 | 17 | 47 | 25 | 88 |
