@@ -26,6 +26,18 @@ Estos porcentajes de secciones y lista nominal sólo indican que **existe alguna
 
 Fuente oficial: [Estadísticas Censales a Escalas Geoelectorales 2020, INEGI](https://www.inegi.org.mx/contenidos/programas/ccpv/2020/datosabiertos/geoelectorales/eceg_2020_csv.zip), miembro `conjunto_de_datos/INE_SECCION_2020.csv`; definiciones en `diccionario_de_datos/Descriptor_indicadores_ECEG_Seccion_2020.csv.csv` dentro del mismo ZIP. El [INE](https://central-estatico.ine.mx/2021/08/18/presentan-ine-e-inegi-la-herramienta-estadisticas-censales-a-escalas-geoelectorales-2020/) describe los indicadores a nivel de sección. Se construye con `D:\Conda\envs\cartografunk\python.exe -B scripts/build_eceg_2020.py` y se guarda localmente en `data/electoral/cpv_2020_seccion.parquet` (no versionado). Contiene 68 806 secciones únicas y 15 porcentajes; `ID_SECCION` se forma con entidad de dos dígitos, guion y sección de cuatro (`01-0338`). La unión es exacta por esa llave, sin imputación municipal. Valores no numéricos, denominadores cero y porcentajes fuera de 0–100 se dejan nulos.
 
+### Tablas completas de entidad, distrito y sección
+
+El ZIP `C:\Users\HeyCe\Downloads\eceg_2020_csv.zip` tiene el mismo SHA-256 (`db357fee6f869ec10c7c996e72d4ab6a339d10b20b8043f63ab5a256339708fe`) que el ZIP local ya descargado. `scripts/build_eceg_completo.py` convierte los tres CSV originales a Parquet tipado y crea tablas materializadas e índices únicos en `data/electoral/eceg_2020.duckdb`. Conserva los indicadores originales; quita el espacio final de `NOM_ENT ` y añade llaves nacionales. Los Parquet y DuckDB son locales y no se versionan.
+
+| Nivel | Parquet local | Tabla DuckDB | Filas | Columnas con llaves nuevas | Llave |
+| --- | --- | --- | ---: | ---: | --- |
+| Entidad | `eceg_2020_entidad.parquet` | `eceg_entidad_2020` | 32 | 223 | `ID_ENTIDAD` (2 dígitos) |
+| Distrito federal | `eceg_2020_distrito.parquet` | `eceg_distrito_2020` | 300 | 227 | `ID_DISTRITO` (`01-03`) |
+| Sección | `eceg_2020_seccion.parquet` | `eceg_seccion_2020` | 68 806 | 228 | `ID_SECCION` (`01-0338`) |
+
+**Verificado:** `POBTOT` suma 126 014 024 en cada nivel; las llaves son únicas; DuckDB contiene el mismo número de filas que los Parquet. Las 68 806 claves seccionales coinciden exactamente con `cpv_2020_seccion.parquet` y sus 15 tasas derivadas coinciden sin discrepancias numéricas ni de nulos. El archivo `eceg_2020_completo_auditoria.json` guarda estos conteos localmente. La app sigue usando **sólo secciones** y sus 15 tasas; las tablas de entidad y distrito quedan disponibles para consulta y auditoría, sin mostrar resultados agregados por estado o municipio. El distrito ECEG corresponde al marco de enero de 2021, no a la distritación 2024.
+
 | Variable | Numerador / denominador ECEG | Lectura |
 | --- | --- | --- |
 | `pct_mujeres` | `POBFEM / POBTOT` | Mujeres en la población |

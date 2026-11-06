@@ -22,3 +22,6 @@ data/electoral/cpv_2020_manzana_seccion_*.parquet
 data/electoral/cpv_2020_colonia_seccion_*_cobertura.json
 data/electoral/cpv_2020_colonia_seccion_lote.json
 data/electoral/cpv_2020_colonia_seccion_nacional.json
+data/electoral/eceg_2020_*.parquet
+data/electoral/eceg_2020*.duckdb*
+data/electoral/eceg_2020_completo_auditoria.json
