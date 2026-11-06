@@ -16,3 +16,9 @@ data/electoral/cpv_2020_cobertura.json
 data/electoral/historico_secciones_ine_2025.accdb
 data/electoral/historico_secciones_ine_2025.csv
 data/electoral/historico_sample.csv
+data/electoral/ageb_mza_urbana_*_cpv2020_csv.zip
+data/electoral/cpv_2020_colonia_seccion_*.parquet
+data/electoral/cpv_2020_manzana_seccion_*.parquet
+data/electoral/cpv_2020_colonia_seccion_*_cobertura.json
+data/electoral/cpv_2020_colonia_seccion_lote.json
+data/electoral/cpv_2020_colonia_seccion_nacional.json
