@@ -37,7 +37,7 @@ def test_correccion_2024_conserva_seccion_original():
     raw = pd.DataFrame([{
         "ID_ESTADO": 22, "ID_DISTRITO_LOCAL": 10, "SECCION": 861,
         "TIPO_CASILLA": "C", "ID_CASILLA": 3, "EXT_CONTIGUA": 0,
-        "TOTAL_VOTOS": 433, "LISTA_NOMINAL": 600,
+        "TOTAL_VOTOS": 433, "LISTA_NOMINAL": 600, "OBSERVACIONES": None,
     }])
     cas = normalize_casillas(2024, raw)
     assert cas.loc[0, "SECCION"] == 861
@@ -55,3 +55,8 @@ def test_cotejo_integral_con_fuentes_locales(tmp_path):
     assert by_year[2021]["celdas_voto_nominal_distintas_de_tabla_seccional"] == 0
     assert by_year[2024]["votos_bce_mas_anticipado_y_especiales_mr"] == by_year[2024]["votos_mr_portal"]
     assert by_year[2018]["diferencia_distrito_menos_seccion"] == 1
+    assert (by_year[2024]["filas_con_sentencia_posterior"], by_year[2024]["votos_en_filas_con_sentencia_posterior"]) == (6, 1870)
+    cotejo = pd.read_csv(tmp_path / "dip_local_mr_2024_cotejo_seccion.csv")
+    flagged = cotejo.loc[cotejo["ID_SECCION"].eq("22-0727")].iloc[0]
+    assert flagged["INSTALACION_CASILLA_ESPECIAL"]
+    assert flagged["DIF_PUBLICADO_MENOS_BCE"] == 52

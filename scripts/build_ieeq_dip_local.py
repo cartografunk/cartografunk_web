@@ -27,6 +27,18 @@ def _read_sources(source: Path) -> dict[int, tuple[pd.DataFrame, pd.DataFrame]]:
         p = source / item["archivo"]
         if hashlib.sha256(p.read_bytes()).hexdigest() != item["sha256"]:
             raise ValueError(f"SHA-256 distinto al manifiesto: {p.name}")
+    def portal_count(district: int, section: str, number: int, votes: int) -> int:
+        data = json.loads((source / f"2024_json_d{district}.json").read_bytes())
+        return sum(
+            s["clave_seccion"] == section
+            and c["clave_tipo_casilla"] == "C"
+            and int(c["contigua_casilla"]) == number
+            and int(c["voto_total_calc"]) == votes
+            for s in data["secciones"]
+            for c in s["casillas"]
+        )
+    if portal_count(10, "0584", 3, 433) != 1 or portal_count(3, "0861", 3, 433) != 0:
+        raise ValueError("El JSON del IEEQ ya no respalda la corrección C03 0861→0584")
     with ZipFile(source / "2018_tablas_resultados.zip") as z:
         cas18 = pd.read_excel(io.BytesIO(z.read("2018_SEE_DIP_LOC_MR_QRO_CAS.xlsx")))
         sec18 = pd.read_excel(io.BytesIO(z.read("2018_SEE_DIP_LOC_MR_QRO_SEC.xlsx")))
@@ -82,6 +94,14 @@ def normalize_casillas(year: int, raw: pd.DataFrame) -> pd.DataFrame:
     df["RECUENTO_DOCUMENTADO"] = (
         df["ESTATUS_ACTA"].eq("Grupo de recuento").fillna(False)
         if "ESTATUS_ACTA" in df else False
+    )
+    df["RECUENTO_ESTADO"] = (
+        df["ESTATUS_ACTA"].fillna("sin_estatus_en_fuente").astype(str)
+        if "ESTATUS_ACTA" in df else "fuente_no_distingue"
+    )
+    df["SENTENCIA_POST_CORTE"] = (
+        df["OBSERVACIONES"].astype(str).str.contains("ST-JRC-216/2024", regex=False)
+        if year == 2024 else False
     )
     reason = pd.Series("", index=df.index, dtype="string")
     reason.loc[df["TIPO_NORMALIZADO"].eq("S")] = "especial_sin_residencia_seccional"
@@ -161,6 +181,7 @@ def reconcile(year: int, cas: pd.DataFrame, sec: pd.DataFrame, official: pd.Data
     comp["DIF_PUBLICADO_MENOS_BCE"] = comp["TOTAL_VOTOS_PUBLICADO"].fillna(0) - comp["TOTAL_VOTOS_BCE"].fillna(0)
     by_special = specials.groupby("ID_SECCION_INSTALACION")["VOTOS_MR"].sum()
     comp["VOTOS_ESPECIALES_MR_EN_SECCION_INSTALACION"] = comp["ID_SECCION"].map(by_special).fillna(0).astype(int)
+    comp["INSTALACION_CASILLA_ESPECIAL"] = comp["VOTOS_ESPECIALES_MR_EN_SECCION_INSTALACION"].gt(0)
     comp["DIF_SIN_EXPLICAR"] = comp.apply(
         lambda r: 0 if r["DIF_PUBLICADO_MENOS_BCE"] in (0, r["VOTOS_ESPECIALES_MR_EN_SECCION_INSTALACION"])
         else r["DIF_PUBLICADO_MENOS_BCE"], axis=1
@@ -192,6 +213,9 @@ def reconcile(year: int, cas: pd.DataFrame, sec: pd.DataFrame, official: pd.Data
         "casillas_especiales_mr": len(specials),
         "votos_especiales_mr": int(specials["VOTOS_MR"].sum()),
         "filas_con_seccion_corregida": int(cas["CORRECCION_SECCION"].ne("").sum()),
+        "filas_con_sentencia_posterior": int(cas["SENTENCIA_POST_CORTE"].sum()),
+        "votos_en_filas_con_sentencia_posterior": int(pd.to_numeric(cas.loc[cas["SENTENCIA_POST_CORTE"], "TOTAL_VOTOS"]).sum()),
+        "secciones_con_sentencia_posterior": sorted(cas.loc[cas["SENTENCIA_POST_CORTE"], "ID_SECCION"].unique().tolist()),
     }
     # En 2018 y 2021 la tabla seccional publicada suma las S de su lugar de
     # instalación. Comparamos todas las columnas de voto, no solo el total.
@@ -227,6 +251,10 @@ def build(source: Path = SOURCE, output: Path = OUTPUT) -> dict:
         sec = aggregate_sections(cas, year)
         specials = special_mr(year, cas, source)
         report, comp = reconcile(year, cas, sec, official, specials, source)
+        if report["secciones_con_diferencia_sin_explicar"]:
+            raise ValueError(f"{year}: hay diferencias seccionales sin explicar")
+        if report.get("celdas_voto_nominal_distintas_de_tabla_seccional", 0):
+            raise ValueError(f"{year}: votos o lista nominal no cuadran con IEEQ")
         cas.to_parquet(output / f"dip_local_mr_{year}_casilla.parquet", index=False)
         sec.to_parquet(output / f"dip_local_mr_{year}_seccion_bce.parquet", index=False)
         specials.to_parquet(output / f"dip_local_mr_{year}_especial_mr.parquet", index=False)
