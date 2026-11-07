@@ -286,7 +286,7 @@ with tab_mapa:
         cpv = cargar_cpv_seccion()
         if cpv is not None:
             st.subheader("¿Por qué?")
-            st.caption("asociación, no causa · CPV 2020 vs votos 2024 · Cada fila es una sección; el estado solo filtra la muestra. Los límites seccionales pueden haber cambiado entre cortes.")
+            st.caption("asociación, no causa · CPV 2020 vs votos 2024 · Cada fila es una sección; el estado solo filtra la muestra. El INE resecciona: una clave igual puede abarcar otra población en 2024.")
             clases_perfil = ("ganada_solida", "perdida_competitiva", "perdida_lejana")
             perfil = perfil_clases(res, cpv, estado, clases_perfil, "perdida_lejana", max_frases=3)
             st.write("Perfil CPV de las secciones por clase de candidatura:")
@@ -603,7 +603,7 @@ with tab_fidelidad:
         cpv_fid = cargar_cpv_seccion()
         if cpv_fid is not None:
             st.subheader("¿Por qué?")
-            st.caption("asociación, no causa · CPV 2020 vs votos 2024 · Cada fila es una sección; el estado solo filtra la muestra. Los límites seccionales pueden haber cambiado entre cortes.")
+            st.caption("asociación, no causa · CPV 2020 vs votos 2024 · Cada fila es una sección; el estado solo filtra la muestra. El INE resecciona: una clave igual puede abarcar otra población en 2024.")
             clases_apoyo = ("Bastión", "Base fuerte", "Resto")
             perfil_apoyo = perfil_clases(seleccion, cpv_fid, estado_fid, clases_apoyo, "Resto", max_frases=3)
             st.caption("Diferencias estandarizadas frente a las secciones de Resto.")
