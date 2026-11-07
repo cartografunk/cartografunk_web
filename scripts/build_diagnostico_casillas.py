@@ -15,6 +15,8 @@ def main() -> None:
         pd.read_parquet(CARPETA / "dip_local_mr_2024_casilla.parquet"),
         pd.read_parquet(CARPETA / "crosswalk_qro_2018_2021_2024_referencias.parquet"),
         pd.read_parquet(ROOT / "data/electoral/cpv_2020_seccion.parquet"),
+        pd.read_parquet(CARPETA / "encarte_qro_2024_claves.parquet")
+        if (CARPETA / "encarte_qro_2024_claves.parquet").exists() else None,
     )
     destino = CARPETA / "diagnostico_casillas_cpv_2024.parquet"
     salida.to_parquet(destino, index=False)

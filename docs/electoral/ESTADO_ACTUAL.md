@@ -6,7 +6,7 @@ Se añadió una pestaña aislada «Dónde actuar · casillas» para el piloto IE
 
 **Medido:** 2 323/3 081 registros B/C/E, 788/953 secciones y 73.66 % de lista nominal tienen cruce CPV con geometría comparable. Los 758 registros restantes, en 165 secciones, mantienen diagnóstico electoral sin perfil CPV. Para MORENA, el contraste victoria sólida vs derrota lejana muestra mayor proporción de personas de 60+ y educación posbásica en las secciones de derrota lejana; es una comparación descriptiva, no una explicación individual de voto. 105 pruebas electorales pasaron y la vista aislada abrió con AppTest sin excepciones.
 
-Las 77 claves aparentes repetidas ya quedaron aclaradas: eran contiguas de casillas extraordinarias E cuyo número faltaba en el CSV, pero estaba en el JSON IEEQ. Se recuperaron las 218 etiquetas E sin eliminar filas ni modificar votos; [método](DATOS.md#diagnóstico-local-ieeq-2024-por-registro-de-casilla).
+Las 77 claves aparentes repetidas ya quedaron aclaradas: eran contiguas de casillas extraordinarias E cuyo número faltaba en el CSV, pero estaba en el JSON IEEQ. Se recuperaron las 218 etiquetas E sin eliminar filas ni modificar votos. El encarte empata con las 3 081 B/C/E y aporta su localidad de **instalación**, incluida la de las 218 E; [método](DATOS.md#diagnóstico-local-ieeq-2024-por-registro-de-casilla).
 
 **NO VERIFICADO:** área de atención y CPV propio de extraordinarias; legalidad del reparto fraccionario como voto oficialmente atribuido al partido; estabilidad de las asociaciones entre años y entidades; capacidad real de movilizar abstencionistas; efecto y costo real de las acciones. El apoyo mínimo federal 2024 no mide fidelidad individual ni histórica.
 

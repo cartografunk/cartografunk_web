@@ -92,3 +92,15 @@ def test_votos_sobre_lista_no_crean_abstencion_aparente():
     assert pd.isna(fila.ABSTENCION)
     assert not fila.ALCANZABLE_ABSTENCION
     assert fila.ACCION_HIPOTESIS == "Revisar votos sobre lista"
+
+
+def test_encarte_aporta_localidad_de_instalacion_sin_cambiar_cpv():
+    casillas, cruce, cpv = _insumos()
+    encarte = casillas.loc[casillas.INCLUIR_SECCION, ["ID_SECCION", "CASILLA_ETIQUETA"]].rename(
+        columns={"CASILLA_ETIQUETA": "CASILLA"}).copy()
+    encarte["LOCALIDAD_INE"] = 17
+    encarte["LOCALIDAD_NOMBRE"] = "LOCALIDAD DE INSTALACIÓN"
+    salida = preparar_casillas(casillas, cruce, cpv, encarte)
+    assert len(salida) == 5
+    assert salida.LOCALIDAD_INSTALACION.eq("LOCALIDAD DE INSTALACIÓN").all()
+    assert salida.loc[salida.ID_SECCION.eq("22-0004"), "pct_mujeres"].isna().all()

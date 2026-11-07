@@ -21,7 +21,7 @@ NOMBRES_CLASE = {"ganada_solida": "victoria sólida",
 
 
 def preparar_casillas(casillas: pd.DataFrame, cruce: pd.DataFrame,
-                     cpv: pd.DataFrame) -> pd.DataFrame:
+                     cpv: pd.DataFrame, encarte: pd.DataFrame | None = None) -> pd.DataFrame:
     """Atribuye votos por partido y añade CPV sólo a perímetros comparables."""
     if cruce.ID_SECCION.duplicated().any() or cpv.ID_SECCION.duplicated().any():
         raise ValueError("ID_SECCION duplicado en cruce o CPV")
@@ -42,6 +42,18 @@ def preparar_casillas(casillas: pd.DataFrame, cruce: pd.DataFrame,
                         votos.drop(columns="ID_SECCION").reset_index(drop=True)], axis=1)
     salida = salida.merge(cruce[["ID_SECCION", "CATEGORIA"]], on="ID_SECCION",
                           how="left", validate="many_to_one")
+    if encarte is not None:
+        lugar = encarte[["ID_SECCION", "CASILLA", "LOCALIDAD_INE", "LOCALIDAD_NOMBRE"]].rename(
+            columns={"CASILLA": "CASILLA_ETIQUETA", "LOCALIDAD_INE": "LOCALIDAD_INE_INSTALACION",
+                     "LOCALIDAD_NOMBRE": "LOCALIDAD_INSTALACION"})
+        salida = salida.merge(lugar, on=["ID_SECCION", "CASILLA_ETIQUETA"], how="left",
+                              validate="one_to_one", indicator="_encarte_cruce")
+        if not salida._encarte_cruce.eq("both").all():
+            raise ValueError("Hay casillas B/C/E sin clave en encarte 2024")
+        salida = salida.drop(columns="_encarte_cruce")
+    else:
+        salida["LOCALIDAD_INE_INSTALACION"] = np.nan
+        salida["LOCALIDAD_INSTALACION"] = pd.NA
     salida["CPV_COMPARABLE"] = salida.CATEGORIA.eq(ESTABLE)
     salida = salida.merge(cpv[["ID_SECCION", *ETIQUETAS]], on="ID_SECCION",
                           how="left", validate="many_to_one", indicator="_cpv_cruce")

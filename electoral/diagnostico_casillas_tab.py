@@ -18,10 +18,12 @@ def _cargar(root: Path) -> pd.DataFrame:
     preparado = carpeta / "diagnostico_casillas_cpv_2024.parquet"
     if preparado.exists():
         return pd.read_parquet(preparado)
+    encarte = carpeta / "encarte_qro_2024_claves.parquet"
     return preparar_casillas(
         pd.read_parquet(carpeta / "dip_local_mr_2024_casilla.parquet"),
         pd.read_parquet(carpeta / "crosswalk_qro_2018_2021_2024_referencias.parquet"),
         pd.read_parquet(root / "data/electoral/cpv_2020_seccion.parquet"),
+        pd.read_parquet(encarte) if encarte.exists() else None,
     )
 
 
@@ -60,8 +62,9 @@ def mostrar_diagnostico_casillas(estado: int, root: Path) -> None:
     c.metric("Lista nominal cubierta", f"{cub['lista_nominal_pct']:.1f} %")
     st.caption("Las casillas especiales S y el voto anticipado A quedan fuera: su sección de instalación "
                "no identifica la residencia del votante. Una extraordinaria E recibe CPV de la sección, "
-               "sin perfil propio de su área de atención verificado. La etiqueta E1-C1, E1-C2… "
-               "se recupera del JSON del propio IEEQ. Reparto de marcas de coalición en "
+               "sin perfil propio de su área de atención verificado. La etiqueta E1C1, E1C2… "
+               "se recupera del JSON del propio IEEQ; el encarte aporta la localidad de instalación. "
+               "Reparto de marcas de coalición en "
                "fracciones iguales: atribución analítica, no cómputo oficial por partido.")
 
     perfil = perfil_cpv(base, max_frases=3)
@@ -93,11 +96,12 @@ def mostrar_diagnostico_casillas(estado: int, root: Path) -> None:
             base["COSTO_HIPOTETICO"] = float("nan")
     else:
         base["COSTO_HIPOTETICO"] = float("nan")
-    vista = base[["ID_SECCION", "CASILLA_ETIQUETA", "FILA_FUENTE", "CLASE", "VOTOS_PARTIDO",
+    vista = base[["ID_SECCION", "CASILLA_ETIQUETA", "LOCALIDAD_INSTALACION", "FILA_FUENTE", "CLASE", "VOTOS_PARTIDO",
                   "RIVAL", "VOTOS_RIVAL", "MARGEN_PP", "VOTOS_PARA_LIDERAR", "ABSTENCION",
                   "ALCANZABLE_ABSTENCION", "VOTOS_SOBRE_LISTA", "APOYO_MINIMO_FEDERAL_2024_PCT", "COSTO_HIPOTETICO",
                   "CPV_COMPARABLE", "ACCION_HIPOTESIS"]].rename(columns={
-        "ID_SECCION": "Sección", "CASILLA_ETIQUETA": "Casilla", "FILA_FUENTE": "Fila IEEQ",
+        "ID_SECCION": "Sección", "CASILLA_ETIQUETA": "Casilla",
+        "LOCALIDAD_INSTALACION": "Localidad de instalación", "FILA_FUENTE": "Fila IEEQ",
         "CLASE": "Clase", "VOTOS_PARTIDO": "Votos partido", "RIVAL": "Rival",
         "VOTOS_RIVAL": "Votos rival", "MARGEN_PP": "Margen (pp)",
         "VOTOS_PARA_LIDERAR": "Votos para liderar", "ABSTENCION": "Abstención",

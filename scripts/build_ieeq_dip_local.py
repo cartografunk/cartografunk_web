@@ -157,7 +157,7 @@ def restore_extraordinary_labels(cas: pd.DataFrame, source: Path) -> pd.DataFram
                                     + resultado.ID_CASILLA.astype(str))
     con_contigua = resultado.TIPO_NORMALIZADO.eq("E") & resultado.CONTIGUA_E_JSON.gt(0).fillna(False)
     resultado.loc[con_contigua, "CASILLA_ETIQUETA"] += (
-        "-C" + resultado.loc[con_contigua, "CONTIGUA_E_JSON"].astype(str))
+        "C" + resultado.loc[con_contigua, "CONTIGUA_E_JSON"].astype(str))
     bce = resultado.loc[resultado.INCLUIR_SECCION]
     if bce.duplicated(["ID_DISTRITO_LOCAL", "ID_SECCION", "CASILLA_ETIQUETA"]).any():
         raise ValueError("La etiqueta recuperada no distingue casillas B/C/E")
