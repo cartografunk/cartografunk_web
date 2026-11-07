@@ -15,4 +15,6 @@ El [cotejo de encartes 2021→2024](CRUCE_ENCARTES_QRO_2021_2024.md) ya propone 
 
 La [auditoría adicional](CRUCE_ENCARTES_QRO_2021_2024.md#clave-distrito-y-domicilio-auditoría-separada) mide que 532 secciones conservadas cambiaron de distrito local y 20 nuevas quedaron en el distrito de su origen territorial dominante. Por tanto, se distingue entre clave seccional, pertenencia distrital y domicilio textual de casilla. El último no demuestra por sí solo traslado de sede.
 
+Para comparar votos **sin desagregarlos**, ya se sumaron todas las secciones conectadas entre 2021 y 2024 en [834 grupos](AGRUPACION_SECCIONES_QRO_2021_2024.md). La tabla oficial de origen→resultantes ayudaría a refinar la correspondencia y recuperar resolución individual, pero no es requisito de esta comparación agrupada.
+
 Buscar las tablas **finales** de origen→resultantes de INE/CG63/2020, INE/CG220/2020 y de los programas incorporados al marco de la jornada 2024. Contrastar esas relaciones con la diferencia de claves y el crosswalk de polígonos, fecha de entrada en vigor y, si existe, asignación por manzana/localidad. Conservar `fuente`, `fecha`, `tipo de cambio`, `origen`, `destino` y `estatus de verificación`; nunca transformar la lista de casillas en supuestos flujos individuales de electores. Hasta cerrar ese cotejo, el NO-GO del forecasting permanece.

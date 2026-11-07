@@ -39,6 +39,8 @@ El sesgo medio `observado − predicho` de Ridge en las 788 secciones fue **+6.7
 
 ## Archivos y huecos
 
+**Comparación posterior:** el [ensayo por grupos 2021→2024](AGRUPACION_SECCIONES_QRO_2021_2024.md) suma secciones relacionadas antes de comparar votos, por lo que incluye las 953 secciones actuales en 834 grupos sin repartir sufragios antiguos. Sus métricas usan otra unidad y se reportan aparte; no reemplazan las de las 788 secciones casi idénticas de esta corrida.
+
 La corrida se reproduce con `D:\Conda\envs\cartografunk\python.exe -B -m scripts.benchmark_ieeq_partidos`. Los resultados detallados locales, sin commit, son `data/electoral/ieeq_local/benchmark_partidos_2024.json` y `benchmark_partidos_2024_seccion.parquet`. `electoral/reparto_ieeq.py` contiene las columnas de voto propio y combinaciones por año. **94 pruebas electorales aprobadas**, 2 advertencias GDAL.
 
 **NO VERIFICADO:** reparto entero distrital contra totales partidarios oficiales; equivalencia exacta del marco de 2018; versión jurídica final de todas las filas 2024; desempeño prospectivo; calibración fuera de un único cambio de ciclo; apoyo del partido como voto de personas persistentes; victoria legal de la candidatura a partir del liderazgo partidario fraccionario. El protocolo se publicó antes de la métrica, pero se diseñó con conocimiento previo de la cobertura y del resultado general de 2024: no es una prueba ciega ni preregistro externo.

@@ -1,5 +1,6 @@
 """Vista aislada del ensayo retrospectivo de forecasting local."""
 
+import json
 from pathlib import Path
 
 import pandas as pd
@@ -13,6 +14,14 @@ from electoral.diagnostico_forecast import (
 @st.cache_data(max_entries=2)
 def _cargar(carpeta: Path) -> tuple[dict, pd.DataFrame, pd.DataFrame]:
     return cargar_benchmark(carpeta)
+
+
+@st.cache_data(max_entries=2)
+def _cargar_grupos(carpeta: Path) -> tuple[dict, pd.DataFrame, pd.DataFrame]:
+    resumen = json.loads((carpeta / "resumen_grupos_secciones_2021_2024.json").read_text(encoding="utf-8"))
+    benchmark = pd.read_parquet(carpeta / "benchmark_partidos_grupos_2024.parquet")
+    mapa = pd.read_csv(carpeta / "mapa_grupos_secciones_2021_2024.csv")
+    return resumen, benchmark, mapa
 
 
 def mostrar_diagnostico_forecast(estado: int, root: Path) -> None:
@@ -87,6 +96,38 @@ def mostrar_diagnostico_forecast(estado: int, root: Path) -> None:
         st.caption("Esta explicación describe las entradas y la salida del método; asociación, no causa. El resultado observado de 2024 está en la tabla para comprobar el ensayo.")
     st.download_button("Descargar diagnóstico por sección", vista.to_csv(index=False).encode("utf-8-sig"),
                        file_name=f"diagnostico_forecast_{partido}_{modelo}_2024.csv", mime="text/csv")
+    archivos_grupos = ("resumen_grupos_secciones_2021_2024.json",
+                       "benchmark_partidos_grupos_2024.parquet",
+                       "mapa_grupos_secciones_2021_2024.csv")
+    if all((carpeta / name).exists() for name in archivos_grupos):
+        resumen_grupos, benchmark_grupos, mapa_grupos = _cargar_grupos(carpeta)
+        st.subheader("Comparación con secciones reagrupadas")
+        st.write("Cuando una sección se dividió o fusionó, sumamos las casillas B+C+E de todas las secciones relacionadas en cada año. Cada voto entra una sola vez.")
+        st.caption(f"{resumen_grupos['secciones_2021']} secciones de 2021 y {resumen_grupos['secciones_2024']} de 2024 → "
+                   f"{resumen_grupos['grupos_comparables']} grupos: {resumen_grupos['grupos_uno_a_uno']} de una a una y "
+                   f"{resumen_grupos['grupos_reconfigurados']} reconfigurados. "
+                   f"Lista nominal 2024 incluida: {resumen_grupos['lista_nominal_2024_agrupada']:,}.")
+        st.caption("En los grupos reconfigurados la estimación corresponde al grupo completo, no a cada sección hija. Este benchmark por grupos no tiene intervalo recalibrado: no se informa confianza ni decisión de victoria.")
+        solo_reconfigurados = st.checkbox("Ver sólo grupos reconfigurados", value=True, key="forecast_solo_grupos")
+        sizes = mapa_grupos.drop_duplicates("ID_GRUPO_2021_2024")[[
+            "ID_GRUPO_2021_2024", "SECCIONES_2021_EN_GRUPO", "SECCIONES_2024_EN_GRUPO"]]
+        grupos = benchmark_grupos.loc[
+            benchmark_grupos.PARTIDO.eq(partido) & benchmark_grupos.MODELO.eq(modelo)
+        ].merge(sizes, on="ID_GRUPO_2021_2024", validate="one_to_one")
+        if solo_reconfigurados:
+            grupos = grupos.loc[
+                grupos.SECCIONES_2021_EN_GRUPO.gt(1) | grupos.SECCIONES_2024_EN_GRUPO.gt(1)]
+        grupos = grupos.rename(columns={
+            "ID_GRUPO_2021_2024": "Grupo (clave 2021)",
+            "SECCIONES_2021_EN_GRUPO": "Secciones 2021", "SECCIONES_2024_EN_GRUPO": "Secciones 2024",
+            "CUOTA_2021_PCT": "Cuota 2021 (%)", "CUOTA_2024_ESTIMADA_PCT": "Estimado 2024 (%)",
+            "CUOTA_2024_OBSERVADA_PCT": "Observado 2024 (%)",
+            "MARGEN_2024_ESTIMADO_PP": "Margen estimado (pp)",
+            "MARGEN_2024_OBSERVADO_PP": "Margen observado (pp)",
+        })[["Grupo (clave 2021)", "Secciones 2021", "Secciones 2024", "Cuota 2021 (%)",
+            "Estimado 2024 (%)", "Observado 2024 (%)", "Margen estimado (pp)", "Margen observado (pp)"]]
+        st.dataframe(grupos, hide_index=True, width="stretch",
+                     alt="Comparación retrospectiva de votos por partido en grupos de secciones relacionadas")
     with st.expander("Avanzado · método y límites"):
         st.write("El método aprende de la transición 2018→2021 y estima 2024 con la cuota, participación y lista nominal de 2021. "
                  "El intervalo se calibró con errores históricos. CPV 2020 no entra al modelo; el bloque «¿Por qué?» "
