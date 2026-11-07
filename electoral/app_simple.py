@@ -36,6 +36,7 @@ from electoral.limites import limites_estado
 from electoral.precalcular_fidelidad import SALIDAS
 from electoral.priorizacion import cubrir_meta, meta_distrital, preparar_priorizacion, presupuestar
 from electoral.portada import mostrar_portada
+from electoral.piloto_local import mostrar_piloto_local
 
 
 NOMBRES = {
@@ -263,9 +264,9 @@ with col_estado:
         format_func=lambda clave: f"{clave:02d} - {nombres_estados[clave]}",
     )
 
-tab_que, tab_mapa, tab_prioridad, tab_fidelidad, tab_calidad = st.tabs([
+tab_que, tab_mapa, tab_prioridad, tab_fidelidad, tab_calidad, tab_local = st.tabs([
     "Introducción", "Mapa y secciones", "Priorización",
-    "Apoyo mínimo", "Calidad de datos",
+    "Apoyo mínimo", "Calidad de datos", "Piloto local IEEQ",
 ], key="vista_laboratorio", on_change="rerun")
 with tab_que:
     mostrar_portada(eleccion)
@@ -697,3 +698,7 @@ with tab_calidad:
     )
     for nota in notas:
         st.markdown(f"\\- {nota}")
+
+with tab_local:
+    if tab_local.open:
+        mostrar_piloto_local(estado, ROOT)

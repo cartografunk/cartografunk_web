@@ -2,7 +2,7 @@
 
 ## Resultados locales IEEQ 2018, 2021 y 2024
 
-Los archivos originales de diputaciones locales MR de Querétaro se guardan en `data/electoral/fuentes_ieeq/` con un manifiesto de URLs, fechas UTC y SHA-256. `scripts/build_ieeq_dip_local.py` produce Parquet locales de casillas, secciones B+C+E y casillas especiales MR en `data/electoral/ieeq_local/`; ninguno se versiona. Las definiciones, exclusiones, fuentes y cifras del cotejo están en [IEEQ_LOCAL_ETAPAS_1_3.md](IEEQ_LOCAL_ETAPAS_1_3.md). Estas tablas **no** están incorporadas a la app ni enlazadas territorialmente entre años.
+Los archivos originales de diputaciones locales MR de Querétaro se guardan en `data/electoral/fuentes_ieeq/` con un manifiesto de URLs, fechas UTC y SHA-256. `scripts/build_ieeq_dip_local.py` produce Parquet locales de casillas, secciones B+C+E y casillas especiales MR en `data/electoral/ieeq_local/`; ninguno se versiona. Las definiciones, exclusiones, fuentes y cifras del cotejo están en [IEEQ_LOCAL_ETAPAS_1_3.md](IEEQ_LOCAL_ETAPAS_1_3.md). La pestaña «Piloto local IEEQ» de la app lee estas tablas cuando existen y muestra una sección por vez. El cruce geométrico se describe en [IEEQ_LOCAL_ETAPAS_4_7.md](IEEQ_LOCAL_ETAPAS_4_7.md); no se trata como serie comparable para ML.
 
 ## Ruta alternativa: CPV urbano por manzana, colonia y sección
 
@@ -333,3 +333,8 @@ En `C:\Users\HeyCe\AppData\Local\Temp\cola3_reporte.md` constan 9 distritos de D
 
 NO VERIFICADO: fecha de corte de lista nominal y confirmación documental del CRS original en los archivos/reporte aquí citados.
 
+# Piloto local IEEQ 2018–2024: geometría y sentencia
+
+La [auditoría de etapas 4–7](IEEQ_LOCAL_ETAPAS_4_7.md) agrega tres fuentes locales sin versionar: el SHP nacional de Pautas con DBF 30-sep-2019 (`860` claves de Querétaro), el SHP seccional ECEG del INE con corte declarado 20-ene-2021 (`891` claves), y el GPKG original 2024 (`953` claves). Las claves electorales B+C+E de 2018, 2021 y 2024 coinciden con las respectivas capas en **860/860, 891/891 y 953/953**. Esta coincidencia de ID es una prueba de cobertura de llaves, no de perímetros iguales. La superposición ECEG→2024 encontró **788/953** polígonos casi idénticos, que cubren **1 398 846/1 899 053** de lista nominal 2024; el encadenamiento con la referencia 2019 encontró **654/953** y **1 053 423/1 899 053**. Los archivos `data/electoral/ieeq_local/crosswalk_*.parquet` registran área y fracción para cada vínculo y no se agregan a Git.
+
+La [sentencia ST-JRC-216/2024](https://www.te.gob.mx/sentenciasHTML/convertir/expediente/ST-JRC-0216-2024-) permite cotejar seis casillas del distrito local 7 y su total MR de **67 452** votos. El alcance del cotejo y sus límites están en el informe enlazado. La fecha jurídica final de otros distritos y la geometría exacta de 2018 siguen **NO VERIFICADAS**.

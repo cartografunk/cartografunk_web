@@ -1,0 +1,44 @@
+# Piloto IEEQ: etapas 4–7 y puerta de comparabilidad
+
+Fecha de corte de este informe: 7 de noviembre de 2026. Unidad electoral: **sección**. Querétaro es únicamente el filtro de muestra. No se publican resultados por estado, municipio ni distrito.
+
+## Etapa 4 · Correspondencia territorial
+
+El [SIGE del INE](https://cartografia.ine.mx/sige8/estadisticos-Geoelectorales), en «ECEG 2020–2021», declara que su marco seccional SHP tiene corte **20-ene-2021**. Se descargó el ZIP de Querétaro desde ese renglón; el ZIP externo (`f000c02f…`) contiene otro ZIP (`5926b924…`) con 891 secciones EPSG:32614. Su DBF indica actualización 18-feb-2021, que no se confunde con la fecha de corte declarada. Las 891 claves coinciden con las 891 del ECEG tabular y las de votos IEEQ 2021.
+
+Para un antecedente de 2018 se usa **sólo como referencia** el [SHP nacional del INE publicado en Pautas](https://pautas.ine.mx/transparencia/mapas/index_2020.html), cuyo DBF indica 30-sep-2019 y cuya entidad 22 tiene 860 secciones, las mismas claves presentes en los votos IEEQ 2018. **NO VERIFICADO:** que sus límites sean exactamente los de la jornada de 2018.
+
+El marco 2024 proviene del GPKG original local `MGE 2024/.../SECCIONES_2024.gpkg` (953 secciones). Su metadato declara erróneamente EPSG:4326 pese a contener coordenadas métricas: `EPSG:32614` es la interpretación de trabajo. Su alineación se comprobó con polígonos ECEG de control; por ejemplo, `22-0001` tiene intersección/unión 0.9999998. **NO VERIFICADO:** procedencia institucional y CRS formal del GPKG. El GeoParquet simplificado de la app no se emplea para esta auditoría: la simplificación de 25 m reducía artificialmente los índices de similitud.
+
+[`build_ieeq_crosswalk.py`](../../scripts/build_ieeq_crosswalk.py) intersecta polígonos originales y guarda los vínculos origen→destino con área y fracción de cada sección. Considera vínculo si la intersección ocupa al menos 1 % de alguno de los polígonos. «Sin cambio cartográfico» exige misma clave, un único vínculo y área de intersección/unión ≥ 0.995; el ID por sí solo nunca basta. Las etiquetas dividida, fusionada, modificada y nueva describen el patrón geométrico observado, no un acto administrativo confirmado. Los Parquet de salida, hashes completos y muestra visual de revisión permanecen locales en `data/electoral/ieeq_local/`.
+
+| Comparación | Destinos | Sin cambio | Dividida o reconfigurada | Fusionada o reconfigurada | Modificada o renumerada |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Referencia 2019 → ECEG enero 2021 | 891 | 715 | 67 | 96 | 13 |
+| ECEG enero 2021 → marco 2024 | 953 | 788 | 94 | 56 | 15 |
+
+En la segunda comparación, las **788 secciones** casi idénticas cubren **1 398 846 / 1 899 053 = 73.66 %** de la lista nominal B+C+E de 2024. Para la cadena de tres fechas, **654 secciones** son casi idénticas en ambos pasos; cubren **1 053 423 / 1 899 053 = 55.47 %**. Se generó una muestra fija de cinco secciones por cada categoría de la comparación ECEG→2024 y se inspeccionó el trazado azul/naranja en `crosswalk_muestra_revision.png`: los casos estables superponen los contornos y los casos divididos/fusionados muestran cambios visibles. Esta inspección no valida exhaustivamente todos los polígonos ni sustituye un marco exacto 2018.
+
+### Go/no-go 2
+
+Se fijó **antes del recálculo con el SHP ECEG exacto** un mínimo de **70 % de lista nominal 2024** en secciones con polígono casi idéntico en los **dos pasos**. Resultado: **55.47 %; NO-GO para ML de tres elecciones**. El corte 2019 tampoco prueba la geometría exacta de 2018. El diagnóstico descriptivo de cada año sigue disponible.
+
+## Cotejo jurídico pendiente de la etapa 3
+
+La [sentencia ST-JRC-216/2024 y acumulados](https://www.te.gob.mx/sentenciasHTML/convertir/expediente/ST-JRC-0216-2024-) menciona expresamente las seis casillas anotadas en el CSV IEEQ: 518 C1, 518 E1 C1, 536 C4, 727 S1, 882 B y 885 C1. Sus totales publicados en la versión de recuento son **339, 376, 316, 22, 409 y 408**, que suman **1 870** y coinciden con las seis filas etiquetadas. La misma resolución recompone el distrito local 7 a **67 452** votos MR. El constructor local suma **66 034 B+C+E + 1 414 especiales MR + 4 anticipados = 67 452**. El [acuerdo IEEQ/CG/A/047/24](https://ieeq.mx/contenido/cg/acuerdos/a_08_Sep_2024_1.pdf) trata la asignación de RP posterior; no reemplaza este cotejo de casillas MR. [`audit_ieeq_judicial_2024.py`](../../scripts/audit_ieeq_judicial_2024.py) reproduce las dos comprobaciones. **NO VERIFICADO:** cotejo de cada columna de partido y versión jurídica final de los otros catorce distritos.
+
+## Etapa 5 · Protocolo congelado
+
+La condición del go/no-go 2 falló antes de entrenar. Queda registrado el protocolo que habría regido una repetición con marcos exactos: objetivo por bloque político como porcentaje de votos válidos B+C+E, **sólo después** de verificar los convenios IEEQ por distrito y año; alternativas base de persistencia de porcentaje y promedio de entrenamiento; MAE en puntos porcentuales como métrica principal y error agregado ponderado por votos válidos como secundaria; entrenamiento en transiciones anteriores y una única evaluación fuera de tiempo en 2024; ninguna selección de variables, umbral o hiperparámetro con datos de 2024; sensibilidad excluyendo las cinco secciones con seis filas judiciales anotadas (incluida 22-0727). El ECEG publicado después de la elección 2021 no puede entrar como predictor ex ante de 2021. No se declara una predicción archivada: cualquier ejercicio futuro sería retrospectivo.
+
+Este protocolo no se activa ni se retoca con los resultados 2024 mientras la puerta territorial esté cerrada. También sigue pendiente la validación de convenios y candidaturas por distrito/año.
+
+## Etapa 6 · Modelos y holdout
+
+**NO-GO, no ejecutada.** No se entrenó ni reportó un modelo de pronóstico. Un error calculado sólo sobre las secciones supervivientes de 2024 daría una impresión sesgada de cobertura, y entrenar/evaluar con 2024 violaría el holdout congelado. El resultado negativo de la puerta queda como resultado metodológico del piloto.
+
+## Etapa 7 · Diagnóstico y demo
+
+La pestaña «Piloto local IEEQ» de [`app_simple.py`](../../electoral/app_simple.py) permite explorar una **sección a la vez** para 2018, 2021 o 2024, con opciones de boleta, votos B+C+E y lista nominal. Para 2024 muestra el estado de cruce geométrico ECEG→2024 y explica cuándo no corresponde atribuirle CPV. El estado existente sirve sólo de filtro de muestra. Si faltan los Parquet locales, la pestaña informa la dependencia y no intenta inventar datos. No muestra una serie de secciones como si conservaran votantes ni un pronóstico no validado.
+
+La prueba de aceptación se limita al diagnóstico verificable: coincidencia de claves, controles geométricos sintéticos, seis totales judiciales y total distrital 7. AppTest comprobó la pestaña local con una sección estable, otra modificada y un cambio de año sin excepciones. El conjunto `electoral/tests` pasó **90 pruebas, 0 fallos y 2 advertencias GDAL**. **NO VERIFICADO:** desempeño en despliegue sin archivos locales, revisión de todos los rótulos en navegador y una auditoría independiente de cada fila electoral.
