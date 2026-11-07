@@ -24,9 +24,10 @@ def test_forecasting_tab_render(tmp_path):
     pd.DataFrame({"ID_SECCION": ["22-0001", "22-0002"],
                   "CATEGORIA": ["sin_cambio_cartografico_referencia", "modificada"]}).to_parquet(
                       carpeta / "crosswalk_qro_2018_2021_2024_referencias.parquet", index=False)
-    pd.DataFrame({"ID_SECCION": ["22-0001"], "PARTIDO": ["MORENA"], "MODELO": ["ridge"],
-                  "CUOTA_OBSERVADA_PCT": [40.], "CUOTA_PREDICHA_PCT": [38.],
-                  "MARGEN_OBSERVADO_PP": [8.], "MARGEN_PREDICHO_PP": [6.]}).to_parquet(
+    pd.DataFrame({"ID_SECCION": ["22-0001", "22-0001"], "PARTIDO": ["MORENA", "MORENA"],
+                  "MODELO": ["ridge", "persistencia"],
+                  "CUOTA_OBSERVADA_PCT": [40., 40.], "CUOTA_PREDICHA_PCT": [38., 30.],
+                  "MARGEN_OBSERVADO_PP": [8., 8.], "MARGEN_PREDICHO_PP": [6., -2.]}).to_parquet(
                       carpeta / "benchmark_partidos_2024_seccion.parquet", index=False)
     script = ("from pathlib import Path\n"
               "from electoral.forecasting_tab import mostrar_diagnostico_forecast\n"
@@ -35,3 +36,7 @@ def test_forecasting_tab_render(tmp_path):
     assert not at.exception
     assert any("1 sección queda sin modelo" in item.value for item in at.caption)
     assert "Sin modelo: sección modificada" in at.dataframe[0].value["Lectura del ensayo"].tolist()
+    assert any("cuota atribuida a MORENA fue 30.0 %" in item.value for item in at.markdown)
+    at.selectbox(key="forecast_seccion").select("22-0002").run(timeout=180)
+    assert not at.exception
+    assert any("perímetro cambió" in item.value for item in at.info)

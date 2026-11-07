@@ -62,6 +62,29 @@ def mostrar_diagnostico_forecast(estado: int, root: Path) -> None:
         "Margen estimado (pp)", "Margen observado 2024 (pp)", "Límite inferior (pp)", "Límite superior (pp)"]]
     st.dataframe(vista, hide_index=True, width="stretch",
                  alt="Diagnóstico retrospectivo por sección con predicción, resultado observado y abstenciones")
+    st.subheader("Leer una sección")
+    seccion = st.selectbox("Sección del ensayo", datos.ID_SECCION.tolist(), key="forecast_seccion")
+    fila = datos.set_index("ID_SECCION").loc[seccion]
+    if pd.isna(fila.MARGEN_PREDICHO_PP):
+        st.info("Esta sección no recibió estimación: su perímetro cambió entre los cortes comparados. El encarte no permite repartir su voto anterior.")
+    else:
+        base_2021 = predicciones.loc[
+            predicciones.ID_SECCION.eq(seccion) & predicciones.PARTIDO.eq(partido)
+            & predicciones.MODELO.eq("persistencia")
+        ]
+        if len(base_2021) != 1:
+            raise ValueError("Falta la cuota 2021 usada como referencia")
+        cuota_2021 = float(base_2021.iloc[0].CUOTA_PREDICHA_PCT)
+        cambio = fila.CUOTA_PREDICHA_PCT - cuota_2021
+        st.write(
+            f"En 2021, la cuota atribuida a {partido} fue {cuota_2021:.1f} %. "
+            f"{modelo.capitalize()} estimó {fila.CUOTA_PREDICHA_PCT:.1f} % para 2024 "
+            f"({cambio:+.1f} puntos). El margen estimado frente al mayor de los otros "
+            f"seis partidos fue {fila.MARGEN_PREDICHO_PP:+.1f} puntos; su intervalo "
+            f"histórico va de {fila.LIMITE_INFERIOR_PP:+.1f} a {fila.LIMITE_SUPERIOR_PP:+.1f}. "
+            f"Lectura: {fila.LECTURA.lower()}."
+        )
+        st.caption("Esta explicación describe las entradas y la salida del método; asociación, no causa. El resultado observado de 2024 está en la tabla para comprobar el ensayo.")
     st.download_button("Descargar diagnóstico por sección", vista.to_csv(index=False).encode("utf-8-sig"),
                        file_name=f"diagnostico_forecast_{partido}_{modelo}_2024.csv", mime="text/csv")
     with st.expander("Avanzado · método y límites"):
