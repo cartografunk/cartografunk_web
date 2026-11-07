@@ -33,6 +33,10 @@ Los intervalos nominales del 90 % se calibraron con errores 2018→2021 y se eva
 
 Ridge detecta **cero** de las 436 secciones donde MORENA encabezó entre los siete partidos, pese a su menor MAE medio. La cifra de acierto entre «no lidera» emitidos sería engañosa por el predominio de negativos; por eso se reportan líderes detectados y abstenciones. El intervalo no alcanza su cobertura nominal para PAN y MORENA. **Estos modelos no sustentan todavía una respuesta fiable a «dónde ganará mi partido» ni un porcentaje de confianza.**
 
+### Diagnóstico posterior a la prueba
+
+El sesgo medio `observado − predicho` de Ridge en las 788 secciones fue **+6.73 pp para MORENA** y **−9.37 pp para PAN**. Como diagnóstico con **oráculo 2024**, sumar a cada partido su sesgo medio observado reduce el MAE macro de 5.38 a 3.86 pp y recupera 365 de las 436 secciones encabezadas por MORENA. La persistencia ajustada con su propio sesgo 2024 recupera 352. Esto apunta a un cambio agregado de ciclo como parte importante del fallo, pero el ajuste usa el resultado de la prueba y **no es un pronóstico**. Claude sugirió contrastar explícitamente este sesgo antes de diseñar un modelo de escenarios; la interpretación causal o la capacidad futura siguen sin verificarse.
+
 ## Archivos y huecos
 
 La corrida se reproduce con `D:\Conda\envs\cartografunk\python.exe -B -m scripts.benchmark_ieeq_partidos`. Los resultados detallados locales, sin commit, son `data/electoral/ieeq_local/benchmark_partidos_2024.json` y `benchmark_partidos_2024_seccion.parquet`. `electoral/reparto_ieeq.py` contiene las columnas de voto propio y combinaciones por año. **94 pruebas electorales aprobadas**, 2 advertencias GDAL.
