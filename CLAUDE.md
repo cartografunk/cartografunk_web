@@ -5,6 +5,7 @@ Lee [docs/electoral/ESTADO_ACTUAL.md](docs/electoral/ESTADO_ACTUAL.md) antes de 
 - Rama compartida de trabajo electoral: `demo-tres-elecciones`. Las etiquetas locales `demo-11am`, `demo-11am-b`, `demo-11am-c` y `respaldo-antes-noche` son respaldos; no las muevas.
 - App actual: `electoral/app_simple.py`. `electoral/demo_app.py` es un demo anterior de Presidencia.
 - Conserva las columnas originales y las reglas de cálculo verificadas por las pruebas. El reparto `A_propios` es experimental, no una regla oficial confirmada.
-- Los Parquet en `data/electoral/` y los ZIP de origen son datos locales; comprueba su disponibilidad antes de ejecutar la app. No los agregues a commits.
+- Los Parquet en `data/electoral/` y los ZIP/PDF de origen son datos locales; comprueba su disponibilidad antes de ejecutar la app. No los agregues a commits, salvo los cuatro Parquet pequeños `data/electoral/ieeq_local/dip_local_mr_{2018,2021,2024}_especial_mr.parquet` y `dip_local_mr_2024_especial_ubicacion.parquet`, que el usuario autorizó versionar. El último contiene domicilios del encarte, no coordenadas geocodificadas ni origen de votantes.
 - Prueba con `D:\Conda\envs\cartografunk\python.exe -B -m pytest electoral/tests -q` y, al cambiar la interfaz, con `streamlit.testing.v1.AppTest` usando `timeout=180`.
 - Reporta por separado lo medido y lo NO VERIFICADO. No presentes el apoyo mínimo de 2024 como seguimiento de personas ni como fidelidad histórica.
+- Antes de leer el contenido de un PDF, conviértelo a Markdown con PyMuPDF u otra herramienta; para PDF escaneado usa OCR y márcalo. Lee el Markdown primero y sólo después inspecciona páginas concretas para comprobar la extracción.
