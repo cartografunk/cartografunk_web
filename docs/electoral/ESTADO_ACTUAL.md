@@ -1,5 +1,9 @@
 # Estado actual del módulo electoral
 
+## Auditoría de colonias del 2026-11-06
+
+Se obtuvo el CCOL nacional 2022 del INE y se comparó con `ColoniasINE2020a.parquet`. Aunque 100 668 polígonos comparten `(ENTIDAD, ID)` con el catálogo, sólo 4 630 coinciden también en nombre, municipio y CP: **el ID no es una llave segura entre cortes**. En las 95 007 colonias con un único candidato por atributos, 104 704 de 111 524 pares colonia–sección del piloto espacial (93,885 %) aparecen también en el CCOL 2022. La procedencia y el corte exacto de los polígonos, así como la causa de los 6 820 pares discordantes, siguen **NO VERIFICADOS**. La app conserva el ECEG a nivel sección; [auditoría y fuentes](CCOL_COLONIAS.md).
+
 ## Adición del 2026-11-06
 
 Se integró el CPV 2020 del ECEG INEGI-INE por `ID_SECCION` en un Parquet local con 15 tasas. La coincidencia exacta de claves con cada Parquet seccional 2024 es de 67 736 secciones (96,030–96,074 %) y cubre 94,501–94,719 % de su lista nominal; detalle en [DATOS.md](DATOS.md). «¿Por qué?» ahora muestra el perfil CPV por clase de **sección**: ganada sólida, pérdida competitiva y pérdida lejana en la vista electoral; Bastión, Base fuerte y Resto en apoyo mínimo por partido. Cada variable tiene medias y diferencias estandarizadas; correlación y regresión se dejan en «Avanzado». El estado solo filtra la muestra. La equivalencia espacial de las secciones entre 2020/2021 y 2024 sigue **NO VERIFICADA**.

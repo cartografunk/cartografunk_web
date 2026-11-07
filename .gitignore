@@ -25,3 +25,8 @@ data/electoral/cpv_2020_colonia_seccion_nacional.json
 data/electoral/eceg_2020_*.parquet
 data/electoral/eceg_2020*.duckdb*
 data/electoral/eceg_2020_completo_auditoria.json
+data/electoral/ccol_ine_2022_nacional.mdb
+data/electoral/ccol_ine_2022_nacional.csv
+data/electoral/ccol_ine_2022_nacional.parquet
+data/electoral/ccol_ine_2022_auditoria.json
+data/electoral/ccol_ine_2026_nacional.xls

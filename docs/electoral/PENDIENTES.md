@@ -4,6 +4,8 @@ Esta lista recoge los `NO VERIFICADO` y `NO ENCONTRADO` de los reportes temporal
 
 ## NO VERIFICADO
 
+El CCOL del INE sí contiene secciones y distritos, pero el corte 2022 no enlaza de forma segura por `(ENTIDAD, ID)` con `ColoniasINE2020a.parquet`: sólo 4 630 de 100 668 IDs compartidos coinciden también en nombre, municipio y CP. Faltan el CCOL del corte compatible, la procedencia geométrica exacta del Parquet de colonias y una validación de las coincidencias compuestas. [Auditoría y fuentes](CCOL_COLONIAS.md).
+
 | Punto | Fuente y alcance de la revisión |
 | --- | --- |
 | Regla oficial para repartir votos de combinaciones entre partidos y equivalencia legal de una candidatura con un partido. | `%TEMP%\cola3_reporte.md`, sección `NO VERIFICADO`; docstrings de [`reparto.py`](../../electoral/reparto.py), [`reparto_distrito.py`](../../electoral/reparto_distrito.py) y [`reparto_fraccionario.py`](../../electoral/reparto_fraccionario.py). |
