@@ -33,6 +33,7 @@ from electoral.explicacion import explicar, perfil_clases
 from electoral.exportacion import construir_excel
 from electoral.fidelidad import PARTIDOS, analizar_fidelidad, panel
 from electoral.forecasting_tab import mostrar_diagnostico_forecast
+from electoral.diagnostico_casillas_tab import mostrar_diagnostico_casillas
 from electoral.limites import limites_estado
 from electoral.precalcular_fidelidad import SALIDAS
 from electoral.priorizacion import cubrir_meta, meta_distrital, preparar_priorizacion, presupuestar
@@ -265,9 +266,10 @@ with col_estado:
         format_func=lambda clave: f"{clave:02d} - {nombres_estados[clave]}",
     )
 
-tab_que, tab_mapa, tab_prioridad, tab_fidelidad, tab_calidad, tab_local, tab_forecast = st.tabs([
+tab_que, tab_mapa, tab_prioridad, tab_fidelidad, tab_calidad, tab_local, tab_forecast, tab_casillas = st.tabs([
     "Introducción", "Mapa y secciones", "Priorización",
     "Apoyo mínimo", "Calidad de datos", "Piloto local IEEQ", "Forecasting · diagnóstico",
+    "Dónde actuar · casillas",
 ], key="vista_laboratorio", on_change="rerun")
 with tab_que:
     mostrar_portada(eleccion)
@@ -707,3 +709,7 @@ with tab_local:
 with tab_forecast:
     if tab_forecast.open:
         mostrar_diagnostico_forecast(estado, ROOT)
+
+with tab_casillas:
+    if tab_casillas.open:
+        mostrar_diagnostico_casillas(estado, ROOT)

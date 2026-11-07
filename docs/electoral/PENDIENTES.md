@@ -1,5 +1,7 @@
 # Límites de verificación y decisiones registradas
 
+El diagnóstico por casilla B/C/E 2024 ya está en la app y se documenta en [DATOS.md](DATOS.md#diagnóstico-local-ieeq-2024-por-registro-de-casilla). Siguiente trabajo concreto: resolver las 77 filas con clave visible de casilla repetida usando el identificador original del acta o encarte; comprobar las áreas de atención E; repetir el perfil por partido en 2018/2021 con un CPV territorialmente comparable; probar asociaciones fuera de Querétaro con la misma elección federal; y registrar intervenciones reales antes de afirmar eficacia o retorno. El costo opcional actual es sólo un supuesto del usuario.
+
 La [ruta estratégica del producto](PREGUNTAS_ESTRATEGICAS.md) coloca primero el diagnóstico CPV por casilla y después la decisión de esfuerzo con rentabilidad y apoyo mínimo. Pendiente: unir CPV a las casillas B/C/E con control de secciones compartidas, distinguir las S de tránsito, comprobar estabilidad de asociaciones entre elecciones y medir resultados de intervenciones antes de presentar retorno de campaña como hecho.
 
 ## Piloto local IEEQ, tras etapas 1–3
