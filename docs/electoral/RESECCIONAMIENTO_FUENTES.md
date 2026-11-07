@@ -11,6 +11,8 @@
 
 ## Próximo cotejo verificable
 
-El [cotejo de encartes 2021→2024](CRUCE_ENCARTES_QRO_2021_2024.md) ya propone antecedentes para las 81 secciones nuevas sin clave ECEG, usando domicilio o localidad de casilla y superposición territorial. Son pistas de ubicación verificables, incluidas las secciones donde cambió la escuela. No reemplazan la tabla oficial de manzanas/localidades para repartir población o votos de una sección origen entre varios destinos.
+El [cotejo de encartes 2021→2024](CRUCE_ENCARTES_QRO_2021_2024.md) ya propone antecedentes para las 81 secciones nuevas sin clave ECEG, usando domicilio o localidad de casilla y superposición territorial. Son pistas de ubicación verificables, incluidas las secciones cuyo domicilio textual de casilla no coincide entre años. No reemplazan la tabla oficial de manzanas/localidades para repartir población o votos de una sección origen entre varios destinos.
+
+La [auditoría adicional](CRUCE_ENCARTES_QRO_2021_2024.md#clave-distrito-y-domicilio-auditoría-separada) mide que 532 secciones conservadas cambiaron de distrito local y 20 nuevas quedaron en el distrito de su origen territorial dominante. Por tanto, se distingue entre clave seccional, pertenencia distrital y domicilio textual de casilla. El último no demuestra por sí solo traslado de sede.
 
 Buscar las tablas **finales** de origen→resultantes de INE/CG63/2020, INE/CG220/2020 y de los programas incorporados al marco de la jornada 2024. Contrastar esas relaciones con la diferencia de claves y el crosswalk de polígonos, fecha de entrada en vigor y, si existe, asignación por manzana/localidad. Conservar `fuente`, `fecha`, `tipo de cambio`, `origen`, `destino` y `estatus de verificación`; nunca transformar la lista de casillas en supuestos flujos individuales de electores. Hasta cerrar ese cotejo, el NO-GO del forecasting permanece.

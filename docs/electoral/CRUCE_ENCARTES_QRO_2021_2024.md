@@ -28,3 +28,22 @@ La revisión sección por sección está en el CSV local `data/electoral/ieeq_lo
 ## Límite práctico
 
 El cruce rescata **candidatos de correspondencia** para las 81 secciones, no transforma automáticamente sus votos 2021 en votos de 2024. Cuando una sección se divide, hay que repartir la población o el padrón anterior entre destinos con una tabla oficial por manzana/localidad o con una aproximación documentada y su incertidumbre. El domicilio de instalación puede cambiar sin que cambie la residencia; por eso el encarte verifica la pista, no el flujo de electores. Los 84 casos que conservaron clave ECEG pero cambiaron geometría siguen como grupo separado.
+
+## Clave, distrito y domicilio: auditoría separada
+
+`scripts/audit_ieeq_cambios_2021_2024.py` cruza las claves de resultados B/C/E, el distrito local de esos resultados, los domicilios normalizados de ambos encartes y el crosswalk geométrico. Deja el detalle local en `auditoria_clave_distrito_domicilio_2021_2024.csv` y el resumen en el JSON homónimo. Para una sección nueva, el origen de referencia es el polígono 2021 que ocupa la mayor fracción de su superficie 2024; esta elección **no** equivale al origen de su padrón o sus votos.
+
+| Cambio 2021→2024 | Medición |
+| --- | ---: |
+| Secciones 2021 / 2024 | 891 / 953 |
+| Claves conservadas / desaparecidas / nuevas | 872 / 19 / 81 |
+| Claves conservadas cuyo distrito **local** cambió | 532 de 872 |
+| Nuevas cuyo origen territorial dominante cambió de distrito local | 61 de 81 |
+| Nuevas cuyo origen territorial dominante quedó en el mismo distrito local | 20 de 81 |
+| Claves conservadas con algún domicilio textual idéntico / sin uno idéntico | 453 / 419 |
+| Nuevas con domicilio textual idéntico al origen dominante | 8 de 81 |
+| Enlaces territoriales desaparecida→nueva / conservada→nueva / desaparecida→conservada | 84 / 8 / 4 |
+
+Las **19 claves desaparecidas** son `22-0066`, `22-0083`, `22-0092`, `22-0116`, `22-0120`, `22-0121`, `22-0147`, `22-0190`, `22-0195`, `22-0214`, `22-0278`, `22-0404`, `22-0491`, `22-0552`, `22-0565`, `22-0585`, `22-0627`, `22-0632` y `22-0685`. Todas las 81 nuevas tienen al menos un vínculo territorial con una de esas 19, aunque una nueva (`22-0910`) tiene como origen dominante una clave que sobrevivió (`22-0898`, 50.16 % de su área). Hay relaciones de uno a varios y de varios a uno.
+
+**Interpretación:** cambiar de distrito local no implica que desaparezca la sección: 532 conservaron su clave. Tampoco todo nacimiento se explica por un cambio de distrito: 20 nuevas quedan en el distrito local de su origen territorial dominante. El encarte documenta el domicilio de instalación de casillas; que dos textos no coincidan **no verifica** una mudanza física, ni permite asignar a las personas del padrón previo. La causa administrativa de cada baja o alta y la distribución oficial por manzana/localidad siguen **NO VERIFICADAS**. La [descripción del SIGE del INE](https://cartografia.ine.mx/sige8/) distingue las modificaciones al marco por reseccionamiento e integración seccional; el [procedimiento de reseccionamiento 2023](https://repositoriodocumental.ine.mx/xmlui/bitstream/handle/123456789/151683/cnv-so05-2023-05-11-acuerdo12-anexo1.pdf) describe subdivisión de secciones. El programa 2023–2024 se incorporaría después de la jornada, como se detalla en [fuentes](RESECCIONAMIENTO_FUENTES.md).
