@@ -32,6 +32,7 @@ from electoral.etiquetas import ETIQUETAS_CLASE, ETIQUETAS_RESULTADO
 from electoral.explicacion import explicar, perfil_clases
 from electoral.exportacion import construir_excel
 from electoral.fidelidad import PARTIDOS, analizar_fidelidad, panel
+from electoral.forecasting_tab import mostrar_diagnostico_forecast
 from electoral.limites import limites_estado
 from electoral.precalcular_fidelidad import SALIDAS
 from electoral.priorizacion import cubrir_meta, meta_distrital, preparar_priorizacion, presupuestar
@@ -264,9 +265,9 @@ with col_estado:
         format_func=lambda clave: f"{clave:02d} - {nombres_estados[clave]}",
     )
 
-tab_que, tab_mapa, tab_prioridad, tab_fidelidad, tab_calidad, tab_local = st.tabs([
+tab_que, tab_mapa, tab_prioridad, tab_fidelidad, tab_calidad, tab_local, tab_forecast = st.tabs([
     "Introducción", "Mapa y secciones", "Priorización",
-    "Apoyo mínimo", "Calidad de datos", "Piloto local IEEQ",
+    "Apoyo mínimo", "Calidad de datos", "Piloto local IEEQ", "Forecasting · diagnóstico",
 ], key="vista_laboratorio", on_change="rerun")
 with tab_que:
     mostrar_portada(eleccion)
@@ -702,3 +703,7 @@ with tab_calidad:
 with tab_local:
     if tab_local.open:
         mostrar_piloto_local(estado, ROOT)
+
+with tab_forecast:
+    if tab_forecast.open:
+        mostrar_diagnostico_forecast(estado, ROOT)
