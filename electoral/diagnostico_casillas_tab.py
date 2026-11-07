@@ -60,8 +60,8 @@ def mostrar_diagnostico_casillas(estado: int, root: Path) -> None:
     c.metric("Lista nominal cubierta", f"{cub['lista_nominal_pct']:.1f} %")
     st.caption("Las casillas especiales S y el voto anticipado A quedan fuera: su sección de instalación "
                "no identifica la residencia del votante. Una extraordinaria E recibe CPV de la sección, "
-               "sin perfil propio de su área de atención verificado. La fila fuente distingue registros "
-               "IEEQ que repiten tipo y número de casilla. Reparto de marcas de coalición en "
+               "sin perfil propio de su área de atención verificado. La etiqueta E1-C1, E1-C2… "
+               "se recupera del JSON del propio IEEQ. Reparto de marcas de coalición en "
                "fracciones iguales: atribución analítica, no cómputo oficial por partido.")
 
     perfil = perfil_cpv(base, max_frases=3)
@@ -93,11 +93,11 @@ def mostrar_diagnostico_casillas(estado: int, root: Path) -> None:
             base["COSTO_HIPOTETICO"] = float("nan")
     else:
         base["COSTO_HIPOTETICO"] = float("nan")
-    vista = base[["ID_SECCION", "FILA_FUENTE", "TIPO_NORMALIZADO", "ID_CASILLA", "CLASE", "VOTOS_PARTIDO",
+    vista = base[["ID_SECCION", "CASILLA_ETIQUETA", "FILA_FUENTE", "CLASE", "VOTOS_PARTIDO",
                   "RIVAL", "VOTOS_RIVAL", "MARGEN_PP", "VOTOS_PARA_LIDERAR", "ABSTENCION",
                   "ALCANZABLE_ABSTENCION", "VOTOS_SOBRE_LISTA", "APOYO_MINIMO_FEDERAL_2024_PCT", "COSTO_HIPOTETICO",
                   "CPV_COMPARABLE", "ACCION_HIPOTESIS"]].rename(columns={
-        "ID_SECCION": "Sección", "FILA_FUENTE": "Fila IEEQ", "TIPO_NORMALIZADO": "Tipo", "ID_CASILLA": "Casilla",
+        "ID_SECCION": "Sección", "CASILLA_ETIQUETA": "Casilla", "FILA_FUENTE": "Fila IEEQ",
         "CLASE": "Clase", "VOTOS_PARTIDO": "Votos partido", "RIVAL": "Rival",
         "VOTOS_RIVAL": "Votos rival", "MARGEN_PP": "Margen (pp)",
         "VOTOS_PARA_LIDERAR": "Votos para liderar", "ABSTENCION": "Abstención",

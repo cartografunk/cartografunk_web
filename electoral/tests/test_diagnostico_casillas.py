@@ -32,6 +32,7 @@ def _insumos():
         filas.append(fila)
     casillas = pd.DataFrame(filas)
     casillas["FILA_FUENTE"] = range(1, len(casillas) + 1)
+    casillas["CASILLA_ETIQUETA"] = casillas.TIPO_NORMALIZADO + casillas.ID_CASILLA.astype(str)
     cruce = pd.DataFrame({"ID_SECCION": [f"22-000{i}" for i in range(1, 5)],
                          "CATEGORIA": ["sin_cambio_cartografico_referencia"] * 3
                                       + ["dividida_o_reconfigurada"]})

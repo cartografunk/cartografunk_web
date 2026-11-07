@@ -114,6 +114,56 @@ def normalize_casillas(year: int, raw: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def restore_extraordinary_labels(cas: pd.DataFrame, source: Path) -> pd.DataFrame:
+    """Recupera las contiguas E del JSON IEEQ sin alterar el CSV original.
+
+    El CSV 2024 pone EXT_CONTIGUA=0 incluso en E1 contigua 1, 2, ...;
+    el JSON del mismo visor las enumera. La coincidencia usa votos y nominal.
+    """
+    refs = []
+    for district in range(1, 16):
+        raw = json.loads((source / f"2024_json_d{district}.json").read_bytes())
+        for section in raw["secciones"]:
+            if not str(section["clave_seccion"]).isdigit():
+                continue
+            for c in section["casillas"]:
+                if c["clave_tipo_casilla"] != "EX":
+                    continue
+                votos = {r["siglas_participante"]: int(r["votos"]) for r in c["resultado"]}
+                refs.append({
+                    "ID_DISTRITO_LOCAL": district,
+                    "SECCION": int(section["clave_seccion"]),
+                    "ID_CASILLA": int(c["no_casilla"]),
+                    "TOTAL_VOTOS": int(c["voto_total_calc"]),
+                    "LISTA_NOMINAL": int(c["lista_nominal_casilla"]),
+                    "PAN": votos["PAN"], "MORENA": votos["MORENA"],
+                    "CONTIGUA_E_JSON": int(c["contigua_casilla"]),
+                })
+    referencia = pd.DataFrame(refs)
+    llave = ["ID_DISTRITO_LOCAL", "SECCION", "ID_CASILLA", "TOTAL_VOTOS",
+             "LISTA_NOMINAL", "PAN", "MORENA"]
+    e = cas.loc[cas.TIPO_NORMALIZADO.eq("E")].copy()
+    if referencia.duplicated(llave).any() or e.duplicated(llave).any():
+        raise ValueError("No se puede distinguir unívocamente una casilla E")
+    unido = e.merge(referencia, on=llave, how="outer", validate="one_to_one", indicator=True)
+    if not unido._merge.eq("both").all() or len(unido) != len(e):
+        raise ValueError("CSV y JSON IEEQ difieren en casillas extraordinarias")
+    resultado = cas.copy()
+    resultado["CONTIGUA_E_JSON"] = pd.Series(pd.NA, index=cas.index, dtype="Int64")
+    resultado.loc[e.index, "CONTIGUA_E_JSON"] = e["FILA_FUENTE"].map(
+        unido.set_index("FILA_FUENTE")["CONTIGUA_E_JSON"]
+    ).astype("Int64")
+    resultado["CASILLA_ETIQUETA"] = (resultado.TIPO_NORMALIZADO
+                                    + resultado.ID_CASILLA.astype(str))
+    con_contigua = resultado.TIPO_NORMALIZADO.eq("E") & resultado.CONTIGUA_E_JSON.gt(0).fillna(False)
+    resultado.loc[con_contigua, "CASILLA_ETIQUETA"] += (
+        "-C" + resultado.loc[con_contigua, "CONTIGUA_E_JSON"].astype(str))
+    bce = resultado.loc[resultado.INCLUIR_SECCION]
+    if bce.duplicated(["ID_DISTRITO_LOCAL", "ID_SECCION", "CASILLA_ETIQUETA"]).any():
+        raise ValueError("La etiqueta recuperada no distingue casillas B/C/E")
+    return resultado
+
+
 def special_mr(year: int, cas: pd.DataFrame, source: Path) -> pd.DataFrame:
     """Casillas S de MR, asociadas al lugar de instalación, no a residencia."""
     if year != 2024:
@@ -248,6 +298,8 @@ def build(source: Path = SOURCE, output: Path = OUTPUT) -> dict:
     reports = []
     for year, (raw, official) in _read_sources(source).items():
         cas = normalize_casillas(year, raw)
+        if year == 2024:
+            cas = restore_extraordinary_labels(cas, source)
         sec = aggregate_sections(cas, year)
         specials = special_mr(year, cas, source)
         report, comp = reconcile(year, cas, sec, official, specials, source)

@@ -56,6 +56,12 @@ def test_cotejo_integral_con_fuentes_locales(tmp_path):
     assert by_year[2024]["votos_bce_mas_anticipado_y_especiales_mr"] == by_year[2024]["votos_mr_portal"]
     assert by_year[2018]["diferencia_distrito_menos_seccion"] == 1
     assert (by_year[2024]["filas_con_sentencia_posterior"], by_year[2024]["votos_en_filas_con_sentencia_posterior"]) == (6, 1870)
+    cas24 = pd.read_parquet(tmp_path / "dip_local_mr_2024_casilla.parquet")
+    bce = cas24.loc[cas24.INCLUIR_SECCION]
+    assert not bce.duplicated(["ID_DISTRITO_LOCAL", "ID_SECCION", "CASILLA_ETIQUETA"]).any()
+    assert cas24.loc[cas24.FILA_FUENTE.eq(314), "CASILLA_ETIQUETA"].iloc[0] == "E1"
+    assert cas24.loc[cas24.FILA_FUENTE.eq(315), "CASILLA_ETIQUETA"].iloc[0] == "E1-C1"
+    assert cas24.loc[cas24.FILA_FUENTE.eq(328), "CASILLA_ETIQUETA"].iloc[0] == "E1-C14"
     cotejo = pd.read_csv(tmp_path / "dip_local_mr_2024_cotejo_seccion.csv")
     flagged = cotejo.loc[cotejo["ID_SECCION"].eq("22-0727")].iloc[0]
     assert flagged["INSTALACION_CASILLA_ESPECIAL"]

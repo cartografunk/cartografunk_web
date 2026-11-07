@@ -31,8 +31,13 @@ def preparar_casillas(casillas: pd.DataFrame, cruce: pd.DataFrame,
         raise ValueError("No hay casillas B/C/E incluidas")
     if base.FILA_FUENTE.duplicated().any():
         raise ValueError("Fila de fuente IEEQ duplicada")
+    if "CASILLA_ETIQUETA" not in base or base.duplicated(
+        ["ID_DISTRITO_LOCAL", "ID_SECCION", "CASILLA_ETIQUETA"]
+    ).any():
+        raise ValueError("La etiqueta de casilla IEEQ falta o no es única")
     votos = atribuir_partidos(base, 2024)
-    columnas = ["ID_SECCION", "FILA_FUENTE", "ID_CASILLA", "TIPO_NORMALIZADO", "ID_DISTRITO_LOCAL"]
+    columnas = ["ID_SECCION", "FILA_FUENTE", "CASILLA_ETIQUETA", "ID_CASILLA",
+                "TIPO_NORMALIZADO", "ID_DISTRITO_LOCAL"]
     salida = pd.concat([base[columnas].reset_index(drop=True),
                         votos.drop(columns="ID_SECCION").reset_index(drop=True)], axis=1)
     salida = salida.merge(cruce[["ID_SECCION", "CATEGORIA"]], on="ID_SECCION",
