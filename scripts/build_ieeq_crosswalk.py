@@ -189,6 +189,24 @@ def build(output: Path = OUTPUT) -> dict:
         "lista_nominal_estable": int(merged.loc[b2024, "LISTA_NOMINAL"].sum()),
         "lista_nominal_total": int(nom),
     }
+    stable_2024_iou = merged.loc[b2024, "IOU_MISMA_CLAVE"]
+    audit["cobertura_eceg_2024"]["iou_estables"] = {
+        "min": float(stable_2024_iou.min()),
+        "p01": float(stable_2024_iou.quantile(.01)),
+        "mediana": float(stable_2024_iou.median()),
+        "p99": float(stable_2024_iou.quantile(.99)),
+        "max": float(stable_2024_iou.max()),
+    }
+    sec21 = pd.read_parquet(output / "dip_local_mr_2021_seccion_bce.parquet",
+                            columns=["ID_SECCION", "LISTA_NOMINAL"])
+    a_nom = a.merge(sec21, on="ID_SECCION", how="left", validate="one_to_one")
+    a_stable = a_nom.CATEGORIA.eq("sin_cambio_cartografico_referencia")
+    audit["cobertura_referencia_2019_eceg_2021"] = {
+        "secciones_estables": int(a_stable.sum()),
+        "secciones_total": len(a_nom),
+        "lista_nominal_estable": int(a_nom.loc[a_stable, "LISTA_NOMINAL"].sum()),
+        "lista_nominal_total": int(a_nom.LISTA_NOMINAL.sum()),
+    }
     audit["cotejo_claves"] = {"2018_votos_con_referencia_2019": len(expected["referencia_2019"]),
                               "2021_votos_con_marco_eceg": len(expected["eceg_2021_01_20"]),
                               "eceg_censo_con_marco": len(cpv_qro),

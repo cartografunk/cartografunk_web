@@ -23,6 +23,9 @@ def test_piloto_local_render_y_perimetro_modificado(tmp_path):
         "IOU_MISMA_CLAVE": [1.0, 0.4],
         "CATEGORIA_2019_A_2021": ["sin_cambio_cartografico_referencia"] * 2,
     }).to_parquet(data / "crosswalk_qro_2018_2021_2024_referencias.parquet", index=False)
+    pd.DataFrame({
+        "ID_SECCION_INSTALACION": ["22-0001"], "VOTOS_MR": [17],
+    }).to_parquet(data / "dip_local_mr_2024_especial_mr.parquet", index=False)
     script = (
         "from pathlib import Path\n"
         "from electoral.piloto_local import mostrar_piloto_local\n"
@@ -30,7 +33,9 @@ def test_piloto_local_render_y_perimetro_modificado(tmp_path):
     )
     at = AppTest.from_string(script).run(timeout=180)
     assert not at.exception
-    assert any("Polígono prácticamente igual" in item.value for item in at.info)
+    assert any("Geometría prácticamente igual (IoU ≥ 0.995)" in item.value for item in at.info)
+    assert any("no residentes: 17 votos MR" in item.value for item in at.info)
+    assert "votos por partido NO VERIFICADOS" in at.markdown[-1].value
     at.selectbox[1].select("22-0002").run(timeout=180)
     assert not at.exception
     assert any("no se atribuye" in item.value for item in at.warning)

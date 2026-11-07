@@ -44,19 +44,25 @@ def mostrar_piloto_local(estado: int, root: Path) -> None:
         for name in local.columns if name not in excluded and pd.notna(row[name])
     ]).sort_values("Votos", ascending=False)
     st.dataframe(options, hide_index=True, width="stretch", alt="Votos por opción registrada en la sección seleccionada")
+    especiales = local_dir / f"dip_local_mr_{anio_local}_especial_mr.parquet"
+    if especiales.exists():
+        s = _cargar_parquet(especiales)
+        s = s.loc[s.ID_SECCION_INSTALACION.eq(seccion_local)]
+        if not s.empty:
+            st.info(f"Casillas especiales instaladas en esta sección, no residentes: {int(s.VOTOS_MR.sum()):,} votos MR en {len(s)} casilla(s). Se contabilizan fuera de los porcentajes residenciales B+C+E.")
     if anio_local == 2024:
         cross = _cargar_parquet(crosswalk_path).set_index("ID_SECCION").loc[seccion_local]
         stable = cross["CATEGORIA"] == "sin_cambio_cartografico_referencia"
         st.caption("CPV 2020 vs votos 2024 · asociación, no causa. La comparación territorial usa el SHP ECEG del 20-ene-2021 y el polígono original de 2024.")
         if stable:
-            st.info("Polígono prácticamente igual entre ECEG 2021 y 2024 (intersección/unión ≥ 0.995). La composición de votantes no se puede verificar.")
+            st.info("Geometría prácticamente igual (IoU ≥ 0.995) entre cortes cartográficos ECEG 2021 y 2024. La composición de votantes no se puede verificar.")
         else:
             st.warning("Polígono modificado o reconfigurado frente al ECEG: no se atribuye aquí un perfil CPV 2020 a esta sección de 2024.")
         with st.expander("Avanzado · cruce territorial y fuentes"):
             st.write({"Categoría": cross["CATEGORIA"],
                       "Intersección/unión de la misma clave": round(float(cross["IOU_MISMA_CLAVE"]), 6),
-                      "Corte de referencia anterior": cross["CATEGORIA_2019_A_2021"]})
-            st.caption("El corte 2019 no acredita por sí mismo el perímetro exacto de la elección 2018. El piloto de ML no pasó el umbral preregistrado de 70 % de lista nominal comparable en los tres cortes.")
-            st.markdown("[Sentencia ST-JRC-216/2024](https://www.te.gob.mx/sentenciasHTML/convertir/expediente/ST-JRC-0216-2024-)")
+                      "Referencia INE 30-sep-2019 → ECEG 20-ene-2021": cross["CATEGORIA_2019_A_2021"]})
+            st.caption("La referencia INE 30-sep-2019 no acredita por sí misma el perímetro exacto de la elección 2018. El piloto de ML no pasó el umbral de 70 % de lista nominal comparable en los tres cortes.")
+            st.markdown("[Sentencia ST-JRC-216/2024](https://www.te.gob.mx/sentenciasHTML/convertir/expediente/ST-JRC-0216-2024-): totales de casilla coinciden; votos por partido NO VERIFICADOS.")
     else:
         st.caption("Resultado del año seleccionado. Se evita compararlo como una serie territorial hasta verificar su perímetro contra los otros cortes.")
