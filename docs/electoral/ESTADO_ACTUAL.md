@@ -1,5 +1,7 @@
 # Estado actual del módulo electoral
 
+La [pregunta central del producto](PREGUNTAS_ESTRATEGICAS.md) queda formulada como **«¿dónde vale la pena concentrar esfuerzos de campaña?»**. Primero se identifican asociaciones entre CPV y resultados por casilla; después se cruzan con rentabilidad, abstención, apoyo mínimo observado, costo supuesto y cobertura para proponer acciones como hipótesis. La implementación actual aún no mide el efecto causal de esas acciones.
+
 ## Benchmark exploratorio por partido, 2026-11-07
 
 Se ejecutó la [primera prueba retrospectiva por partido](BENCHMARK_PARTIDOS_QRO_2024.md) en 788 de 953 secciones comparables ECEG→2024 (73.66 % de lista nominal). Las combinaciones IEEQ se atribuyen por fracciones iguales a los partidos marcados, sin redondeo seccional. Ridge obtuvo MAE medio de cuota de 5.38 puntos porcentuales frente a 5.95 de persistencia 2021, pero no detectó ninguna de las 436 secciones donde MORENA lideró entre siete partidos comparables. **No hay pronóstico de liderazgo confiable ni validación prospectiva.** El código, protocolos sellados, cobertura y abstenciones están documentados en ese informe. La etapa 6 anterior conserva su resultado histórico de NO-GO de tres fechas; la corrida actual es una decisión exploratoria posterior del propietario.

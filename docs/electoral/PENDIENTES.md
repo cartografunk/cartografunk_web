@@ -1,5 +1,7 @@
 # Límites de verificación y decisiones registradas
 
+La [ruta estratégica del producto](PREGUNTAS_ESTRATEGICAS.md) coloca primero el diagnóstico CPV por casilla y después la decisión de esfuerzo con rentabilidad y apoyo mínimo. Pendiente: unir CPV a las casillas B/C/E con control de secciones compartidas, distinguir las S de tránsito, comprobar estabilidad de asociaciones entre elecciones y medir resultados de intervenciones antes de presentar retorno de campaña como hecho.
+
 ## Piloto local IEEQ, tras etapas 1–3
 
 El procesamiento y cotejo de diputaciones locales MR 2018, 2021 y 2024 se documenta en [IEEQ_LOCAL_ETAPAS_1_3.md](IEEQ_LOCAL_ETAPAS_1_3.md). El [informe de etapas 4–7](IEEQ_LOCAL_ETAPAS_4_7.md) mide la superposición ECEG→2024 y declara NO-GO para ML de tres elecciones. **NO VERIFICADO:** causa del voto de diferencia entre tabla distrital y seccional del IEEQ en 2018; marco exacto de la jornada 2018; versión jurídica final de los otros catorce distritos 2024; estatus de recuento de 2021/2024 cuando el archivo no lo especifica. En el distrito 7, seis casillas y el total 67 452 sí cuadran con ST-JRC-216/2024. El voto en casillas especiales indica sufragio fuera de la sección de residencia, pero los archivos no identifican su sección de origen.
