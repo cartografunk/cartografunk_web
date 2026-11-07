@@ -1,5 +1,9 @@
 # Archivos de data/electoral
 
+## Resultados locales IEEQ 2018, 2021 y 2024
+
+Los archivos originales de diputaciones locales MR de Querétaro se guardan en `data/electoral/fuentes_ieeq/` con un manifiesto de URLs, fechas UTC y SHA-256. `scripts/build_ieeq_dip_local.py` produce Parquet locales de casillas, secciones B+C+E y casillas especiales MR en `data/electoral/ieeq_local/`; ninguno se versiona. Las definiciones, exclusiones, fuentes y cifras del cotejo están en [IEEQ_LOCAL_ETAPAS_1_3.md](IEEQ_LOCAL_ETAPAS_1_3.md). Estas tablas **no** están incorporadas a la app ni enlazadas territorialmente entre años.
+
 ## Ruta alternativa: CPV urbano por manzana, colonia y sección
 
 La búsqueda posterior del Catálogo de Colonias con claves seccionales, sus cortes 2022/2026 y la auditoría que impide unirlo directamente al polígono local se documentan en [CCOL_COLONIAS.md](CCOL_COLONIAS.md).

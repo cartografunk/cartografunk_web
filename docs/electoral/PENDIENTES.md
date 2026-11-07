@@ -1,5 +1,9 @@
 # Límites de verificación y decisiones registradas
 
+## Piloto local IEEQ, tras etapas 1–3
+
+El procesamiento y cotejo de diputaciones locales MR 2018, 2021 y 2024 se documenta en [IEEQ_LOCAL_ETAPAS_1_3.md](IEEQ_LOCAL_ETAPAS_1_3.md). **NO VERIFICADO:** causa del voto de diferencia entre tabla distrital y seccional del IEEQ en 2018; fecha y versión jurídica exactas del paquete 2024 frente a sentencias posteriores; estatus de recuento de 2021/2024 cuando el archivo no lo especifica; correspondencia territorial de secciones entre los tres años. El voto en casillas especiales indica sufragio fuera de la sección de residencia, pero los archivos no identifican su sección de origen.
+
 Esta lista recoge los `NO VERIFICADO` y `NO ENCONTRADO` de los reportes temporales disponibles y de la inspección de código y datos de Prompt 6. Las rutas de `%TEMP%` se refieren a `C:\Users\HeyCe\AppData\Local\Temp` en esta sesión.
 
 ## NO VERIFICADO

@@ -1,5 +1,9 @@
 # Estado actual del módulo electoral
 
+## Piloto local Querétaro: etapas 1–3
+
+Se descargaron y normalizaron los resultados IEEQ de diputaciones locales MR 2018, 2021 y 2024. Las salidas locales por casilla, sección B+C+E y casillas especiales, los hashes de 20 archivos fuente y los cotejos están descritos en [IEEQ_LOCAL_ETAPAS_1_3.md](IEEQ_LOCAL_ETAPAS_1_3.md). Hay 860, 891 y 953 secciones B+C+E respectivamente. El cotejo seccional no deja diferencias sin explicar; las casillas S se conservan aparte como voto fuera de la sección de residencia. La puerta de disponibilidad para ML sigue condicionada por un voto de diferencia entre el agregado distrital y el seccional de 2018 y por el corte jurídico exacto del portal 2024, ambos **NO VERIFICADOS**. Todavía no se ha construido la correspondencia territorial entre años ni integrado estas elecciones a la app.
+
 ## Auditoría de colonias del 2026-11-06
 
 Se obtuvo el CCOL nacional 2022 del INE y se comparó con `ColoniasINE2020a.parquet`. Aunque 100 668 polígonos comparten `(ENTIDAD, ID)` con el catálogo, sólo 4 630 coinciden también en nombre, municipio y CP: **el ID no es una llave segura entre cortes**. En las 95 007 colonias con un único candidato por atributos, 104 704 de 111 524 pares colonia–sección del piloto espacial (93,885 %) aparecen también en el CCOL 2022. La procedencia y el corte exacto de los polígonos, así como la causa de los 6 820 pares discordantes, siguen **NO VERIFICADOS**. La app conserva el ECEG a nivel sección; [auditoría y fuentes](CCOL_COLONIAS.md).
