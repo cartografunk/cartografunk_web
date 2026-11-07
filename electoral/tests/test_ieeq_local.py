@@ -5,7 +5,7 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from scripts.build_ieeq_dip_local import SOURCE, aggregate_sections, build, normalize_casillas
+from scripts.build_ieeq_dip_local import ROOT, SOURCE, aggregate_sections, build, normalize_casillas
 
 
 def test_anulada_pierde_votos_pero_conserva_lista_nominal():
@@ -66,3 +66,25 @@ def test_cotejo_integral_con_fuentes_locales(tmp_path):
     flagged = cotejo.loc[cotejo["ID_SECCION"].eq("22-0727")].iloc[0]
     assert flagged["INSTALACION_CASILLA_ESPECIAL"]
     assert flagged["DIF_PUBLICADO_MENOS_BCE"] == 52
+
+
+@pytest.mark.skipif(
+    not (ROOT / "data/electoral/presidencia_2024_casilla.parquet").exists()
+    or not (ROOT / "data/electoral/ieeq_local/dip_local_mr_2024_casilla.parquet").exists(),
+    reason="Parquet federal o local no disponible",
+)
+def test_lista_nominal_extraordinaria_coincide_con_ine_federal():
+    local = pd.read_parquet(ROOT / "data/electoral/ieeq_local/dip_local_mr_2024_casilla.parquet")
+    local = local.loc[local.TIPO_NORMALIZADO.eq("E"),
+                      ["ID_SECCION", "ID_CASILLA", "CONTIGUA_E_JSON", "LISTA_NOMINAL"]]
+    federal = pd.read_parquet(ROOT / "data/electoral/presidencia_2024_casilla.parquet",
+                              columns=["ID_ESTADO", "ID_SECCION", "TIPO_CASILLA", "ID_CASILLA",
+                                       "EXT_CONTIGUA", "LISTA_NOMINAL"])
+    federal = federal.loc[federal.ID_ESTADO.eq(22) & federal.TIPO_CASILLA.eq("E")]
+    cotejo = local.merge(federal, left_on=["ID_SECCION", "ID_CASILLA", "CONTIGUA_E_JSON"],
+                         right_on=["ID_SECCION", "ID_CASILLA", "EXT_CONTIGUA"],
+                         how="outer", validate="one_to_one", indicator=True,
+                         suffixes=("_IEEQ", "_INE"))
+    assert len(cotejo) == 218
+    assert cotejo._merge.eq("both").all()
+    assert cotejo.LISTA_NOMINAL_IEEQ.eq(cotejo.LISTA_NOMINAL_INE).all()
