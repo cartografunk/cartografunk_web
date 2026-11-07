@@ -1,0 +1,17 @@
+# Enmienda v1.2 · objetivo principal por partido
+
+**Fecha:** 2026-11-07. Esta enmienda reemplaza el objetivo principal de v1/v1.1 **antes de calcular métricas 2024**, por instrucción del propietario. Los documentos anteriores se conservan como historial sellado. La salida comercial solicitada es por **partido y sección**; Querétaro sólo filtra la muestra. La candidatura y el bloque son contexto, no sustituyen el resultado partidario.
+
+## Reparto analítico seccional
+
+Cada partido recibe sus votos de marca individual, más `votos_combinación / número_de_partidos_marcados` de cada columna de marcas múltiples que lo incluye. Se calcula con números racionales; **no se redondea por sección**. Por ejemplo, tres votos `PAN-PRI` aportan 1.5 a PAN y 1.5 a PRI. Los votos de independientes no se asignan a partidos; permanecen en el total válido. La suma de votos atribuidos a partidos más independientes debe igualar la suma válida de opciones, salvo datos faltantes documentados. Los sobrantes enteros del cómputo oficial se asignan a nivel distrito según los lineamientos IEEQ; no existe evidencia para ubicar ese entero en una sección concreta. El reparto fraccionario seccional es una medida analítica, no el cómputo oficial entero de partido por sección.
+
+Se modelan los siete partidos presentes en 2018, 2021 y 2024: `PAN`, `PRI`, `PRD`, `MC`, `PVEM`, `MORENA`, `PT`. Otros partidos se conservan en el denominador válido y se reportan como competidores sin serie completa. Si un partido ya no compite en un distrito-año, su cuota observada es cero. La lista y las columnas de combinación por año quedan en el código y en un manifiesto hash antes de la prueba.
+
+Objetivo primario por partido: `100 × votos_atribuidos_partido / votos_válidos_BCE` en puntos porcentuales. Segundo objetivo: ventaja firmada de ese partido frente al **partido rival de mayor cuota en la misma elección**; el rival se define por la regla fija de máximo entre partidos, aunque cambie de identidad. «Lidera entre partidos» es mayor cuota atribuida; **no equivale necesariamente a que gane la candidatura de MR**. Se reportarán ambos conceptos con rótulos distintos cuando se incorpore el mapa de candidaturas.
+
+## Modelos y abstenciones
+
+Universo y baselines de v1, Ridge fijo de v1.1, entrenamiento 2018→2021 en 654 secciones y prueba 2021→2024 en 788 secciones. El modelo usa por partido `cuota_t`, participación y `log1p(lista nominal)`; `alpha=10` sin búsqueda. Persistencia 2021 es el comparador principal. Intervalos de margen por partido con residuos de 2018→2021 y cinco folds por distrito para Ridge. Se informa cobertura y anchura, y abstención por sección modificada, sin dato o intervalo que cruza cero. Sin CPV como predictor. El cambio de ciclo electoral y la cartografía 2018 no certificada hacen la evaluación retrospectiva exploratoria.
+
+El reparto oficial **entero por distrito** se cotejará contra totales publicados aparte. Si no cuadra, se documentará la diferencia sin alterar retroactivamente las cuotas fraccionarias seccionales ni ocultar el resultado experimental. Los siete partidos no cubren necesariamente al ganador entre todos los partidos; para la etiqueta de liderazgo se comparará con **todos los partidos con votos en el año**, y una predicción se abstendrá si un partido sin historia comparable podría liderar según la información previa. No se publicarán probabilidades prospectivas con este ejercicio.
