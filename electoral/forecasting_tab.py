@@ -39,6 +39,11 @@ def _cargar_perfiles(carpeta: Path) -> tuple[dict, pd.DataFrame]:
     return informe, secciones
 
 
+@st.cache_data(max_entries=2)
+def _cargar_candidaturas(carpeta: Path) -> pd.DataFrame:
+    return pd.read_parquet(carpeta / "margen_candidatura_ieeq_2024_seccion.parquet")
+
+
 def mostrar_diagnostico_forecast(estado: int, root: Path) -> None:
     st.subheader("Forecasting · prueba retrospectiva 2024")
     st.caption("Diputaciones locales MR · unidad: sección · Querétaro es el filtro de muestra. Reparto fraccionario de coaliciones por partido.")
@@ -174,7 +179,10 @@ def mostrar_diagnostico_forecast(estado: int, root: Path) -> None:
             "perfilamiento_cpv_2024.json", "perfilamiento_cpv_2024_seccion.parquet"
         )):
             perfiles, secciones_perfil = _cargar_perfiles(carpeta)
-            perfil_partido, detalle_perfil = resumir_partido(secciones_perfil, ml_rows, partido)
+            archivo_candidaturas = carpeta / "margen_candidatura_ieeq_2024_seccion.parquet"
+            candidaturas_locales = _cargar_candidaturas(carpeta) if archivo_candidaturas.exists() else None
+            perfil_partido, detalle_perfil = resumir_partido(
+                secciones_perfil, ml_rows, partido, candidaturas_locales)
             st.subheader("Perfiles CPV de secciones")
             st.write(
                 f"Agrupamos {perfiles['secciones_con_perfil']} secciones por sus 15 tasas censales. "
@@ -189,28 +197,40 @@ def mostrar_diagnostico_forecast(estado: int, root: Path) -> None:
             )
             vista_perfiles = perfil_partido.rename(columns={
                 "PERFIL_CPV": "Perfil", "secciones": "Secciones",
-                "cuota_observada_media_pct": "Cuota observada media (%)",
-                "lidera_observado": "Lideró en 2024",
-                "derrotas_cercanas": "Derrotas a ≤5 pp",
-                "revisar_oportunidad": "Revisar oportunidad",
-            })[["Perfil", "Rasgos CPV", "Secciones", "Cuota observada media (%)",
-                "Lideró en 2024", "Derrotas a ≤5 pp", "Revisar oportunidad"]]
+                "cuota_observada_media_pct": "Cuota media por sección (%)",
+                "lidera_observado": "Lideró entre siete partidos",
+                "derrotas_cercanas": "Partido a ≤5 pp del primero",
+                "cercanas_y_ml_predijo_liderazgo": "ML: liderazgo puntual",
+            })[["Perfil", "Rasgos CPV", "Secciones", "Cuota media por sección (%)",
+                "Lideró entre siete partidos", "Partido a ≤5 pp del primero", "ML: liderazgo puntual"]]
+            if candidaturas_locales is not None:
+                vista_perfiles["Candidatura ya lideró"] = perfil_partido.candidatura_lidero
             st.dataframe(vista_perfiles, hide_index=True, width="stretch",
                          alt="Perfiles censales de secciones y resultados partidarios observados")
-            st.caption("«Revisar oportunidad» = el ML esperaba liderazgo, pero el partido perdió por 5 puntos o menos. Es una pista para investigar, no una probabilidad de remontada.")
-            revisar = detalle_perfil.loc[detalle_perfil.REVISAR_OPORTUNIDAD].copy()
-            if len(revisar):
-                revisar["Faltaron (pp)"] = -revisar.MARGEN_OBSERVADO_PP
-                revisar = revisar.sort_values("Faltaron (pp)").rename(columns={
+            st.caption("Margen partidario entre siete partidos con reparto fraccionario. «ML: liderazgo puntual» describe un error retrospectivo y no usa el intervalo: puede cruzar el empate. La candidatura local puede haber ganado aunque uno de sus partidos no liderara. Hipótesis de reversión, sin prueba.")
+            cercanas = detalle_perfil.loc[detalle_perfil.DERROTA_CERCANA].copy()
+            if len(cercanas):
+                cercanas["Distancia partidaria observada (pp)"] = -cercanas.MARGEN_OBSERVADO_PP
+                cercanas["ML: liderazgo puntual"] = cercanas.FALSO_LIDERAZGO_ML
+                if candidaturas_locales is not None:
+                    cercanas["Candidatura local"] = cercanas.MARGEN_CANDIDATURA_PP.map(
+                        lambda m: "Lideró" if m > 0 else "Empató" if m == 0 else "No lideró")
+                cercanas = cercanas.sort_values(["PERFIL_CPV", "ID_SECCION"]).rename(columns={
                     "ID_SECCION": "Sección", "PERFIL_CPV": "Perfil",
-                    "MARGEN_PREDICHO_PP": "Margen que estimó ML (pp)",
-                })[["Sección", "Perfil", "Faltaron (pp)", "Margen que estimó ML (pp)"]]
-                st.dataframe(revisar, hide_index=True, width="stretch",
-                             alt="Secciones con derrota cercana y falso liderazgo del modelo")
+                })
+                columnas_cercanas = ["Sección", "Perfil", "Distancia partidaria observada (pp)",
+                                     "ML: liderazgo puntual"]
+                if candidaturas_locales is not None:
+                    columnas_cercanas += ["Candidatura local", "MARGEN_CANDIDATURA_PP"]
+                    cercanas = cercanas.rename(columns={
+                        "MARGEN_CANDIDATURA_PP": "Margen candidatura local (pp)"})
+                    columnas_cercanas[-1] = "Margen candidatura local (pp)"
+                st.dataframe(cercanas[columnas_cercanas], hide_index=True, width="stretch",
+                             alt="Secciones donde el partido quedó a cinco puntos o menos del primero entre siete")
     with st.expander("Avanzado · método y límites"):
-        st.write("El método aprende de la transición 2018→2021 y estima 2024 con la cuota, participación y lista nominal de 2021. "
-                 "El intervalo se calibró con errores históricos. CPV 2020 no entra al modelo; el bloque «¿Por qué?» "
-                 "de la app describe asociaciones CPV 2020 vs votos 2024, no explica causalmente esta predicción.")
+        st.write("Ridge aprende de la transición 2018→2021 y estima 2024 con cuota, participación y lista nominal de 2021. "
+                 "Su intervalo se calibró con errores históricos; CPV 2020 no entra a Ridge. "
+                 "El ensayo ML separado sí usa CPV 2020. El bloque «¿Por qué?» describe asociaciones, sin explicación causal.")
         st.write(f"Semianchura del intervalo: {partido_info['intervalo_90_semianchura_pp']:.1f} pp. "
                  f"Cobertura observada en 2024: {partido_info['cobertura_empirica_intervalo_pct']:.1f} %. ")
         st.caption("Los 19 IDs desaparecidos y 81 nuevos se auditan por separado. El domicilio de casilla no redistribuye electores ni votos. "

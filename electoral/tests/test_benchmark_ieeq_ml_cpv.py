@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from scripts.benchmark_ieeq_ml_cpv import P, metrics, tabla_features
+from scripts.benchmark_ieeq_ml_cpv import P, limitar_total, metrics, tabla_features, train_predict
 
 
 def _previous():
@@ -42,3 +42,18 @@ def test_metricas_cuentan_lideres_y_falsos_lideres():
     assert result["PAN"]["falsos_lideres"] == 1
     assert result["MORENA"]["lideres_observados"] == 1
     assert result["MORENA"]["lideres_detectados"] == 0
+
+
+def test_cuotas_predichas_respetan_total_sin_inflar_filas_incompletas():
+    cuotas = np.array([[80., 40., -5.], [20., 30., 10.]])
+    out = limitar_total(cuotas)
+    assert out[0].sum() == pytest.approx(100.)
+    assert out[1].tolist() == [20., 30., 10.]
+    assert (out >= 0).all()
+
+
+def test_modelo_de_cambio_exige_ambas_cuotas_previas():
+    x = pd.DataFrame({"x": [1., 2.]})
+    y = np.zeros((2, len(P)))
+    with pytest.raises(ValueError, match="ambos años"):
+        train_predict(x, y, x, previous_train=y)

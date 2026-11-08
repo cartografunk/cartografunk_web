@@ -40,19 +40,33 @@ def tabla_features(previous: pd.DataFrame, cpv: pd.DataFrame) -> pd.DataFrame:
     return result
 
 
+def limitar_total(cuotas: np.ndarray) -> np.ndarray:
+    """Las siete cuotas modeladas dejan sitio a partidos sin serie completa."""
+    clipped = np.clip(cuotas, 0, 100)
+    factor = np.maximum(clipped.sum(axis=1, keepdims=True) / 100, 1)
+    return clipped / factor
+
+
 def train_predict(train_x: pd.DataFrame, train_y: np.ndarray,
-                  eval_x: pd.DataFrame) -> np.ndarray:
+                  eval_x: pd.DataFrame, previous_train: np.ndarray | None = None,
+                  previous_eval: np.ndarray | None = None) -> np.ndarray:
     if list(train_x.columns) != list(eval_x.columns):
         raise ValueError("Columnas de entrenamiento y evaluación distintas")
+    if (previous_train is None) != (previous_eval is None):
+        raise ValueError("La cuota previa debe existir en ambos años")
+    change = previous_train is not None
+    target = train_y - previous_train if change else train_y
     prediction = np.empty((len(eval_x), len(P)), dtype=float)
     for j in range(len(P)):
         model = HistGradientBoostingRegressor(
             max_iter=150, max_leaf_nodes=8, min_samples_leaf=30,
             learning_rate=0.05, l2_regularization=10.0, random_state=0,
         )
-        model.fit(train_x, train_y[:, j])
+        model.fit(train_x, target[:, j])
         prediction[:, j] = model.predict(eval_x)
-    return np.clip(prediction, 0, 100)
+    if change:
+        prediction += previous_eval
+    return limitar_total(prediction)
 
 
 def metrics(estimate: np.ndarray, actual: np.ndarray) -> dict:
@@ -90,13 +104,17 @@ def run() -> dict:
     prior21, observed24 = d21.loc[ids_eval], pct(d24.loc[ids_eval])
     train_x = tabla_features(prior18, cpv)
     eval_x = tabla_features(prior21, cpv)
-    models = {
-        "persistencia": pct(prior21),
-        "ridge_sin_cpv": ridge_predict(
+    prior18_shares, prior21_shares = pct(prior18), pct(prior21)
+    ridge_raw = ridge_predict(
             np.column_stack((pct(prior18), features(prior18))), observed21,
             np.column_stack((pct(prior21), features(prior21))),
-        ),
+        )
+    models = {
+        "persistencia": prior21_shares,
+        "ridge_sin_cpv": limitar_total(ridge_raw),
         "hist_gradient_boosting_cpv": train_predict(train_x, observed21, eval_x),
+        "hist_gradient_boosting_delta_cpv": train_predict(
+            train_x, observed21, eval_x, prior18_shares, prior21_shares),
     }
     report = {
         "muestra": "Querétaro; secciones comparables, no resultados agregados por estado",
@@ -110,6 +128,8 @@ def run() -> dict:
             train_x[cpv.columns.drop("ID_SECCION")].isna().all(axis=1).sum()),
         "secciones_cpv_todas_las_tasas_nulas_evaluacion": int(
             eval_x[cpv.columns.drop("ID_SECCION")].isna().all(axis=1).sum()),
+        "ajuste_cuotas": "Si la suma predicha de siete partidos excede 100 %, se reescala proporcionalmente a 100 %; el resto queda para otros partidos.",
+        "ridge_filas_reescaladas": int((ridge_raw.sum(axis=1) > 100).sum()),
         "modelos": {name: metrics(pred, observed24) for name, pred in models.items()},
         "limites": [
             "Ensayo retrospectivo; 2024 se usó sólo para medir errores.",
