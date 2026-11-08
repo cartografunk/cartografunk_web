@@ -4,6 +4,8 @@
 
 La pestaña «Dónde actuar · casillas» muestra una lista filtrable y descargable por partido. Entra una casilla si el partido quedó a 10 pp o menos del primero entre siete partidos atribuidos, empató, conservó una ventaja menor de 10 pp, o presenta votos sobre lista nominal que deben revisarse. Las filas se agrupan por **motivo y clave**, sin ordenar por supuesta probabilidad de victoria. Para cada una se ven votos del partido y del rival, distancia para liderar, abstención observada, apoyo mínimo federal 2024 cuando existe, perfil CPV de la sección cuando es comparable y una frase que explica el motivo. El usuario puede introducir costo supuesto por voto adicional y presupuesto por casilla; sólo se compara aritméticamente el costo supuesto con ese presupuesto. En victorias no se calcula costo de defensa.
 
+**Exploración geográfica:** la tabla permite seleccionar una casilla en «Para revisar» o «Todas». Su ficha abre el polígono de la **sección electoral MGE 2024** y muestra todas las casillas B/C/E de esa sección con sus resultados partidarios. La tabla principal deja visibles las columnas de decisión; la ficha muestra motivo, márgenes, rasgos CPV seccionales y localidad de instalación cuando consta en el encarte. El Parquet geométrico local contiene las 953 secciones del piloto y las 3 081 casillas B/C/E se vinculan por clave a una de ellas. **No hay coordenada verificada de la mesa**, por lo que el mapa no coloca marcadores de casilla ni usa el centroide como sustituto.
+
 | Partido | Examinar pérdida cercana | Examinar empate | Defender ventaja cercana | Revisar dato electoral | Total | Con CPV comparable |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | PAN | 594 | 4 | 400 | 1 | 999 | 789 |

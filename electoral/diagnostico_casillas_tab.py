@@ -1,11 +1,15 @@
 """Vista de patrones CPV y esfuerzo exploratorio por casilla local."""
 
 import json
+import math
 from pathlib import Path
 
+import geopandas as gpd
 import pandas as pd
+import pydeck as pdk
 import streamlit as st
 
+from electoral.config import GEOMETRIA_PARQUET
 from electoral.diagnostico_casillas import (
     cobertura, costo_hipotetico, evaluar_partido, incorporar_apoyo_minimo,
     lista_revision, perfil_cpv, preparar_casillas, proponer_esfuerzo,
@@ -47,6 +51,74 @@ def _cargar_perfiles(carpeta: Path) -> pd.DataFrame:
     return asignacion
 
 
+@st.cache_data(max_entries=64)
+def _cargar_geometria_seccion(path: Path, id_seccion: str) -> tuple[dict, tuple[float, float, float, float]] | None:
+    """Lee sólo el polígono 2024 solicitado; nunca infiere la sede de casilla."""
+    if not path.exists():
+        return None
+    geom = gpd.read_parquet(path, columns=["ID_SECCION", "geometry"],
+                            filters=[("ID_SECCION", "==", id_seccion)])
+    if len(geom) != 1 or geom.geometry.isna().any() or geom.geometry.is_empty.any():
+        return None
+    if geom.crs is None or geom.crs.to_epsg() != 4326:
+        geom = geom.to_crs(4326)
+    return json.loads(geom.to_json(drop_id=True)), tuple(float(x) for x in geom.total_bounds)
+
+
+def _mostrar_ficha_casilla(fila: pd.Series, base: pd.DataFrame) -> None:
+    seccion, casilla = str(fila.ID_SECCION), str(fila.CASILLA_ETIQUETA)
+    with st.container(border=True):
+        st.subheader(f"Sección {seccion} · casilla {casilla}")
+        if fila.get("TIPO_REVISION"):
+            st.markdown(f"**{fila.TIPO_REVISION}.** {fila.MOTIVO_REVISION}")
+        elif fila.get("ACCION_HIPOTESIS"):
+            st.markdown(f"**Esfuerzo a explorar:** {fila.ACCION_HIPOTESIS}.")
+        m1, m2, m3 = st.columns(3)
+        m1.metric("Votos del partido atribuidos", f"{fila.VOTOS_PARTIDO:,.1f}")
+        m2.metric("Votos del rival", f"{fila.VOTOS_RIVAL:,.1f}")
+        m3.metric("Margen partidario", f"{fila.MARGEN_PP:+.1f} pp" if pd.notna(fila.MARGEN_PP) else "Sin dato")
+        if pd.notna(fila.get("PERFIL_CPV")):
+            st.caption(f"Perfil CPV de la sección {int(fila.PERFIL_CPV)}: {fila.RASGOS_CPV_SECCION}. "
+                       "CPV 2020 vs votos 2024; asociación, no causa.")
+        else:
+            st.caption("Esta sección no tiene perfil CPV comparable.")
+        st.caption("El mapa delimita la sección electoral de 2024. La posición exacta de esta casilla "
+                   "no está geocodificada; no se coloca un punto aproximado.")
+        if pd.notna(fila.LOCALIDAD_INSTALACION):
+            st.caption(f"Localidad de instalación registrada en el encarte: {fila.LOCALIDAD_INSTALACION}.")
+        datos_mapa = _cargar_geometria_seccion(GEOMETRIA_PARQUET, seccion)
+        if datos_mapa is None:
+            st.info("No hay polígono 2024 disponible para esta sección; se conservan los datos de casilla.")
+        else:
+            geojson, (minx, miny, maxx, maxy) = datos_mapa
+            lat = (miny + maxy) / 2
+            ancho = max(maxx - minx, 0.0005)
+            alto = max((maxy - miny) / max(math.cos(math.radians(lat)), 0.1), 0.0005)
+            zoom = min(math.log2(360 * 360 / (512 * ancho * 1.35)),
+                       math.log2(360 * 380 / (512 * alto * 1.35)))
+            capa = pdk.Layer("GeoJsonLayer", data=geojson, filled=True, stroked=True,
+                             get_fill_color=[180, 79, 255, 90],
+                             get_line_color=[245, 238, 255, 255], line_width_min_pixels=3,
+                             pickable=True)
+            st.pydeck_chart(pdk.Deck(
+                layers=[capa], map_style=None,
+                initial_view_state=pdk.ViewState(latitude=lat, longitude=(minx + maxx) / 2,
+                                                 zoom=max(7, min(16, zoom))),
+                tooltip={"text": f"Sección {seccion}"}), height=390,
+                alt=f"Polígono de la sección electoral {seccion} en Querétaro, sin ubicación puntual de casillas")
+        st.markdown("**Casillas B/C/E de esta sección**")
+        hermanas = base.loc[base.ID_SECCION.eq(seccion), ["CASILLA_ETIQUETA", "LOCALIDAD_INSTALACION",
+                            "VOTOS_PARTIDO", "VOTOS_RIVAL", "MARGEN_PP", "CLASE"]].copy()
+        hermanas.insert(0, "Seleccionada", hermanas.CASILLA_ETIQUETA.eq(casilla))
+        hermanas = hermanas.rename(columns={
+            "CASILLA_ETIQUETA": "Casilla", "LOCALIDAD_INSTALACION": "Localidad de instalación",
+            "VOTOS_PARTIDO": "Votos partido", "VOTOS_RIVAL": "Votos rival",
+            "MARGEN_PP": "Margen (pp)", "CLASE": "Clase",
+        }).sort_values("Casilla")
+        st.dataframe(hermanas, hide_index=True, width="stretch",
+                     alt=f"Casillas B/C/E con resultados partidarios en la sección {seccion}")
+
+
 def mostrar_diagnostico_casillas(estado: int, root: Path) -> None:
     st.subheader("¿Dónde vale la pena actuar? · diagnóstico por casilla")
     st.caption("Diputaciones locales MR 2024 · CPV 2020 vs votos 2024 · asociación, no causa. "
@@ -81,20 +153,6 @@ def mostrar_diagnostico_casillas(estado: int, root: Path) -> None:
                "se recupera del JSON del propio IEEQ; el encarte aporta la localidad de instalación. "
                "Reparto de marcas de coalición en "
                "fracciones iguales: atribución analítica, no cómputo oficial por partido.")
-
-    perfil = perfil_cpv(base, max_frases=3)
-    st.markdown("#### ¿Por qué aparecen estos patrones?")
-    st.caption("Las clases comparan el liderazgo del partido entre siete partidos atribuidos en cada casilla; "
-               "no la victoria de la candidatura de coalición. Victoria sólida: ≥10 puntos; derrota "
-               "competitiva: hasta 10 puntos de desventaja. Los umbrales son exploratorios.")
-    if perfil["frases"]:
-        for frase in perfil["frases"][:5]:
-            st.write(frase)
-    else:
-        st.info("No hay suficientes secciones comparables para contrastar clases.")
-    st.caption("Cada sección cuenta una vez por clase aunque tenga varias casillas. "
-               f"{perfil['n_secciones_en_varias_clases']} contribuciones adicionales pertenecen a secciones "
-               "que tienen casillas en más de una clase. Son asociaciones ecológicas descriptivas.")
 
     st.markdown("#### Esfuerzo a explorar")
     st.caption("La propuesta usa votos observados, abstención y distancia al liderazgo entre partidos. "
@@ -158,12 +216,8 @@ def mostrar_diagnostico_casillas(estado: int, root: Path) -> None:
         "CPV_COMPARABLE": "CPV comparable", "PERFIL_CPV": "Perfil CPV de sección",
         "RASGOS_CPV_SECCION": "Rasgos CPV de sección",
     })
-    st.dataframe(corta, hide_index=True, width="stretch",
-                 alt="Casillas seleccionadas por criterios electorales observados y perfil censal de sección")
-    st.download_button("Descargar casillas para revisar", corta.to_csv(index=False).encode("utf-8-sig"),
-                       file_name=f"casillas_revision_{partido}_2024.csv", mime="text/csv")
-    st.markdown("#### Todas las casillas")
-    vista = base[["ID_SECCION", "CASILLA_ETIQUETA", "LOCALIDAD_INSTALACION", "FILA_FUENTE", "CLASE", "VOTOS_PARTIDO",
+    todas = base.sort_values(["ID_SECCION", "CASILLA_ETIQUETA"]).reset_index(drop=True)
+    vista = todas[["ID_SECCION", "CASILLA_ETIQUETA", "LOCALIDAD_INSTALACION", "FILA_FUENTE", "CLASE", "VOTOS_PARTIDO",
                   "RIVAL", "VOTOS_RIVAL", "MARGEN_PP", "VOTOS_PARA_LIDERAR", "ABSTENCION",
                   "ALCANZABLE_ABSTENCION", "VOTOS_SOBRE_LISTA", "APOYO_MINIMO_FEDERAL_2024_PCT", "COSTO_HIPOTETICO",
                   "CPV_COMPARABLE", "ACCION_HIPOTESIS"]].rename(columns={
@@ -178,8 +232,48 @@ def mostrar_diagnostico_casillas(estado: int, root: Path) -> None:
         "COSTO_HIPOTETICO": "Costo hipotético (MXN)",
         "ACCION_HIPOTESIS": "Esfuerzo a probar",
     })
-    st.dataframe(vista, hide_index=True, width="stretch",
-                 alt="Diagnóstico por casilla, margen de partido, abstención y esfuerzo hipotético")
+    modo = st.segmented_control("Mostrar casillas", ["Para revisar", "Todas"],
+                                default="Para revisar", key="casillas_modo_tabla")
+    tabla = corta.reset_index(drop=True) if modo == "Para revisar" else vista
+    filas = seleccion.reset_index(drop=True) if modo == "Para revisar" else todas
+    st.caption("Haz clic en una fila para ver la sección en el mapa y las demás casillas B/C/E que contiene.")
+    evento = st.dataframe(
+        tabla, hide_index=True, width="stretch", height=420,
+        on_select="rerun", selection_mode="single-row",
+        key=f"casillas_tabla_{partido}_{modo}_{'-'.join(elegidos) if modo == 'Para revisar' else 'todas'}",
+        column_order=(["Sección", "Casilla", "Motivo", "Votos partido", "Votos rival",
+                       "Votos para liderar", "Abstención", "Perfil CPV de sección"]
+                      if modo == "Para revisar" else
+                      ["Sección", "Casilla", "Clase", "Votos partido", "Votos rival",
+                       "Margen (pp)", "Votos para liderar", "Abstención"]),
+        column_config={
+            "Sección": st.column_config.TextColumn(pinned=True),
+            "Casilla": st.column_config.TextColumn(pinned=True),
+            "Votos partido": st.column_config.NumberColumn(format="%.1f"),
+            "Votos rival": st.column_config.NumberColumn(format="%.1f"),
+            "Margen (pp)": st.column_config.NumberColumn(format="%+.1f"),
+        },
+        alt="Casillas electorales seleccionables por sección para abrir su ficha y mapa",
+    )
+    st.download_button("Descargar tabla visible", tabla.to_csv(index=False).encode("utf-8-sig"),
+                       file_name=f"casillas_{'revision' if modo == 'Para revisar' else 'todas'}_{partido}_2024.csv",
+                       mime="text/csv")
+    indices = evento.selection.rows
+    if indices and 0 <= indices[0] < len(filas):
+        _mostrar_ficha_casilla(filas.iloc[indices[0]], base)
+    perfil = perfil_cpv(base, max_frases=3)
+    st.markdown("#### ¿Por qué aparecen estos patrones?")
+    st.caption("Las clases comparan el liderazgo del partido entre siete partidos atribuidos en cada casilla; "
+               "no la victoria de la candidatura de coalición. Victoria sólida: ≥10 puntos; derrota "
+               "competitiva: hasta 10 puntos de desventaja. Los umbrales son exploratorios.")
+    if perfil["frases"]:
+        for frase in perfil["frases"][:5]:
+            st.write(frase)
+    else:
+        st.info("No hay suficientes secciones comparables para contrastar clases.")
+    st.caption("Cada sección cuenta una vez por clase aunque tenga varias casillas. "
+               f"{perfil['n_secciones_en_varias_clases']} contribuciones adicionales pertenecen a secciones "
+               "que tienen casillas en más de una clase. Son asociaciones ecológicas descriptivas.")
     with st.expander("Avanzado · las 15 variables y cobertura", on_change="rerun") as avanzado:
         if avanzado.open:
             st.dataframe(perfil["tabla"], hide_index=True, width="stretch",
