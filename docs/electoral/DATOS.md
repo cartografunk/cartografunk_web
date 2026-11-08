@@ -362,3 +362,24 @@ NO VERIFICADO: fecha de corte de lista nominal y confirmación documental del CR
 La [auditoría de etapas 4–7](IEEQ_LOCAL_ETAPAS_4_7.md) agrega tres fuentes locales sin versionar: el SHP nacional de Pautas con DBF 30-sep-2019 (`860` claves de Querétaro), el SHP seccional ECEG del INE con corte declarado 20-ene-2021 (`891` claves), y el GPKG original 2024 (`953` claves). Las claves electorales B+C+E de 2018, 2021 y 2024 coinciden con las respectivas capas en **860/860, 891/891 y 953/953**. Esta coincidencia de ID es una prueba de cobertura de llaves, no de perímetros iguales. La superposición ECEG→2024 encontró **788/953** polígonos casi idénticos, que cubren **1 398 846/1 899 053** de lista nominal 2024; el encadenamiento con la referencia 2019 encontró **654/953** y **1 053 423/1 899 053**. Los archivos `data/electoral/ieeq_local/crosswalk_*.parquet` registran área y fracción para cada vínculo y no se agregan a Git.
 
 La [sentencia ST-JRC-216/2024](https://www.te.gob.mx/sentenciasHTML/convertir/expediente/ST-JRC-0216-2024-) permite cotejar seis casillas del distrito local 7 y su total MR de **67 452** votos. El alcance del cotejo y sus límites están en el informe enlazado. La fecha jurídica final de otros distritos y la geometría exacta de 2018 siguen **NO VERIFICADAS**.
+
+## Sedes puntuales de casillas 2024
+
+- Fuente de coordenadas: [Casillas INE, Morlan, DataMX](https://datamx.io/es/dataset/casillas-ine), publicación 3-jun-2024, GeoPackage [descarga](https://datamx.io/dataset/985fceef-1d7b-49ed-8098-a5bc182462d2/resource/50f1cc66-c303-4713-adc4-dcd27bd4c3c3/download/casillas.gpkg). El editor declara que extrajo los puntos de Ubica tu Casilla del INE; **es una copia de tercero**, no una descarga oficial de coordenadas del INE. Licencia indicada por DataMX: CC BY.
+- Archivo fuente local: `data/electoral/fuentes_ine/casillas_ine_morlan_2024.gpkg`, SHA-256 `9180feeed610779b789fc76bf20ff60d095a4628f5ce029e5a7681c351b139ea`.
+- Fuentes de cotejo: encarte IEEQ 30-may-2024 convertido a Markdown, procesado en `data/electoral/ieeq_local/encarte_qro_2024_claves.parquet`, y `data/electoral/secciones_2024_geom.parquet` (MGE 2024).
+- Reproducción: `D:\Conda\envs\cartografunk\python.exe -B -m scripts.build_casillas_2024_puntos`. Salidas **locales no versionadas**: `data/electoral/ieeq_local/casillas_2024_puntos.parquet` y `.audit.json`.
+- Llave: `(ID_SECCION, CASILLA_ETIQUETA)`; `B` en la fuente de puntos corresponde a `B1` del encarte. No se usan S ni A para el mapa seccional.
+- Aceptación visual: coincidencia de llave, domicilio completo normalizado y punto contenido por el polígono de sección. La aplicación dibuja únicamente los aceptados; las demás casillas conservan el polígono. El punto es una sede de instalación, no una localización residencial ni CPV propio de casilla E.
+
+| Medición Querétaro B/C/E | Registros |
+| --- | ---: |
+| Encarte y resultados | 3 081 en 953 secciones |
+| Punto con misma llave | 2 614 |
+| Punto aceptado tras domicilio y polígono | 2 538 en 841 secciones |
+| Sin punto en la copia cartográfica | 467 |
+| Punto para revisar por domicilio o polígono | 76 |
+| Puntos fuera del polígono | 20 |
+| Puntos cuyo domicilio difiere del encarte | 56 |
+
+Las dos últimas categorías pueden solaparse; no se suman. **NO VERIFICADO:** exactitud métrica del punto, causas de ausencia o discrepancia, sitio final de instalación frente al corte del encarte y procedencia oficial directa de cada coordenada. El Parquet no se publica con el código; en un despliegue sin ese archivo la ficha muestra únicamente la sección.

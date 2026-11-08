@@ -1,5 +1,11 @@
 # Estado actual del módulo electoral
 
+## Sedes puntuales de casillas, 2026-11-08
+
+La ficha de «Dónde actuar · casillas» muestra un punto cuando la sección y la casilla 2024 coinciden entre el encarte IEEQ y una copia cartográfica de Ubica tu Casilla publicada por Morlan, el domicilio normalizado es idéntico y el punto cae dentro del polígono seccional MGE 2024. **2 538/3 081** casillas B/C/E (en **841/953** secciones) pasan las tres comprobaciones. Otras **467** no tienen punto en la fuente y **76** tienen punto pero falla domicilio o geometría; esas **543** muestran sólo el polígono. El punto representa la **sede de instalación**, no la residencia ni el área de atención de sus votantes. La fuente GeoPackage y el Parquet derivado permanecen locales. [Proveniencia y auditoría](DATOS.md#sedes-puntuales-de-casillas-2024).
+
+**NO VERIFICADO:** precisión física del punto en campo, si las 467 ausencias son por cambios de corte o cobertura de la copia, la causa de las 76 discrepancias y el área de atención de las extraordinarias E. La fuente de puntos es una publicación de tercero que declara origen INE; no se verificó contra un archivo de coordenadas descargado directamente del INE.
+
 ## Lista de revisión de campaña, 2026-11-08
 
 La pestaña «Dónde actuar · casillas» añade una [lista filtrable y descargable por partido](DECISION_CAMPANA_QRO_2024.md), con motivo explícito, distancia en votos, abstención, apoyo mínimo, perfil CPV seccional si existe, costo y presupuesto supuestos opcionales. Al seleccionar una fila se abre una ficha con el polígono de su sección MGE 2024 y todas las casillas B/C/E de esa sección. Las 3 081 casillas del piloto vinculan con las 953 geometrías de sección; no se dibuja un punto de casilla sin coordenadas verificadas. La lista se agrupa por motivo y clave, sin ranking de probabilidad. Para PAN: 594 casillas con pérdida partidaria cercana, cuatro empates, 400 con ventaja estrecha por defender y una con dato electoral a revisar. El cotejo seccional de siete partidos muestra que el ML apenas añade nueve señales puntuales a la persistencia 2021 entre las 76 pérdidas cercanas de PAN; en MORENA no añade ninguna entre 68. **NO VERIFICADO:** ubicación puntual de cada mesa, votos captables, retorno de campaña ni confianza prospectiva.

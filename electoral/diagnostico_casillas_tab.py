@@ -65,7 +65,20 @@ def _cargar_geometria_seccion(path: Path, id_seccion: str) -> tuple[dict, tuple[
     return json.loads(geom.to_json(drop_id=True)), tuple(float(x) for x in geom.total_bounds)
 
 
-def _mostrar_ficha_casilla(fila: pd.Series, base: pd.DataFrame) -> None:
+@st.cache_data(max_entries=64)
+def _cargar_punto_casilla(path: Path, id_seccion: str, casilla: str) -> dict | None:
+    if not path.exists():
+        return None
+    puntos = pd.read_parquet(path, filters=[("ID_SECCION", "==", id_seccion),
+                                             ("CASILLA_ETIQUETA", "==", casilla)])
+    aceptados = puntos.loc[puntos.CALIDAD.eq("clave_domicilio_y_poligono")]
+    if len(aceptados) != 1:
+        return None
+    return aceptados.iloc[0][["LONGITUD", "LATITUD", "SEDE", "DOMICILIO_FUENTE"]].to_dict()
+
+
+def _mostrar_ficha_casilla(fila: pd.Series, base: pd.DataFrame,
+                           puntos_path: Path | None = None) -> None:
     seccion, casilla = str(fila.ID_SECCION), str(fila.CASILLA_ETIQUETA)
     with st.container(border=True):
         st.subheader(f"Sección {seccion} · casilla {casilla}")
@@ -82,8 +95,20 @@ def _mostrar_ficha_casilla(fila: pd.Series, base: pd.DataFrame) -> None:
                        "CPV 2020 vs votos 2024; asociación, no causa.")
         else:
             st.caption("Esta sección no tiene perfil CPV comparable.")
-        st.caption("El mapa delimita la sección electoral de 2024. La posición exacta de esta casilla "
-                   "no está geocodificada; no se coloca un punto aproximado.")
+        if puntos_path is None:
+            puntos_path = (Path(__file__).resolve().parents[1]
+                           / "data/electoral/ieeq_local/casillas_2024_puntos.parquet")
+        punto = _cargar_punto_casilla(puntos_path, seccion, casilla)
+        if punto:
+            st.caption("El punto señala la sede de instalación de esta casilla en Ubica tu Casilla 2024 "
+                       "(copia publicada por Morlan), cotejada con clave, domicilio del encarte IEEQ "
+                       "y polígono seccional. No representa el domicilio de los votantes. "
+                       "La precisión física del punto no está verificada en campo.")
+            st.markdown(f"**Sede:** {punto['SEDE']}  ")
+            st.caption(f"Domicilio de la fuente cartográfica: {punto['DOMICILIO_FUENTE']}")
+        else:
+            st.caption("El mapa delimita la sección electoral de 2024. Esta casilla no tiene un punto "
+                       "que haya pasado el cotejo de clave, domicilio y polígono.")
         if pd.notna(fila.LOCALIDAD_INSTALACION):
             st.caption(f"Localidad de instalación registrada en el encarte: {fila.LOCALIDAD_INSTALACION}.")
         datos_mapa = _cargar_geometria_seccion(GEOMETRIA_PARQUET, seccion)
@@ -100,12 +125,23 @@ def _mostrar_ficha_casilla(fila: pd.Series, base: pd.DataFrame) -> None:
                              get_fill_color=[180, 79, 255, 90],
                              get_line_color=[245, 238, 255, 255], line_width_min_pixels=3,
                              pickable=True)
+            capas = [capa]
+            if punto:
+                capas.append(pdk.Layer(
+                    "ScatterplotLayer", data=[{"LONGITUD": punto["LONGITUD"],
+                                               "LATITUD": punto["LATITUD"]}],
+                    get_position="[LONGITUD, LATITUD]", get_radius=70,
+                    radius_min_pixels=9, radius_max_pixels=18,
+                    get_fill_color=[255, 166, 39, 255],
+                    get_line_color=[20, 20, 30, 255], line_width_min_pixels=2,
+                    stroked=True, pickable=True))
             st.pydeck_chart(pdk.Deck(
-                layers=[capa], map_style=None,
+                layers=capas, map_style=None,
                 initial_view_state=pdk.ViewState(latitude=lat, longitude=(minx + maxx) / 2,
                                                  zoom=max(7, min(16, zoom))),
-                tooltip={"text": f"Sección {seccion}"}), height=390,
-                alt=f"Polígono de la sección electoral {seccion} en Querétaro, sin ubicación puntual de casillas")
+                tooltip={"text": f"Sección {seccion} · casilla {casilla}"}), height=390,
+                alt=(f"Polígono de la sección {seccion} y sede puntual de la casilla {casilla}"
+                     if punto else f"Polígono de la sección electoral {seccion}, sin punto cotejado"))
         st.markdown("**Casillas B/C/E de esta sección**")
         hermanas = base.loc[base.ID_SECCION.eq(seccion), ["CASILLA_ETIQUETA", "LOCALIDAD_INSTALACION",
                             "VOTOS_PARTIDO", "VOTOS_RIVAL", "MARGEN_PP", "CLASE"]].copy()
@@ -236,7 +272,8 @@ def mostrar_diagnostico_casillas(estado: int, root: Path) -> None:
                                 default="Para revisar", key="casillas_modo_tabla")
     tabla = corta.reset_index(drop=True) if modo == "Para revisar" else vista
     filas = seleccion.reset_index(drop=True) if modo == "Para revisar" else todas
-    st.caption("Haz clic en una fila para ver la sección en el mapa y las demás casillas B/C/E que contiene.")
+    st.caption("Haz clic en una fila para ver su sede cotejada, si está disponible, "
+               "y el polígono de la sección con las demás casillas B/C/E.")
     evento = st.dataframe(
         tabla, hide_index=True, width="stretch", height=420,
         on_select="rerun", selection_mode="single-row",
