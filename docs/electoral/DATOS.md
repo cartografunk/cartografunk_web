@@ -12,7 +12,7 @@ También existe un [encarte IEEQ 2018 por distrito federal](https://ieeq.mx/cont
 
 ## Ruta alternativa: CPV urbano por manzana, colonia y sección
 
-La búsqueda posterior del Catálogo de Colonias con claves seccionales, sus cortes 2022/2026 y la auditoría que impide unirlo directamente al polígono local se documentan en [CCOL_COLONIAS.md](CCOL_COLONIAS.md).
+La búsqueda posterior del Catálogo de Colonias con claves seccionales, sus cortes 2022/2026 y la auditoría que impide unirlo directamente al polígono local se documentan en [CCOL_COLONIAS.md](CCOL_COLONIAS.md). El [catálogo EDMSLM](EDMSLM_CATALOGO.md) aportado por el usuario vincula localidad y manzana electoral con sección de su corte; la prueba de Viñedos demuestra que sus secciones no se pueden asignar directamente al encarte 2024.
 
 El archivo local `H:\Mi unidad\(0) CARTOGRAFUNK BASICS\(4) DATA\00 Marco Geoestadístico\00m.parquet` contiene **geometría de manzanas**, no indicadores CPV. El archivo `H:\Mi unidad\(0) CARTOGRAFUNK BASICS\(4) DATA\11 Colonias INE\ColoniasINE2020a.parquet` contiene polígonos de colonias, sin clave de sección ni indicadores CPV. Los conteos vienen del [CPV 2020 por AGEB y manzana urbana de INEGI](https://www.inegi.org.mx/contenidos/programas/ccpv/2020/datosabiertos/ageb_manzana/ageb_mza_urbana_01_cpv2020_csv.zip). En el CSV se excluyen filas agregadas `MZA=000` antes de formar la llave de 16 dígitos `ENTIDAD+MUN+LOC+AGEB+MZA` y cruzarla con `CVEGEO` de `00m`.
 
