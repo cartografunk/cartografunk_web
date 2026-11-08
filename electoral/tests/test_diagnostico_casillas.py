@@ -6,7 +6,7 @@ import pandas as pd
 from electoral.cpv import ETIQUETAS
 from electoral.diagnostico_casillas import (
     cobertura, costo_hipotetico, evaluar_partido, incorporar_apoyo_minimo,
-    perfil_cpv, preparar_casillas, proponer_esfuerzo,
+    lista_revision, perfil_cpv, preparar_casillas, proponer_esfuerzo,
 )
 from electoral.reparto_ieeq import COMBINACIONES, INDEPENDIENTES, PROPIOS
 
@@ -79,6 +79,7 @@ def test_apoyo_y_costo_son_dimensiones_separadas():
     fila = salida.loc[salida.ID_SECCION.eq("22-0002")].iloc[0]
     assert fila.APOYO_MINIMO_FEDERAL_2024_PCT == 15
     assert fila.COSTO_HIPOTETICO == 475
+    assert salida.loc[salida.ID_SECCION.eq("22-0001"), "COSTO_HIPOTETICO"].isna().all()
     assert pd.isna(salida.loc[salida.ID_SECCION.eq("22-0004"),
                               "APOYO_MINIMO_FEDERAL_2024_PCT"].iloc[0])
 
@@ -104,3 +105,32 @@ def test_encarte_aporta_localidad_de_instalacion_sin_cambiar_cpv():
     assert len(salida) == 5
     assert salida.LOCALIDAD_INSTALACION.eq("LOCALIDAD DE INSTALACIÓN").all()
     assert salida.loc[salida.ID_SECCION.eq("22-0004"), "pct_mujeres"].isna().all()
+
+
+def test_lista_revision_explica_reglas_y_no_infiere_votos_captables():
+    base = evaluar_partido(preparar_casillas(*_insumos()), "PAN")
+    base.loc[base.ID_SECCION.eq("22-0002"), "CLASE"] = "perdida_competitiva"
+    base.loc[base.ID_SECCION.eq("22-0001"), "CLASE"] = "ganada_ajustada"
+    salida = lista_revision(costo_hipotetico(base, 25), presupuesto=500)
+    assert len(salida) == 3
+    assert salida.iloc[0].TIPO_REVISION == "Examinar pérdida cercana"
+    assert salida.iloc[0].VOTOS_PARA_LIDERAR == 19
+    assert salida.iloc[0].DENTRO_PRESUPUESTO_SUPUESTO == True
+    assert "comprobar en campo" in salida.iloc[0].MOTIVO_REVISION
+    assert salida.TIPO_REVISION.tolist().count("Defender ventaja cercana") == 2
+
+
+def test_lista_revision_no_convierte_votos_sobre_lista_en_oportunidad():
+    base = evaluar_partido(preparar_casillas(*_insumos()), "PAN")
+    base.loc[base.ID_SECCION.eq("22-0002"), "VOTOS_SOBRE_LISTA"] = True
+    salida = lista_revision(base)
+    assert salida.loc[salida.ID_SECCION.eq("22-0002"), "TIPO_REVISION"].iloc[0] == "Revisar dato electoral"
+
+
+def test_lista_revision_incluye_empate_sin_llamarlo_victoria():
+    base = evaluar_partido(preparar_casillas(*_insumos()), "PAN")
+    base.loc[base.ID_SECCION.eq("22-0003"), "CLASE"] = "empate"
+    salida = lista_revision(base)
+    fila = salida.loc[salida.ID_SECCION.eq("22-0003")].iloc[0]
+    assert fila.TIPO_REVISION == "Examinar empate"
+    assert "Empate partidario" in fila.MOTIVO_REVISION

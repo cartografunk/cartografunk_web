@@ -1,5 +1,9 @@
 # Estado actual del módulo electoral
 
+## Lista de revisión de campaña, 2026-11-08
+
+La pestaña «Dónde actuar · casillas» añade una [lista filtrable y descargable por partido](DECISION_CAMPANA_QRO_2024.md), con motivo explícito, distancia en votos, abstención, apoyo mínimo, perfil CPV seccional si existe, costo y presupuesto supuestos opcionales. Se agrupa por motivo y clave, sin ranking de probabilidad. Para PAN: 594 casillas con pérdida partidaria cercana, cuatro empates, 400 con ventaja estrecha por defender y una con dato electoral a revisar. El cotejo seccional de siete partidos muestra que el ML apenas añade nueve señales puntuales a la persistencia 2021 entre las 76 pérdidas cercanas de PAN; en MORENA no añade ninguna entre 68. **NO VERIFICADO:** votos captables, retorno de campaña ni confianza prospectiva.
+
 ## Perfilamiento CPV antes de rentabilidad, 2026-11-07
 
 Se generaron [cuatro perfiles censales de secciones](PERFILAMIENTO_CPV_QRO_2024.md) con las 15 tasas CPV, sin usar votos al formar los grupos. **787/788** secciones comparables recibieron perfil. El PAN quedó a ≤5 pp del primero entre siete partidos en **76** secciones; el ML esperaba liderazgo en 74 y la persistencia 2021 en 65. En 27 de las 76 la candidatura local ya había liderado; sólo 17 tuvieron derrota cercana de candidatura. La app muestra la distinción por partido y candidatura, sin ordenar como ranking de victoria ni mezclar costos o apoyo mínimo. **NO VERIFICADO:** que alguna sea volteable, confianza prospectiva o causalidad demográfica.

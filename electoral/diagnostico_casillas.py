@@ -180,5 +180,48 @@ def costo_hipotetico(casillas: pd.DataFrame, costo_por_voto: float) -> pd.DataFr
         raise ValueError("El costo supuesto debe ser finito y no negativo")
     d = casillas.copy()
     d["COSTO_SUPUESTO_POR_VOTO"] = float(costo_por_voto)
-    d["COSTO_HIPOTETICO"] = d.VOTOS_PARA_LIDERAR * costo_por_voto
+    d["COSTO_HIPOTETICO"] = (d.VOTOS_PARA_LIDERAR * costo_por_voto).where(
+        d.VOTOS_PARA_LIDERAR.gt(0) & ~d.VOTOS_SOBRE_LISTA)
     return d
+
+
+def lista_revision(casillas: pd.DataFrame, presupuesto: float | None = None) -> pd.DataFrame:
+    """Selecciona casos para revisión de campo con reglas visibles, sin estimar retorno.
+
+    La selección compara partidos atribuidos, no candidaturas MR. El presupuesto
+    opcional sólo contrasta un costo supuesto; no pronostica votos captables.
+    """
+    if presupuesto is not None and (not np.isfinite(presupuesto) or presupuesto < 0):
+        raise ValueError("El presupuesto supuesto debe ser finito y no negativo")
+    d = casillas.copy()
+    if d.duplicated(["ID_SECCION", "CASILLA_ETIQUETA"]).any():
+        raise ValueError("Casilla duplicada en lista de revisión")
+    competitiva = d.CLASE.eq("perdida_competitiva")
+    defensa = d.CLASE.eq("ganada_ajustada")
+    d["TIPO_REVISION"] = ""
+    d.loc[competitiva & d.ALCANZABLE_ABSTENCION, "TIPO_REVISION"] = "Examinar pérdida cercana"
+    d.loc[competitiva & ~d.ALCANZABLE_ABSTENCION, "TIPO_REVISION"] = "Examinar barreras"
+    d.loc[defensa, "TIPO_REVISION"] = "Defender ventaja cercana"
+    d.loc[d.CLASE.eq("empate"), "TIPO_REVISION"] = "Examinar empate"
+    d.loc[d.VOTOS_SOBRE_LISTA, "TIPO_REVISION"] = "Revisar dato electoral"
+    d["MOTIVO_REVISION"] = ""
+    d.loc[competitiva & d.ALCANZABLE_ABSTENCION, "MOTIVO_REVISION"] = (
+        "Distancia partidaria menor o igual a la abstención observada; comprobar en campo.")
+    d.loc[competitiva & ~d.ALCANZABLE_ABSTENCION, "MOTIVO_REVISION"] = (
+        "Pérdida partidaria cercana; la abstención registrada no cubre la distancia.")
+    d.loc[defensa, "MOTIVO_REVISION"] = (
+        "Ventaja partidaria menor de 10 pp; revisar cómo conservar apoyo.")
+    d.loc[d.CLASE.eq("empate"), "MOTIVO_REVISION"] = (
+        "Empate partidario observado; revisar votos y definir una meta mínima.")
+    d.loc[d.VOTOS_SOBRE_LISTA, "MOTIVO_REVISION"] = (
+        "Votos sobre lista nominal: revisar antes de planear esfuerzo.")
+    d["DENTRO_PRESUPUESTO_SUPUESTO"] = pd.NA
+    if presupuesto is not None and "COSTO_HIPOTETICO" in d:
+        valido = d.COSTO_HIPOTETICO.notna() & ~d.VOTOS_SOBRE_LISTA
+        d.loc[valido, "DENTRO_PRESUPUESTO_SUPUESTO"] = d.loc[valido, "COSTO_HIPOTETICO"].le(presupuesto)
+    orden = {"Examinar pérdida cercana": 0, "Examinar empate": 1,
+             "Defender ventaja cercana": 2, "Examinar barreras": 3,
+             "Revisar dato electoral": 4}
+    d = d.loc[d.TIPO_REVISION.ne("")].copy()
+    d["_orden"] = d.TIPO_REVISION.map(orden)
+    return d.sort_values(["_orden", "ID_SECCION", "CASILLA_ETIQUETA"]).drop(columns="_orden")

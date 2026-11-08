@@ -1,5 +1,6 @@
 """Vista de patrones CPV y esfuerzo exploratorio por casilla local."""
 
+import json
 from pathlib import Path
 
 import pandas as pd
@@ -7,7 +8,7 @@ import streamlit as st
 
 from electoral.diagnostico_casillas import (
     cobertura, costo_hipotetico, evaluar_partido, incorporar_apoyo_minimo,
-    perfil_cpv, preparar_casillas, proponer_esfuerzo,
+    lista_revision, perfil_cpv, preparar_casillas, proponer_esfuerzo,
 )
 from electoral.reparto_ieeq import PARTIDOS_COMUNES
 
@@ -30,6 +31,20 @@ def _cargar(root: Path) -> pd.DataFrame:
 @st.cache_data(max_entries=2)
 def _cargar_apoyo(path: Path) -> pd.DataFrame:
     return pd.read_parquet(path, columns=["ID_SECCION", "partido", "piso_pct", "ID_ESTADO"])
+
+
+@st.cache_data(max_entries=2)
+def _cargar_perfiles(carpeta: Path) -> pd.DataFrame:
+    asignacion = pd.read_parquet(carpeta / "perfilamiento_cpv_2024_seccion.parquet",
+                                 columns=["ID_SECCION", "PERFIL_CPV"])
+    if asignacion.ID_SECCION.duplicated().any():
+        raise ValueError("Perfil CPV duplicado por sección")
+    informe = json.loads((carpeta / "perfilamiento_cpv_2024.json").read_text(encoding="utf-8"))
+    rasgos = {int(clave): "; ".join(
+        f"{r['etiqueta']}: {r['direccion']}" for r in valor["rasgos"][:3])
+        for clave, valor in informe["perfiles"].items()}
+    asignacion["RASGOS_CPV_SECCION"] = asignacion.PERFIL_CPV.map(rasgos)
+    return asignacion
 
 
 def mostrar_diagnostico_casillas(estado: int, root: Path) -> None:
@@ -96,6 +111,58 @@ def mostrar_diagnostico_casillas(estado: int, root: Path) -> None:
             base["COSTO_HIPOTETICO"] = float("nan")
     else:
         base["COSTO_HIPOTETICO"] = float("nan")
+    archivos_perfiles = (carpeta / "perfilamiento_cpv_2024_seccion.parquet",
+                        carpeta / "perfilamiento_cpv_2024.json")
+    if all(p.exists() for p in archivos_perfiles):
+        base = base.merge(_cargar_perfiles(carpeta), on="ID_SECCION", how="left",
+                          validate="many_to_one")
+        base.loc[~base.CPV_COMPARABLE, ["PERFIL_CPV", "RASGOS_CPV_SECCION"]] = pd.NA
+    else:
+        base["PERFIL_CPV"] = pd.NA
+        base["RASGOS_CPV_SECCION"] = pd.NA
+    presupuesto_texto = st.text_input("Presupuesto supuesto por casilla (opcional, MXN)", value="",
+                                     key="casillas_presupuesto")
+    presupuesto = None
+    if presupuesto_texto.strip():
+        try:
+            presupuesto = float(presupuesto_texto.replace(",", "."))
+            if not pd.notna(presupuesto) or presupuesto < 0 or presupuesto == float("inf"):
+                raise ValueError
+        except ValueError:
+            st.warning("Ingresa un presupuesto numérico mayor o igual a cero.")
+            presupuesto = None
+    revision = lista_revision(base, presupuesto)
+    st.markdown("#### Casillas para revisar")
+    st.caption("Selección por reglas observables: pérdida partidaria ≤10 pp, empate, ventaja partidaria <10 pp "
+               "o dato electoral a revisar. Se agrupa por motivo y luego por clave, sin ranking de "
+               "probabilidad de victoria. «Faltante ≤ abstención» es una comparación aritmética, "
+               "no votos disponibles para el partido. El presupuesto sólo compara un costo supuesto.")
+    if not all(p.exists() for p in archivos_perfiles):
+        st.caption("No está el archivo local de perfiles CPV; se muestran los resultados electorales sin perfil de sección.")
+    tipos = revision.TIPO_REVISION.drop_duplicates().tolist()
+    elegidos = st.multiselect("Motivos de revisión", tipos, default=tipos,
+                              key="casillas_tipos_revision")
+    seleccion = revision.loc[revision.TIPO_REVISION.isin(elegidos)]
+    cols_revision = ["ID_SECCION", "CASILLA_ETIQUETA", "TIPO_REVISION", "MOTIVO_REVISION",
+                     "VOTOS_PARTIDO", "VOTOS_RIVAL", "VOTOS_PARA_LIDERAR", "ABSTENCION",
+                     "ALCANZABLE_ABSTENCION", "APOYO_MINIMO_FEDERAL_2024_PCT", "COSTO_HIPOTETICO",
+                     "DENTRO_PRESUPUESTO_SUPUESTO", "CPV_COMPARABLE", "PERFIL_CPV", "RASGOS_CPV_SECCION"]
+    corta = seleccion[cols_revision].rename(columns={
+        "ID_SECCION": "Sección", "CASILLA_ETIQUETA": "Casilla", "TIPO_REVISION": "Motivo",
+        "MOTIVO_REVISION": "Por qué revisar", "VOTOS_PARTIDO": "Votos partido",
+        "VOTOS_RIVAL": "Votos rival", "VOTOS_PARA_LIDERAR": "Votos para liderar",
+        "ABSTENCION": "Abstención", "ALCANZABLE_ABSTENCION": "Faltante ≤ abstención",
+        "APOYO_MINIMO_FEDERAL_2024_PCT": "Apoyo mínimo federal 2024 (%)",
+        "COSTO_HIPOTETICO": "Costo supuesto (MXN)",
+        "DENTRO_PRESUPUESTO_SUPUESTO": "Dentro del presupuesto supuesto",
+        "CPV_COMPARABLE": "CPV comparable", "PERFIL_CPV": "Perfil CPV de sección",
+        "RASGOS_CPV_SECCION": "Rasgos CPV de sección",
+    })
+    st.dataframe(corta, hide_index=True, width="stretch",
+                 alt="Casillas seleccionadas por criterios electorales observados y perfil censal de sección")
+    st.download_button("Descargar casillas para revisar", corta.to_csv(index=False).encode("utf-8-sig"),
+                       file_name=f"casillas_revision_{partido}_2024.csv", mime="text/csv")
+    st.markdown("#### Todas las casillas")
     vista = base[["ID_SECCION", "CASILLA_ETIQUETA", "LOCALIDAD_INSTALACION", "FILA_FUENTE", "CLASE", "VOTOS_PARTIDO",
                   "RIVAL", "VOTOS_RIVAL", "MARGEN_PP", "VOTOS_PARA_LIDERAR", "ABSTENCION",
                   "ALCANZABLE_ABSTENCION", "VOTOS_SOBRE_LISTA", "APOYO_MINIMO_FEDERAL_2024_PCT", "COSTO_HIPOTETICO",
