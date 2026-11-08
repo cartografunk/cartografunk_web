@@ -58,6 +58,13 @@ def test_forecasting_tab_render(tmp_path):
                   "CUOTA_PREDICHA_PCT": [38.], "CUOTA_OBSERVADA_PCT": [40.],
                   "MARGEN_PREDICHO_PP": [6.], "MARGEN_OBSERVADO_PP": [8.]}).to_parquet(
                       carpeta / "benchmark_ml_cpv_2024_seccion.parquet", index=False)
+    (carpeta / "perfilamiento_cpv_2024.json").write_text(json.dumps({
+        "secciones_con_perfil": 1,
+        "perfiles": {"1": {"secciones": 1, "rasgos": [
+            {"etiqueta": "Viviendas con Internet", "direccion": "mayor"}]}},
+    }), encoding="utf-8")
+    pd.DataFrame({"ID_SECCION": ["22-0001"], "PERFIL_CPV": [1]}).to_parquet(
+        carpeta / "perfilamiento_cpv_2024_seccion.parquet", index=False)
     script = ("from pathlib import Path\n"
               "from electoral.forecasting_tab import mostrar_diagnostico_forecast\n"
               f"mostrar_diagnostico_forecast(22, Path({str(tmp_path)!r}))\n")
@@ -69,6 +76,7 @@ def test_forecasting_tab_render(tmp_path):
     assert at.dataframe[1].value["Grupo (clave 2021)"].tolist() == ["22-0002"]
     assert at.dataframe[2].value["Sección"].tolist() == ["22-0001"]
     assert any("ML con CPV" in item.value for item in at.subheader)
+    assert at.dataframe[3].value["Perfil"].tolist() == [1]
     at.selectbox(key="forecast_seccion").select("22-0002").run(timeout=180)
     assert not at.exception
     assert any("perímetro cambió" in item.value for item in at.info)

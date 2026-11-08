@@ -9,6 +9,7 @@ import streamlit as st
 from electoral.diagnostico_forecast import (
     MODELOS_CON_INTERVALO, PARTIDOS, cargar_benchmark, diagnostico_secciones,
 )
+from electoral.perfilamiento_cpv import resumir_partido
 
 
 @st.cache_data(max_entries=2)
@@ -29,6 +30,13 @@ def _cargar_ml(carpeta: Path) -> tuple[dict, pd.DataFrame]:
     informe = json.loads((carpeta / "benchmark_ml_cpv_2024.json").read_text(encoding="utf-8"))
     filas = pd.read_parquet(carpeta / "benchmark_ml_cpv_2024_seccion.parquet")
     return informe, filas
+
+
+@st.cache_data(max_entries=2)
+def _cargar_perfiles(carpeta: Path) -> tuple[dict, pd.DataFrame]:
+    informe = json.loads((carpeta / "perfilamiento_cpv_2024.json").read_text(encoding="utf-8"))
+    secciones = pd.read_parquet(carpeta / "perfilamiento_cpv_2024_seccion.parquet")
+    return informe, secciones
 
 
 def mostrar_diagnostico_forecast(estado: int, root: Path) -> None:
@@ -162,6 +170,43 @@ def mostrar_diagnostico_forecast(estado: int, root: Path) -> None:
             "Margen estimado (pp)", "Margen observado (pp)"]]
         st.dataframe(table, hide_index=True, width="stretch",
                      alt="Ensayo ML retrospectivo por partido y sección comparable")
+        if all((carpeta / name).exists() for name in (
+            "perfilamiento_cpv_2024.json", "perfilamiento_cpv_2024_seccion.parquet"
+        )):
+            perfiles, secciones_perfil = _cargar_perfiles(carpeta)
+            perfil_partido, detalle_perfil = resumir_partido(secciones_perfil, ml_rows, partido)
+            st.subheader("Perfiles CPV de secciones")
+            st.write(
+                f"Agrupamos {perfiles['secciones_con_perfil']} secciones por sus 15 tasas censales. "
+                "Las cifras de voto describen cómo se comportó cada grupo en 2024."
+            )
+            perfil_partido["Rasgos CPV"] = perfil_partido.PERFIL_CPV.map(
+                lambda n: ", ".join(
+                    ("Más " if item["direccion"] == "mayor" else "Menos ")
+                    + item["etiqueta"].lower()
+                    for item in perfiles["perfiles"][str(n)]["rasgos"]
+                )
+            )
+            vista_perfiles = perfil_partido.rename(columns={
+                "PERFIL_CPV": "Perfil", "secciones": "Secciones",
+                "cuota_observada_media_pct": "Cuota observada media (%)",
+                "lidera_observado": "Lideró en 2024",
+                "derrotas_cercanas": "Derrotas a ≤5 pp",
+                "revisar_oportunidad": "Revisar oportunidad",
+            })[["Perfil", "Rasgos CPV", "Secciones", "Cuota observada media (%)",
+                "Lideró en 2024", "Derrotas a ≤5 pp", "Revisar oportunidad"]]
+            st.dataframe(vista_perfiles, hide_index=True, width="stretch",
+                         alt="Perfiles censales de secciones y resultados partidarios observados")
+            st.caption("«Revisar oportunidad» = el ML esperaba liderazgo, pero el partido perdió por 5 puntos o menos. Es una pista para investigar, no una probabilidad de remontada.")
+            revisar = detalle_perfil.loc[detalle_perfil.REVISAR_OPORTUNIDAD].copy()
+            if len(revisar):
+                revisar["Faltaron (pp)"] = -revisar.MARGEN_OBSERVADO_PP
+                revisar = revisar.sort_values("Faltaron (pp)").rename(columns={
+                    "ID_SECCION": "Sección", "PERFIL_CPV": "Perfil",
+                    "MARGEN_PREDICHO_PP": "Margen que estimó ML (pp)",
+                })[["Sección", "Perfil", "Faltaron (pp)", "Margen que estimó ML (pp)"]]
+                st.dataframe(revisar, hide_index=True, width="stretch",
+                             alt="Secciones con derrota cercana y falso liderazgo del modelo")
     with st.expander("Avanzado · método y límites"):
         st.write("El método aprende de la transición 2018→2021 y estima 2024 con la cuota, participación y lista nominal de 2021. "
                  "El intervalo se calibró con errores históricos. CPV 2020 no entra al modelo; el bloque «¿Por qué?» "

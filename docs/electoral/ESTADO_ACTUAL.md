@@ -1,5 +1,9 @@
 # Estado actual del módulo electoral
 
+## Perfilamiento CPV antes de rentabilidad, 2026-11-07
+
+Se generaron [cinco perfiles censales de secciones](PERFILAMIENTO_CPV_QRO_2024.md) con las 15 tasas CPV, sin usar votos al formar los grupos. **787/788** secciones comparables recibieron perfil. De los **393 falsos liderazgos del PAN** en el ensayo ML, **74** terminaron en derrota de ≤5 puntos: son casos para **revisión**, no victorias previstas. La app muestra los perfiles y esas secciones sin mezclar costos o apoyo mínimo en este bloque. **NO VERIFICADO:** que alguna sea volteable, confianza prospectiva o causalidad demográfica.
+
 ## Ensayo ML con CPV y reporte de errata, 2026-11-07
 
 Se ejecutó un [modelo de árboles con las 15 tasas CPV](BENCHMARK_ML_CPV_QRO_2024.md): entrenamiento 2018→2021 en 654 secciones estables y evaluación 2024 en 788 secciones, 73.66 % de la lista nominal. Su MAE medio de cuota fue **5.90 pp**, frente a **5.38 pp** de Ridge sin CPV; detectó 75 de 436 liderazgos observados de MORENA por punto estimado y generó 393 falsos liderazgos de PAN. La app muestra el ensayo por partido y sección cuando los archivos locales existen. **NO VERIFICADO:** confianza futura ni causalidad del CPV; el árbol no se presenta como pronóstico fiable. El [posible error de rango `0529`](ERRATA_ANEXO_IEEQ_2026.md) quedó descrito con texto listo para remitir al IEEQ; la corrección sigue por confirmar.
