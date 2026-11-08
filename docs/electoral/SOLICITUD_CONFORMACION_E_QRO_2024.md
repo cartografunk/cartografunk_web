@@ -1,6 +1,6 @@
 # Solicitud preparada: conformación territorial de casillas extraordinarias 2024
 
-**Estado:** borrador para presentar al INE; no enviado. La [guía del INE](https://ine.mx/como-consultar-los-documentos-que-generan-los-consejos-y-juntas-locales-y-distritales/) indica solicitar documentos de consejos y juntas por la Plataforma Nacional de Transparencia. No se presupone plazo de entrega ni que exista un CSV público.
+**Estado:** borrador archivado; no enviado ni previsto para el alcance activo del producto por decisión del propietario. Se usa CPV seccional como contexto de las E, sin afirmar un perfil propio de su área de atención. La [guía del INE](https://ine.mx/como-consultar-los-documentos-que-generan-los-consejos-y-juntas-locales-y-distritales/) indica solicitar documentos de consejos y juntas por la Plataforma Nacional de Transparencia. No se presupone plazo de entrega ni que exista un CSV público.
 
 ## Texto para la solicitud
 
