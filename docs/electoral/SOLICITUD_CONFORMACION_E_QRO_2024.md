@@ -12,7 +12,7 @@
 
 ## Por qué se pide esta tabla
 
-El encarte IEEQ 2024 identifica la **localidad de instalación** de las 218 E, pero no enumera las manzanas o localidades de **residencia asignadas** a cada una. La lista nominal por mesa ya está disponible y cotejada con el SICEE federal; no da edad, educación ni vivienda. El objetivo es unir la conformación territorial con el CPV 2020 de INEGI para crear un perfil sociodemográfico por área E, con control de cambios territoriales y supresión censal.
+El encarte IEEQ 2024 identifica la **localidad de instalación** de las 218 E, pero no enumera las manzanas o localidades de **residencia asignadas** a cada una. La lista nominal por mesa ya está disponible y cotejada con el SICEE federal; no da edad, educación ni vivienda. **Ya están procesados** el CPV 2020 urbano de INEGI por manzana y colonia–sección para Querétaro, y el ECEG por sección. La asignación territorial permitiría intentar un perfil sociodemográfico por área E, sujeto a cambios territoriales y supresión censal. Las E rurales requerirán los conteos CPV por localidad correspondientes. La auditoría actual muestra que los conteos urbanos finos están muy suprimidos en las secciones con E; la solicitud no garantiza por sí sola 15 tasas utilizables.
 
 ## Alcance verificado y límite
 
