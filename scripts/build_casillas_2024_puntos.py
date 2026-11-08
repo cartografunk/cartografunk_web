@@ -25,13 +25,15 @@ ENCARTE = ROOT / "data/electoral/ieeq_local/encarte_qro_2024_claves.parquet"
 OUTPUT = ROOT / "data/electoral/ieeq_local/casillas_2024_puntos.parquet"
 AUDIT = ROOT / "data/electoral/ieeq_local/casillas_2024_puntos.audit.json"
 REVISIONES = ROOT / "electoral/revisiones_sedes_2024.csv"
+REVISIONES_SITIOS = ROOT / "electoral/revisiones_sedes_usuario_2024.csv"
 SOURCE_URL = ("https://datamx.io/dataset/985fceef-1d7b-49ed-8098-a5bc182462d2/"
               "resource/50f1cc66-c303-4713-adc4-dcd27bd4c3c3/download/casillas.gpkg")
 
 
 def cruzar_puntos(encarte: pd.DataFrame, puntos: gpd.GeoDataFrame,
                   secciones: gpd.GeoDataFrame,
-                  revisiones: pd.DataFrame | None = None) -> pd.DataFrame:
+                  revisiones: pd.DataFrame | None = None,
+                  revisiones_sitios: pd.DataFrame | None = None) -> pd.DataFrame:
     """Coteja clave y domicilio; acepta polígono o revisión visual documentada."""
     if puntos.crs is None or secciones.crs is None:
         raise ValueError("CRS ausente")
@@ -66,6 +68,7 @@ def cruzar_puntos(encarte: pd.DataFrame, puntos: gpd.GeoDataFrame,
     joined.loc[valid, "CALIDAD"] = "clave_domicilio_y_poligono"
     joined["DISTANCIA_REVISION_M"] = float("nan")
     joined["URL_REVISION"] = ""
+    joined["NOTA_REVISION"] = ""
     if revisiones is not None and len(revisiones):
         if revisiones.duplicated(["ID_SECCION", "CASILLA_ETIQUETA"]).any():
             raise ValueError("Revisión manual duplicada")
@@ -86,13 +89,27 @@ def cruzar_puntos(encarte: pd.DataFrame, puntos: gpd.GeoDataFrame,
             joined.at[idx, "DISTANCIA_REVISION_M"] = round(metros, 2)
             joined.at[idx, "URL_REVISION"] = row.URL_REVISION if pd.notna(row.URL_REVISION) else ""
             joined.at[idx, "CALIDAD"] = "domicilio_y_revision_manual"
+    if revisiones_sitios is not None and len(revisiones_sitios):
+        if revisiones_sitios.GRUPO_SEDE.duplicated().any():
+            raise ValueError("Grupo de sede revisada duplicado")
+        for row in revisiones_sitios.itertuples():
+            match = joined.ID_SECCION.eq(row.ID_SECCION) & joined.geometry.map(
+                lambda p: p is not None and abs(p.y - row.LATITUD_FUENTE) < 1e-6
+                and abs(p.x - row.LONGITUD_FUENTE) < 1e-6)
+            expected = {x.strip() for x in row.CASILLAS_DEL_GRUPO.split(",")}
+            if set(joined.loc[match, "CASILLA"]) != expected:
+                raise ValueError(f"Casillas distintas en sede revisada {row.GRUPO_SEDE}")
+            if not joined.loc[match, "CALIDAD"].eq("revisar_domicilio_o_poligono").all():
+                raise ValueError(f"La sede ya no requiere revisión: {row.GRUPO_SEDE}")
+            joined.loc[match, "CALIDAD"] = "sede_revisada_visual_usuario"
+            joined.loc[match, "NOTA_REVISION"] = row.NOTA if pd.notna(row.NOTA) else ""
     joined["LONGITUD"] = joined.geometry.map(lambda p: p.x if p is not None else float("nan"))
     joined["LATITUD"] = joined.geometry.map(lambda p: p.y if p is not None else float("nan"))
     return joined.rename(columns={"CASILLA": "CASILLA_ETIQUETA", "ubicacion": "SEDE",
                                   "domicilio": "DOMICILIO_FUENTE"})[
         ["ID_SECCION", "CASILLA_ETIQUETA", "LONGITUD", "LATITUD", "SEDE",
          "DOMICILIO_FUENTE", "CALIDAD", "DOMICILIO_COINCIDE", "DENTRO_SECCION",
-         "DISTANCIA_REVISION_M", "URL_REVISION"]]
+         "DISTANCIA_REVISION_M", "URL_REVISION", "NOTA_REVISION"]]
 
 
 def build(source: Path = SOURCE, encarte_path: Path = ENCARTE,
@@ -101,9 +118,12 @@ def build(source: Path = SOURCE, encarte_path: Path = ENCARTE,
     encarte = pd.read_parquet(encarte_path)
     secciones = gpd.read_parquet(geometry_path, columns=["ID_SECCION", "geometry"])
     revisiones = pd.read_csv(REVISIONES)
-    result = cruzar_puntos(encarte, puntos, secciones, revisiones)
+    revisiones_sitios = pd.read_csv(REVISIONES_SITIOS)
+    result = cruzar_puntos(encarte, puntos, secciones, revisiones, revisiones_sitios)
     output.parent.mkdir(parents=True, exist_ok=True)
     result.to_parquet(output, index=False)
+    accepted = result.CALIDAD.isin(("clave_domicilio_y_poligono", "domicilio_y_revision_manual",
+                                   "sede_revisada_visual_usuario"))
     audit = {
         "fuente_url": SOURCE_URL,
         "fuente_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
@@ -111,9 +131,10 @@ def build(source: Path = SOURCE, encarte_path: Path = ENCARTE,
         "fuente_tipo": "copia de Ubica tu Casilla 2024 publicada por tercero; no descarga oficial INE",
         "encarte_casillas_bce": len(result),
         "puntos_por_clave": int(result.LONGITUD.notna().sum()),
-        "puntos_aceptados": int(result.CALIDAD.isin(("clave_domicilio_y_poligono", "domicilio_y_revision_manual")).sum()),
-        "secciones_con_punto_aceptado": int(result.loc[result.CALIDAD.isin(("clave_domicilio_y_poligono", "domicilio_y_revision_manual")), "ID_SECCION"].nunique()),
+        "puntos_aceptados": int(accepted.sum()),
+        "secciones_con_punto_aceptado": int(result.loc[accepted, "ID_SECCION"].nunique()),
         "puntos_revision_manual": int(result.CALIDAD.eq("domicilio_y_revision_manual").sum()),
+        "puntos_revision_visual_usuario": int(result.CALIDAD.eq("sede_revisada_visual_usuario").sum()),
         "distancia_revision_m": result.loc[result.CALIDAD.eq("domicilio_y_revision_manual"),
                                            ["ID_SECCION", "CASILLA_ETIQUETA", "DISTANCIA_REVISION_M"]].to_dict("records"),
         "calidad": result.CALIDAD.value_counts().to_dict(),

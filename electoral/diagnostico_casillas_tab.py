@@ -72,11 +72,12 @@ def _cargar_punto_casilla(path: Path, id_seccion: str, casilla: str) -> dict | N
     puntos = pd.read_parquet(path, filters=[("ID_SECCION", "==", id_seccion),
                                              ("CASILLA_ETIQUETA", "==", casilla)])
     aceptados = puntos.loc[puntos.CALIDAD.isin(("clave_domicilio_y_poligono",
-                                              "domicilio_y_revision_manual"))]
+                                              "domicilio_y_revision_manual",
+                                              "sede_revisada_visual_usuario"))]
     if len(aceptados) != 1:
         return None
     return aceptados.iloc[0][["LONGITUD", "LATITUD", "SEDE", "DOMICILIO_FUENTE",
-                             "CALIDAD", "URL_REVISION"]].to_dict()
+                             "CALIDAD", "URL_REVISION", "NOTA_REVISION"]].to_dict()
 
 
 def _mostrar_ficha_casilla(fila: pd.Series, base: pd.DataFrame,
@@ -109,6 +110,12 @@ def _mostrar_ficha_casilla(fila: pd.Series, base: pd.DataFrame,
                            "No representa el domicilio de los votantes ni una verificación en campo.")
                 if punto["URL_REVISION"]:
                     st.link_button("Abrir revisión en Google Maps", punto["URL_REVISION"])
+            elif punto["CALIDAD"] == "sede_revisada_visual_usuario":
+                st.caption("Sede de instalación 2024 revisada visualmente por el usuario en mapas. "
+                           "Se conserva el punto publicado; la ubicación no se comprobó en campo "
+                           "y no representa el domicilio de los votantes.")
+                if punto["NOTA_REVISION"]:
+                    st.info("Referencia histórica: " + punto["NOTA_REVISION"])
             else:
                 st.caption("El punto señala la sede de instalación de esta casilla en Ubica tu Casilla 2024 "
                            "(copia publicada por Morlan), cotejada con clave, domicilio del encarte IEEQ "

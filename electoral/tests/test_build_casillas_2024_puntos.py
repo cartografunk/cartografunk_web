@@ -44,3 +44,24 @@ def test_revision_manual_acepta_e_fuera_si_coordenada_concuerda():
     assert result.CALIDAD == "domicilio_y_revision_manual"
     assert result.DISTANCIA_REVISION_M < 2
     assert not result.DENTRO_SECCION
+
+
+def test_revision_visual_de_sede_aplica_a_b_y_c_sin_cambiar_punto():
+    encarte = pd.DataFrame({"ID_SECCION": ["22-0001"] * 2,
+                            "CASILLA": ["B1", "C1"],
+                            "DOMICILIO_NORMALIZADO": ["DOMICILIO ENCARTE"] * 2})
+    puntos = gpd.GeoDataFrame({"seccion": [1, 1], "name": ["B", "C1"],
+                               "ubicacion": ["RESTAURANTE"] * 2,
+                               "domicilio": ["CALLE UNO"] * 2,
+                               "referencia": [""] * 2},
+                              geometry=[Point(-100.45, 20.55)] * 2, crs=4326)
+    secciones = gpd.GeoDataFrame({"ID_SECCION": ["22-0001"]},
+                                 geometry=[box(-100.5, 20.5, -100.4, 20.6)], crs=4326)
+    revision = pd.DataFrame({"GRUPO_SEDE": ["SEDE-01"], "ID_SECCION": ["22-0001"],
+                             "LATITUD_FUENTE": [20.55], "LONGITUD_FUENTE": [-100.45],
+                             "CASILLAS_DEL_GRUPO": ["B1, C1"],
+                             "NOTA": ["Domicilio del encarte 2024"]})
+    result = cruzar_puntos(encarte, puntos, secciones, revisiones_sitios=revision)
+    assert result.CALIDAD.eq("sede_revisada_visual_usuario").all()
+    assert result.LONGITUD.eq(-100.45).all()
+    assert result.NOTA_REVISION.eq("Domicilio del encarte 2024").all()

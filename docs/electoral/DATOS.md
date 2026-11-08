@@ -370,7 +370,7 @@ La [sentencia ST-JRC-216/2024](https://www.te.gob.mx/sentenciasHTML/convertir/ex
 - Fuentes de cotejo: encarte IEEQ 30-may-2024 convertido a Markdown, procesado en `data/electoral/ieeq_local/encarte_qro_2024_claves.parquet`, y `data/electoral/secciones_2024_geom.parquet` (MGE 2024).
 - Reproducción: `D:\Conda\envs\cartografunk\python.exe -B -m scripts.build_casillas_2024_puntos`. Salidas **locales no versionadas**: `data/electoral/ieeq_local/casillas_2024_puntos.parquet` y `.audit.json`.
 - Llave: `(ID_SECCION, CASILLA_ETIQUETA)`; `B` en la fuente de puntos corresponde a `B1` del encarte. No se usan S ni A para el mapa seccional.
-- Aceptación visual: coincidencia de llave, domicilio completo normalizado y punto contenido por el polígono de sección. Tres E fuera del polígono se aceptaron por revisión manual del usuario en Google Maps, con coordenadas documentadas en `electoral/revisiones_sedes_2024.csv`; el script exige que la coordenada revisada esté a ≤35 m del punto fuente y no mueve el punto original. La aplicación distingue estos tres casos de los aceptados automáticamente y ofrece enlace a Google Maps. El punto es una sede de instalación, no una localización residencial ni CPV propio de casilla E.
+- Aceptación visual: coincidencia de llave, domicilio completo normalizado y punto contenido por el polígono de sección. Tres E fuera del polígono se aceptaron por revisión manual del usuario en Google Maps, con coordenadas documentadas en `electoral/revisiones_sedes_2024.csv`; el script exige que la coordenada revisada esté a ≤35 m del punto fuente y no mueve el punto original. El usuario declaró revisadas visualmente las 15 sedes de los 73 registros pendientes; `electoral/revisiones_sedes_usuario_2024.csv` documenta sección, punto fuente, casillas del grupo y dos notas históricas de domicilio. No se recibieron coordenadas nuevas para esas 15 sedes y tampoco se movieron sus puntos. La aplicación distingue los estados de revisión. El punto es una sede de instalación, no una localización residencial ni CPV propio de casilla E.
 
 | Medición Querétaro B/C/E | Registros |
 | --- | ---: |
@@ -378,10 +378,11 @@ La [sentencia ST-JRC-216/2024](https://www.te.gob.mx/sentenciasHTML/convertir/ex
 | Punto con misma llave | 2 614 |
 | Punto aceptado tras domicilio y polígono | 2 538 |
 | Punto E aceptado tras revisión manual documentada | 3 |
-| Total con punto mostrado | 2 541 en 841 secciones |
+| Punto de 15 sedes revisadas visualmente por el usuario | 73 |
+| Total con punto mostrado | 2 614 en 854 secciones |
 | Sin punto en la copia cartográfica | 467 |
-| Punto aún por revisar por domicilio o polígono | 73 |
+| Punto aún por revisar por domicilio o polígono | 0 |
 | Puntos fuera del polígono | 20 |
 | Puntos cuyo domicilio difiere del encarte | 56 |
 
-Las dos últimas categorías pueden solaparse; no se suman. Las coordenadas aportadas para `22-0165 E1`, `22-0237 E1` y `22-0630 E2` quedan a **8.72 m, 19.70 m y 22.56 m** de los respectivos puntos fuente. Esta revisión visual no equivale a inspección física del sitio. **NO VERIFICADO:** exactitud métrica del punto, causas de ausencia o discrepancia, sitio final de instalación frente al corte del encarte y procedencia oficial directa de cada coordenada. El Parquet no se publica con el código; en un despliegue sin ese archivo la ficha muestra únicamente la sección.
+Los puntos exteriores y las diferencias de domicilio pueden solaparse; no se suman. Las coordenadas aportadas para `22-0165 E1`, `22-0237 E1` y `22-0630 E2` quedan a **8.72 m, 19.70 m y 22.56 m** de los respectivos puntos fuente. En `22-0782`, B1 corresponde al domicilio del encarte 2024 **avenida Camino Real 240**, entonces «In Sano», y C1 al **242**, entonces «Marios Pizza»; la vigencia actual de los negocios no se afirma. Esta revisión visual no equivale a inspección física del sitio. **NO VERIFICADO:** exactitud métrica del punto, causas de ausencia o discrepancia, sitio final de instalación frente al corte del encarte y procedencia oficial directa de cada coordenada. El Parquet no se publica con el código; en un despliegue sin ese archivo la ficha muestra únicamente la sección.
