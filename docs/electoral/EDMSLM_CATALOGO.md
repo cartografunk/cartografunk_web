@@ -6,9 +6,17 @@ Auditoría local del 2026-11-07 de los archivos aportados por el usuario:
 - `C:\Users\HeyCe\Downloads\Catálogo de Localidades.xlsx`: 1 968 localidades de Querétaro con entidad, municipio, localidad, nombre y tipo; no trae sección, manzana ni casilla. El CLOC del SIGE también indica corte enero de 2026.
 - El TXT tiene para Querétaro 59 157 filas, 1 090 secciones, 1 968 pares municipio–localidad y 2 735 pares localidad–sección. **Sí da la relación localidad/manzana INE → sección de su propio corte**, incluso para localidades urbanas como `FRACCIONAMIENTO VIÑEDOS` (municipio 14, localidad 173).
 
+El script [`scripts/build_sige_edmslm.py`](../../scripts/build_sige_edmslm.py) convirtió el TXT de enero de 2026 a `data/electoral/edmslm_2026_01_22.parquet` y dejó un `*.audit.json` local. Conserva las 13 columnas originales, añade el corte y llaves normalizadas, y comprueba unicidad de la llave electoral de manzana. SHA-256 del TXT: `331447edfcc60d58ba74234430d58d986edbfda630ca8e0dbea2d38853e77327`. El Parquet y el JSON de auditoría **no se versionan**.
+
+Al comparar solo **claves de sección**, 935 de las 953 secciones IEEQ 2024 aparecen también en EDMSLM 2026; 18 claves de 2024 faltan en 2026, incluida `22-0553`. EDMSLM tiene otras 155 claves que no aparecen en los resultados IEEQ 2024. Una clave compartida no prueba que el perímetro sea idéntico.
+
 ## Prueba de cambio de corte: Viñedos
 
 El encarte IEEQ 2024 local (`encarte_qro_2024_claves.parquet`) registra las casillas E instaladas en `FRACCIONAMIENTO VIÑEDOS` como `22-0553`, municipio 14, localidad 173. En el EDMSLM **enero 2026** aportado, esa localidad aparece en las secciones `22-0999`, `22-1002`, `22-1003` y `22-1004`; la sección `22-0553` no aparece en ninguna fila de Querétaro. **La identidad de municipio y localidad no autoriza asignar esas manzanas a la sección electoral 2024**. La correspondencia territorial exacta 0553→secciones posteriores sigue **NO VERIFICADA**.
+
+Hay evidencia oficial de que se mezclaban cortes: el [plano distrital 02 del IEEQ con corte 10 de noviembre de 2023](https://pel.eleccionesqro.mx/2024/cartografia/archivos/PDS22DL02MG0000_101123.pdf) muestra `0553` y Viñedos. El [paquete cartográfico del distrito 02 publicado por el IEEQ](https://pel.eleccionesqro.mx/2024/cartografia/archivos/DISTRITO_02.rar) contiene 108 planos fechados **28 de junio de 2024**; entre ellos están `0999`, `1002`, `1003` y `1004`, pero no `0553`. El [informe del Registro Federal de Electores, abril–junio de 2024](https://repositoriodocumental.ine.mx/xmlui/bitstream/handle/123456789/173923/crfe-3so-2024-07-29-p3-1-informe.pdf), pp. 40–41, indica que en junio se incorporaron a los catálogos **924 secciones** que ocuparon el espacio de **136** secciones reseccionadas en el país. Esto ocurrió después de la votación del **2 de junio**. El informe nacional no identifica por sí solo la operación exacta sobre `22-0553`.
+
+Para cumplir la regla de consulta de PDF del proyecto, los dos planos y el informe se convirtieron primero a Markdown local el 2026-11-07. SHA-256: plano 2023 `b1869bee449da12ee35eae7cddf62f1e5005df2fcf64094751bcb3d270f0a10f`; plano individual `0999` del paquete, actualizado el 28 de junio, `be7157be98fb1c7dc42afd8d6868c6d99ed45df47f97e2417c4694595e9ed473`; informe INE `f4e5b779da720c9ea8f309d5c1d0fd8a2a0f690609108ca99b092a0944ab210b`. SHA-256 del RAR: `814fae891b670d5c64fe67b13c98c167ad6ae0652fee6c3b1016ac227a4d5bc7`.
 
 ## Uso correcto y límite
 
@@ -16,6 +24,7 @@ El encarte IEEQ 2024 local (`encarte_qro_2024_claves.parquet`) registra las casi
 2. Obtener el corte vigente en la elección 2024 o una correspondencia final de manzanas/localidades entre cortes antes de atribuirle el EDMSLM actual a los votos de esa elección.
 3. El TXT **no tiene columna de casilla B/C/E** ni enumera la población de residencia asignada a cada E. El Excel tampoco. Relaciona manzana/localidad con sección de su corte, no con casilla extraordinaria.
 4. La clave `MANZANA` electoral no incluye `AGEB`; el `CVEGEO` de manzana censal INEGI sí. La equivalencia entre ambas claves de manzana sigue **NO VERIFICADA** y requiere cotejo cartográfico/catálogo, no concatenación directa.
+5. En el ejemplo de Viñedos, `LOCALIDAD=173` de INE no coincide con una `CVE_LOC=0173` de INEGI dentro del municipio censal 014. Por ello tampoco se debe unir INE e INEGI usando solo el número de localidad. La superposición preliminar de manzanas censales con el polígono 2024 de `22-0553` detectó 498 manzanas de cuatro localidades censales; falta validar el sistema de coordenadas y la equivalencia oficial. El agregado CPV urbano existente de esa sección tiene 495 manzanas con datos y 15 tasas suprimidas o ausentes: aún no aporta un perfil de las casillas E.
 
 **Decisión actual:** mantener el ECEG por sección comparable como base de la app. Este catálogo aporta una pieza para investigar reseccionamiento y un piloto por localidad; no se ha usado para reasignar votos ni CPV a casillas E.
 
