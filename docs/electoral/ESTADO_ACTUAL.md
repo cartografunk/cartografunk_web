@@ -1,5 +1,9 @@
 # Estado actual del módulo electoral
 
+## Ensayo ML con CPV y reporte de errata, 2026-11-07
+
+Se ejecutó un [modelo de árboles con las 15 tasas CPV](BENCHMARK_ML_CPV_QRO_2024.md): entrenamiento 2018→2021 en 654 secciones estables y evaluación 2024 en 788 secciones, 73.66 % de la lista nominal. Su MAE medio de cuota fue **5.90 pp**, frente a **5.38 pp** de Ridge sin CPV; detectó 75 de 436 liderazgos observados de MORENA por punto estimado y generó 393 falsos liderazgos de PAN. La app muestra el ensayo por partido y sección cuando los archivos locales existen. **NO VERIFICADO:** confianza futura ni causalidad del CPV; el árbol no se presenta como pronóstico fiable. El [posible error de rango `0529`](ERRATA_ANEXO_IEEQ_2026.md) quedó descrito con texto listo para remitir al IEEQ; la corrección sigue por confirmar.
+
 ## Diagnóstico de campaña por casilla, 2026-11-07
 
 Se añadió una pestaña aislada «Dónde actuar · casillas» para el piloto IEEQ Querétaro. Por partido y registro B/C/E muestra margen frente al mayor de otros seis partidos atribuidos, votos para liderar, abstención, apoyo mínimo federal 2024 cuando está disponible, costo supuesto opcional y una acción como hipótesis. El perfil principal resume 3–5 asociaciones de las 15 variables ECEG por clase de casilla; cada sección cuenta una sola vez por clase. **CPV 2020 vs votos 2024; asociación, no causa.** [Datos, cobertura y límites](DATOS.md#diagnóstico-local-ieeq-2024-por-registro-de-casilla).

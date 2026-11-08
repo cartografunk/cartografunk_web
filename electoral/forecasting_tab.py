@@ -24,6 +24,13 @@ def _cargar_grupos(carpeta: Path) -> tuple[dict, pd.DataFrame, pd.DataFrame]:
     return resumen, benchmark, mapa
 
 
+@st.cache_data(max_entries=2)
+def _cargar_ml(carpeta: Path) -> tuple[dict, pd.DataFrame]:
+    informe = json.loads((carpeta / "benchmark_ml_cpv_2024.json").read_text(encoding="utf-8"))
+    filas = pd.read_parquet(carpeta / "benchmark_ml_cpv_2024_seccion.parquet")
+    return informe, filas
+
+
 def mostrar_diagnostico_forecast(estado: int, root: Path) -> None:
     st.subheader("Forecasting · prueba retrospectiva 2024")
     st.caption("Diputaciones locales MR · unidad: sección · Querétaro es el filtro de muestra. Reparto fraccionario de coaliciones por partido.")
@@ -128,6 +135,33 @@ def mostrar_diagnostico_forecast(estado: int, root: Path) -> None:
             "Estimado 2024 (%)", "Observado 2024 (%)", "Margen estimado (pp)", "Margen observado (pp)"]]
         st.dataframe(grupos, hide_index=True, width="stretch",
                      alt="Comparación retrospectiva de votos por partido en grupos de secciones relacionadas")
+    if all((carpeta / name).exists() for name in (
+        "benchmark_ml_cpv_2024.json", "benchmark_ml_cpv_2024_seccion.parquet"
+    )):
+        ml_report, ml_rows = _cargar_ml(carpeta)
+        ml = ml_report["modelos"]["hist_gradient_boosting_cpv"]["por_partido"][partido]
+        ridge_ml = ml_report["modelos"]["ridge_sin_cpv"]["por_partido"][partido]
+        st.subheader("ML con CPV · prueba retrospectiva")
+        st.write(
+            f"En {ml_report['evaluacion_2024_secciones']} secciones comparables, el modelo con CPV "
+            f"tuvo un error medio de {ml['mae_cuota_pp']:.1f} puntos para {partido}; "
+            f"Ridge sin CPV tuvo {ridge_ml['mae_cuota_pp']:.1f}. "
+            f"Detectó {ml['lideres_detectados']} de {ml['lideres_observados']} secciones "
+            f"donde {partido} lideró, y marcó {ml['falsos_lideres']} liderazgos que no ocurrieron."
+        )
+        st.caption("CPV 2020 vs votos 2024; asociación, no causa. Es una prueba con 2024 ya observado, sin confianza futura calibrada. Las secciones modificadas quedan fuera.")
+        table = ml_rows.loc[
+            ml_rows.PARTIDO.eq(partido)
+            & ml_rows.MODELO.eq("hist_gradient_boosting_cpv")
+        ].rename(columns={
+            "ID_SECCION": "Sección", "CUOTA_PREDICHA_PCT": "Estimado 2024 (%)",
+            "CUOTA_OBSERVADA_PCT": "Observado 2024 (%)",
+            "MARGEN_PREDICHO_PP": "Margen estimado (pp)",
+            "MARGEN_OBSERVADO_PP": "Margen observado (pp)",
+        })[["Sección", "Estimado 2024 (%)", "Observado 2024 (%)",
+            "Margen estimado (pp)", "Margen observado (pp)"]]
+        st.dataframe(table, hide_index=True, width="stretch",
+                     alt="Ensayo ML retrospectivo por partido y sección comparable")
     with st.expander("Avanzado · método y límites"):
         st.write("El método aprende de la transición 2018→2021 y estima 2024 con la cuota, participación y lista nominal de 2021. "
                  "El intervalo se calibró con errores históricos. CPV 2020 no entra al modelo; el bloque «¿Por qué?» "
@@ -136,3 +170,7 @@ def mostrar_diagnostico_forecast(estado: int, root: Path) -> None:
                  f"Cobertura observada en 2024: {partido_info['cobertura_empirica_intervalo_pct']:.1f} %. ")
         st.caption("Los 19 IDs desaparecidos y 81 nuevos se auditan por separado. El domicilio de casilla no redistribuye electores ni votos. "
                    "NO VERIFICADO: equivalencia exacta del marco 2018, desempeño prospectivo, reparto entero distrital y reasignación de personas en las secciones modificadas.")
+        if all((carpeta / name).exists() for name in (
+            "benchmark_ml_cpv_2024.json", "benchmark_ml_cpv_2024_seccion.parquet"
+        )):
+            st.write("El ensayo ML entrena un árbol de gradiente por partido con 2018→2021: siete cuotas previas, participación, logaritmo de lista nominal y 15 tasas CPV 2020. Evalúa 2021→2024 sin ajustar el modelo con votos 2024. El CPV faltante queda nulo; el algoritmo admite nulos.")

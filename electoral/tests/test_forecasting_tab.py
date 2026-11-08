@@ -45,6 +45,19 @@ def test_forecasting_tab_render(tmp_path):
                   "MARGEN_2024_ESTIMADO_PP": [6., 7.],
                   "MARGEN_2024_OBSERVADO_PP": [8., 9.]}).to_parquet(
                       carpeta / "benchmark_partidos_grupos_2024.parquet", index=False)
+    (carpeta / "benchmark_ml_cpv_2024.json").write_text(json.dumps({
+        "evaluacion_2024_secciones": 1,
+        "modelos": {name: {"por_partido": {"MORENA": {
+            "mae_cuota_pp": mae, "lideres_detectados": 1,
+            "lideres_observados": 1, "falsos_lideres": 0,
+        }}} for name, mae in (("hist_gradient_boosting_cpv", 2.0),
+                            ("ridge_sin_cpv", 3.0))},
+    }), encoding="utf-8")
+    pd.DataFrame({"ID_SECCION": ["22-0001"], "PARTIDO": ["MORENA"],
+                  "MODELO": ["hist_gradient_boosting_cpv"],
+                  "CUOTA_PREDICHA_PCT": [38.], "CUOTA_OBSERVADA_PCT": [40.],
+                  "MARGEN_PREDICHO_PP": [6.], "MARGEN_OBSERVADO_PP": [8.]}).to_parquet(
+                      carpeta / "benchmark_ml_cpv_2024_seccion.parquet", index=False)
     script = ("from pathlib import Path\n"
               "from electoral.forecasting_tab import mostrar_diagnostico_forecast\n"
               f"mostrar_diagnostico_forecast(22, Path({str(tmp_path)!r}))\n")
@@ -54,6 +67,8 @@ def test_forecasting_tab_render(tmp_path):
     assert "Sin modelo: sección modificada" in at.dataframe[0].value["Lectura del ensayo"].tolist()
     assert any("cuota atribuida a MORENA fue 30.0 %" in item.value for item in at.markdown)
     assert at.dataframe[1].value["Grupo (clave 2021)"].tolist() == ["22-0002"]
+    assert at.dataframe[2].value["Sección"].tolist() == ["22-0001"]
+    assert any("ML con CPV" in item.value for item in at.subheader)
     at.selectbox(key="forecast_seccion").select("22-0002").run(timeout=180)
     assert not at.exception
     assert any("perímetro cambió" in item.value for item in at.info)
