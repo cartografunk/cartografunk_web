@@ -4,6 +4,8 @@ Investigación local del 2026-11-06. El [Catálogo de Colonias (CCOL) del INE](h
 
 **Localidad no equivale a colonia:** en zona urbana, una localidad puede abarcar muchas colonias; ciertos fraccionamientos pueden compartir nombre con una localidad. El CCOL 2022 local tiene 188 279 filas y columnas de colonia y sección, pero ninguna clave de casilla. La localidad del encarte identifica el sitio de instalación de una E, no las colonias o manzanas de residencia que atiende. La coincidencia de nombre sirve para generar candidatos de cruce, no para asignarles directamente el CPV a una E.
 
+La [ficha CCOL del SIGE](https://cartografia.ine.mx/sige8/productosCartograficos/catalogos) aclara que la colonia es un elemento auxiliar para ubicar domicilios y que el INE no define oficialmente sus límites. Los 14 productos de esa página y sus cortes se resumen en [SIGE_CATALOGOS.md](SIGE_CATALOGOS.md).
+
 ## Fuentes examinadas
 
 - Polígonos: `H:\Mi unidad\(0) CARTOGRAFUNK BASICS\(4) DATA\11 Colonias INE\ColoniasINE2020a.parquet`, 107 027 filas. Su original local `D:\(5) WORK\CONJUNTOS DE DATOS\ColoniasINE\ColoniasINE2020.shp` tiene las mismas columnas sin sección ni distrito. El XML local registra cambios de atributos en febrero y marzo de 2024, pero **no documenta el corte de la geometría**.
