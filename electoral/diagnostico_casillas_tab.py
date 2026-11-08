@@ -71,10 +71,12 @@ def _cargar_punto_casilla(path: Path, id_seccion: str, casilla: str) -> dict | N
         return None
     puntos = pd.read_parquet(path, filters=[("ID_SECCION", "==", id_seccion),
                                              ("CASILLA_ETIQUETA", "==", casilla)])
-    aceptados = puntos.loc[puntos.CALIDAD.eq("clave_domicilio_y_poligono")]
+    aceptados = puntos.loc[puntos.CALIDAD.isin(("clave_domicilio_y_poligono",
+                                              "domicilio_y_revision_manual"))]
     if len(aceptados) != 1:
         return None
-    return aceptados.iloc[0][["LONGITUD", "LATITUD", "SEDE", "DOMICILIO_FUENTE"]].to_dict()
+    return aceptados.iloc[0][["LONGITUD", "LATITUD", "SEDE", "DOMICILIO_FUENTE",
+                             "CALIDAD", "URL_REVISION"]].to_dict()
 
 
 def _mostrar_ficha_casilla(fila: pd.Series, base: pd.DataFrame,
@@ -100,12 +102,23 @@ def _mostrar_ficha_casilla(fila: pd.Series, base: pd.DataFrame,
                            / "data/electoral/ieeq_local/casillas_2024_puntos.parquet")
         punto = _cargar_punto_casilla(puntos_path, seccion, casilla)
         if punto:
-            st.caption("El punto señala la sede de instalación de esta casilla en Ubica tu Casilla 2024 "
-                       "(copia publicada por Morlan), cotejada con clave, domicilio del encarte IEEQ "
-                       "y polígono seccional. No representa el domicilio de los votantes. "
-                       "La precisión física del punto no está verificada en campo.")
+            if punto["CALIDAD"] == "domicilio_y_revision_manual":
+                st.caption("Sede de instalación cotejada por clave y domicilio del encarte IEEQ; "
+                           "la posición fue revisada visualmente en Google Maps por el usuario. "
+                           "El punto está fuera del polígono de la sección. "
+                           "No representa el domicilio de los votantes ni una verificación en campo.")
+                if punto["URL_REVISION"]:
+                    st.link_button("Abrir revisión en Google Maps", punto["URL_REVISION"])
+            else:
+                st.caption("El punto señala la sede de instalación de esta casilla en Ubica tu Casilla 2024 "
+                           "(copia publicada por Morlan), cotejada con clave, domicilio del encarte IEEQ "
+                           "y polígono seccional. No representa el domicilio de los votantes. "
+                           "La precisión física del punto no está verificada en campo.")
             st.markdown(f"**Sede:** {punto['SEDE']}  ")
             st.caption(f"Domicilio de la fuente cartográfica: {punto['DOMICILIO_FUENTE']}")
+            st.link_button("Abrir punto en Google Maps",
+                           "https://www.google.com/maps/search/?api=1&query="
+                           f"{punto['LATITUD']},{punto['LONGITUD']}")
         else:
             st.caption("El mapa delimita la sección electoral de 2024. Esta casilla no tiene un punto "
                        "que haya pasado el cotejo de clave, domicilio y polígono.")

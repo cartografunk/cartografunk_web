@@ -54,11 +54,26 @@ def test_cargar_punto_solo_si_paso_cotejo(tmp_path):
         "ID_SECCION": ["22-0001", "22-0001"], "CASILLA_ETIQUETA": ["B1", "C1"],
         "CALIDAD": ["clave_domicilio_y_poligono", "revisar_domicilio_o_poligono"],
         "LONGITUD": [-100.45, -100.46], "LATITUD": [20.55, 20.56],
-        "SEDE": ["Escuela", "Otra"], "DOMICILIO_FUENTE": ["Calle 1", "Calle 2"]
+        "SEDE": ["Escuela", "Otra"], "DOMICILIO_FUENTE": ["Calle 1", "Calle 2"],
+        "URL_REVISION": ["", ""]
     }).to_parquet(archivo)
     assert _cargar_punto_casilla(archivo, "22-0001", "B1")["SEDE"] == "Escuela"
     assert _cargar_punto_casilla(archivo, "22-0001", "C1") is None
     assert _cargar_punto_casilla(archivo, "22-0002", "B1") is None
+
+
+def test_cargar_punto_con_revision_manual(tmp_path):
+    import pandas as pd
+
+    archivo = tmp_path / "puntos.parquet"
+    pd.DataFrame({"ID_SECCION": ["22-0001"], "CASILLA_ETIQUETA": ["E1"],
+                  "CALIDAD": ["domicilio_y_revision_manual"], "LONGITUD": [-100.5001],
+                  "LATITUD": [20.55], "SEDE": ["Escuela"],
+                  "DOMICILIO_FUENTE": ["Calle Uno"],
+                  "URL_REVISION": ["https://maps.app.goo.gl/ejemplo"]}).to_parquet(archivo)
+    punto = _cargar_punto_casilla(archivo, "22-0001", "E1")
+    assert punto["CALIDAD"] == "domicilio_y_revision_manual"
+    assert punto["URL_REVISION"].endswith("ejemplo")
 
 
 def test_ficha_muestra_sede_cotejada(tmp_path):
@@ -71,7 +86,7 @@ def test_ficha_muestra_sede_cotejada(tmp_path):
     pd.DataFrame({"ID_SECCION": ["22-0001"], "CASILLA_ETIQUETA": ["B1"],
                   "CALIDAD": ["clave_domicilio_y_poligono"], "LONGITUD": [-100.45],
                   "LATITUD": [20.55], "SEDE": ["Escuela Uno"],
-                  "DOMICILIO_FUENTE": ["Calle Uno"]}).to_parquet(puntos)
+                  "DOMICILIO_FUENTE": ["Calle Uno"], "URL_REVISION": [""]}).to_parquet(puntos)
     script = (
         "from pathlib import Path\nimport pandas as pd\n"
         "import electoral.diagnostico_casillas_tab as tab\n"
