@@ -1,5 +1,14 @@
 # Preguntas del producto electoral
 
+## Las cuatro preguntas de la presentación
+
+1. **¿Dónde vas a ganar?** El resultado 2024 identifica ventajas y pérdidas observadas por casilla. El ensayo ML aún no permite afirmar ganadores futuros con confianza.
+2. **¿Por qué?** El CPV 2020 describe rasgos asociados a las clases electorales en secciones comparables; **asociación, no causa**.
+3. **¿Con qué grado de confiabilidad?** Se reportan error retrospectivo, cobertura territorial y casos indeterminados. Todavía no hay probabilidad de victoria prospectiva calibrada.
+4. **¿Dónde vale la pena enfocar esfuerzos de campaña?** Se cruzan distancia en votos, abstención, apoyo mínimo, cobertura y costo supuesto para generar una lista de revisión, no un retorno garantizado.
+
+El dashboard presenta una respuesta breve, cómo se obtuvo y un control para explorar cada pregunta. Los apartados siguientes desglosan las preguntas técnicas que alimentan esas cuatro respuestas.
+
 **Pregunta central:** ¿Dónde vale la pena concentrar esfuerzos de campaña para un partido o candidatura, y qué tipo de esfuerzo tiene sentido en cada lugar?
 
 La unidad de votos del diagnóstico local será la **casilla**; la sección agrupa las casillas y aporta el perfil CPV 2020 disponible. Querétaro es el filtro de la muestra, no una salida por estado. Las casillas especiales (S), que atienden electores en tránsito, se analizan aparte de las B/C/E residenciales. Si una extraordinaria (E) tiene asignación verificada de manzanas o localidades, podrá recibir un perfil CPV de su área de atención; su domicilio de instalación no es esa asignación.

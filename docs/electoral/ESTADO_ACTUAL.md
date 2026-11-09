@@ -1,5 +1,11 @@
 # Estado actual del módulo electoral
 
+## Dashboard para presentación, 2026-11-08
+
+La entrada directa [`electoral/dashboard_app.py`](../../electoral/dashboard_app.py) organiza el piloto de Querétaro en las cuatro preguntas acordadas: **dónde vas a ganar, por qué, con qué grado de confiabilidad y dónde enfocar esfuerzo**. La primera enlaza mapa de sedes 2024 y casillas por partido; la segunda compara cinco rasgos CPV entre clases; la tercera muestra error retrospectivo y cobertura del benchmark; la cuarta filtra motivos de revisión, acepta supuestos de costo y abre la ficha de cada casilla. La app general conserva el dashboard como pestaña y su resto de vistas. La entrada directa evita los selectores globales de otras elecciones durante la presentación. [Guion y arranque](PRESENTACION_DASHBOARD_2024.md).
+
+**Medido:** la entrada directa y los cuatro apartados abrieron con AppTest sin excepciones; el mapa agrupó 3 081 casillas de MORENA en 1 024 sedes visibles cuando el filtro es «Todas». **NO VERIFICADO:** pronóstico futuro por casilla, confianza prospectiva, eficacia de campaña y disponibilidad de los Parquet locales en otra máquina o despliegue.
+
 ## Sedes puntuales de casillas, 2026-11-08
 
 La ficha de «Dónde actuar · casillas» muestra un punto cuando la sección y la casilla 2024 coinciden entre el encarte IEEQ y una copia cartográfica de Ubica tu Casilla publicada por Morlan, el domicilio normalizado es idéntico y el punto cae dentro del polígono seccional MGE 2024. También muestra **tres E** exteriores cotejadas con coordenadas aportadas por el usuario y **73 casillas de 15 sedes** que el usuario declaró revisadas visualmente. **2 614/3 081** casillas B/C/E (en **854/953** secciones) tienen punto: 2 538 por cotejo automático, tres E con coordenada de revisión y 73 con revisión visual del usuario. Las **467** restantes no tienen punto en la fuente y muestran sólo el polígono. En `22-0782`, B1 y C1 aparecen por su domicilio del encarte 2024 (avenida Camino Real 240 y 242); «In Sano» y «Marios Pizza» son referencias históricas, sin afirmar que sigan abiertos. El punto representa la **sede de instalación**, no la residencia ni el área de atención de sus votantes. La fuente GeoPackage y el Parquet derivado permanecen locales. [Proveniencia y auditoría](DATOS.md#sedes-puntuales-de-casillas-2024).
