@@ -64,6 +64,9 @@ def comprobar(paquete: Path) -> dict:
             sedes = next(x for x in mapa["layers"] if x.get("id") == "sedes")
             if capa.value != "Sedes de casillas" or not sedes["data"]:
                 raise AssertionError("Las sedes de casillas no aparecen al abrir el mapa")
+            if not any("leyenda-mapa" in x.proto.body and "leyenda-sede" in x.proto.body
+                       for x in app.get("html")):
+                raise AssertionError("Falta la simbología visual de secciones y sedes")
         resultados[pregunta] = {"tablas": len(app.dataframe), "graficas": len(app.get("vega_lite_chart"))}
     return {"archivos_verificados": len(manifiesto["archivos"]),
             "casilla_enlazada": "22-0272 B1", "preguntas": resultados}

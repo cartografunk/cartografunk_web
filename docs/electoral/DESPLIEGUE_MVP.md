@@ -15,6 +15,9 @@ Corrección del 2026-11-09: las **1 024 sedes del filtro aparecen desde que se
 abre el mapa**, sobre la capa de secciones. «Sólo secciones» es una vista
 opcional. El smoke test comprueba que la capa `sedes` contiene datos en la
 vista inicial; una sede puede reunir varias casillas B/C/E.
+La simbología vuelve a ser visual: cuadros de color para secciones y círculos
+para sedes. Sus muestras de color salen de las mismas constantes que pintan el
+mapa; la explicación larga debajo del selector se retiró.
 
 **Medido:** el paquete aislado contiene 58 archivos cotejados por SHA-256.
 Su smoke test recorrió portada, boletas, enlace de la casilla `22-0272 B1` y
