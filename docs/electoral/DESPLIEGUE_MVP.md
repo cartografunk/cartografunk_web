@@ -11,6 +11,11 @@ mapa y abre la ficha existente. Las secciones sin punto conservan su geometría.
 El mapa usa calles de CARTO. Los números de la portada se calculan de los
 Parquet incluidos; no proceden de las maquetas de 12ui.
 
+Corrección del 2026-11-09: las **1 024 sedes del filtro aparecen desde que se
+abre el mapa**, sobre la capa de secciones. «Sólo secciones» es una vista
+opcional. El smoke test comprueba que la capa `sedes` contiene datos en la
+vista inicial; una sede puede reunir varias casillas B/C/E.
+
 **Medido:** el paquete aislado contiene 58 archivos cotejados por SHA-256.
 Su smoke test recorrió portada, boletas, enlace de la casilla `22-0272 B1` y
 las cuatro preguntas sin excepciones. En la URL pública se observaron la

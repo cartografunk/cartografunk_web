@@ -58,6 +58,12 @@ def comprobar(paquete: Path) -> dict:
             raise AssertionError(f"Error en {pregunta}: {app.exception[0].message}")
         if "Partido a explorar" not in [x.label for x in app.selectbox]:
             raise AssertionError(f"Falta el piloto en {pregunta}")
+        if pregunta == PREGUNTAS[0]:
+            capa = next(x for x in app.segmented_control if x.label == "Vista del mapa")
+            mapa = json.loads(app.get("deck_gl_json_chart")[0].proto.json)
+            sedes = next(x for x in mapa["layers"] if x.get("id") == "sedes")
+            if capa.value != "Sedes de casillas" or not sedes["data"]:
+                raise AssertionError("Las sedes de casillas no aparecen al abrir el mapa")
         resultados[pregunta] = {"tablas": len(app.dataframe), "graficas": len(app.get("vega_lite_chart"))}
     return {"archivos_verificados": len(manifiesto["archivos"]),
             "casilla_enlazada": "22-0272 B1", "preguntas": resultados}

@@ -8,6 +8,8 @@ los derivados de Ayuntamiento 2024 (953 secciones, 3 081 casillas B/C/E y
 una capa de secciones en la primera pregunta. Su color resume la mediana del
 margen partidario de las casillas, no una predicción. Elegir una sección en el
 mapa filtra sus casillas; elegir una casilla centra su sede y abre la ficha.
+Las sedes puntuales también aparecen desde el inicio; «Sólo secciones» permite
+ocultarlas cuando se necesita una lectura territorial menos densa.
 El paquete desplegado tiene 58 archivos con SHA-256 y pasó su smoke test
 aislado. [Despliegue y límites](DESPLIEGUE_MVP.md#actualización-visual-2026-11-09).
 
