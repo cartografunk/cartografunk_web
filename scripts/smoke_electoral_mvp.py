@@ -67,6 +67,15 @@ def comprobar(paquete: Path) -> dict:
             if not any("leyenda-mapa" in x.proto.body and "leyenda-sede" in x.proto.body
                        for x in app.get("html")):
                 raise AssertionError("Falta la simbología visual de secciones y sedes")
+            if not any("Ventaja amplia ≥10 pp" in x.proto.body and "Pérdida cercana ≤10 pp" in x.proto.body
+                       for x in app.get("html")):
+                raise AssertionError("La leyenda no usa las clases comunes de 10 pp")
+        if pregunta == PREGUNTAS[1] and not any("15 rasgos" in x.value for x in app.caption):
+            raise AssertionError("El perfil no aclara que compara los 15 rasgos CPV")
+        if pregunta == PREGUNTAS[3]:
+            mapas = app.get("deck_gl_json_chart")
+            if not mapas or not json.loads(mapas[0].proto.json)["layers"]:
+                raise AssertionError("Falta el mapa interactivo de esfuerzo")
         resultados[pregunta] = {"tablas": len(app.dataframe), "graficas": len(app.get("vega_lite_chart"))}
     return {"archivos_verificados": len(manifiesto["archivos"]),
             "casilla_enlazada": "22-0272 B1", "preguntas": resultados}

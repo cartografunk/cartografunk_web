@@ -46,6 +46,8 @@ Estos porcentajes de secciones y lista nominal sólo indican que **existe alguna
 
 ## CPV 2020 por sección: ECEG INEGI-INE (integración 2026-11-06)
 
+El [inventario del ECEG completo y la auditoría de variables candidatas](CPV_VARIABLES_2020.md) distingue los 226 campos oficiales de las 15 tasas inicialmente usadas en el dashboard. Las variables adicionales se incorporarán por grupos después de revisar cobertura, denominador y redundancia; el ensayo de ML existente usó sólo las 15 tasas compactas.
+
 ### Diagnóstico local IEEQ 2024 por registro de casilla
 
 `scripts/build_diagnostico_casillas.py` (`python -B -m scripts.build_diagnostico_casillas`) genera el archivo **local, no versionado** `data/electoral/ieeq_local/diagnostico_casillas_cpv_2024.parquet`. Parte de los registros IEEQ de diputaciones locales MR 2024 B/C/E marcados `INCLUIR_SECCION`, reparte cada marca de coalición en fracciones iguales entre sus partidos y une por `ID_SECCION` el ECEG 2020. Sólo conserva valores CPV en las secciones con geometría prácticamente igual (IoU ≥ 0.995) en el cruce ECEG 2021→2024. La unión nunca usa municipio o colonia. Los registros S de tránsito y A de voto anticipado quedan fuera. Las E reciben el perfil de toda la sección; su área específica de atención no está verificada.

@@ -19,6 +19,16 @@ La simbología vuelve a ser visual: cuadros de color para secciones y círculos
 para sedes. Sus muestras de color salen de las mismas constantes que pintan el
 mapa; la explicación larga debajo del selector se retiró.
 
+Actualización del 2026-11-09: la simbología usa cinco colores de ColorBrewer
+RdYlBu en orden azul → amarillo → rojo para ventaja amplia, ventaja estrecha,
+empate, pérdida cercana y pérdida lejana. Las secciones y sedes comparten la
+escala; el gris identifica falta de resultado. Los cortes seccionales del mapa
+son los mismos 10 pp del diagnóstico por casilla. La pregunta 02 ofrece grupos
+de las 15 tasas CPV y muestra las 15 en «Avanzado»; el [inventario completo del
+ECEG](CPV_VARIABLES_2020.md) se audita aparte. La pregunta 04 recuperó el mapa
+de sedes y secciones: seleccionar una fila centra el mapa y abre la ficha, y
+seleccionar un punto abre su casilla inicial.
+
 **Medido:** el paquete aislado contiene 58 archivos cotejados por SHA-256.
 Su smoke test recorrió portada, boletas, enlace de la casilla `22-0272 B1` y
 las cuatro preguntas sin excepciones. En la URL pública se observaron la
