@@ -16,6 +16,12 @@ def _datos(root: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
             pd.read_parquet(base / "votos_opcion_qro_2018_2024_seccion.parquet"))
 
 
+@st.cache_data(max_entries=1)
+def _indice_casillas(root: Path) -> pd.DataFrame:
+    return pd.read_parquet(root / "data/electoral/ieeq_local/boletas_qro_2018_2024_casilla.parquet",
+                           columns=["ANIO", "CARGO", "ID_MUNICIPIO"])
+
+
 def apoyo_minimo_directo(boletas: pd.DataFrame, votos: pd.DataFrame,
                          partido: str, municipio: int | None = None,
                          extras: pd.DataFrame | None = None) -> pd.DataFrame:
@@ -232,7 +238,14 @@ def mostrar_explorador_boletas(root: Path) -> None:
         elegido, on="ID_SECCION", how="left", validate="one_to_one")
     vista["CUOTA_PCT"] = 100 * vista.VOTOS / vista.VOTOS_VALIDOS.where(vista.VOTOS_VALIDOS.gt(0))
     a, c, d = st.columns(3)
-    a.metric("Secciones", f"{len(vista):,}")
+    if cargo in ("ayuntamiento", "gubernatura"):
+        indice = _indice_casillas(root)
+        mascara = indice.ANIO.eq(anio) & indice.CARGO.eq(cargo)
+        if municipio is not None:
+            mascara &= indice.ID_MUNICIPIO.eq(municipio)
+        a.metric("Casillas", f"{int(mascara.sum()):,}", help=f"{len(vista):,} secciones")
+    else:
+        a.metric("Secciones", f"{len(vista):,}")
     c.metric("Votos de la opción", f"{int(vista.VOTOS.sum()):,}")
     d.metric("Cuota de la opción", f"{100 * vista.VOTOS.sum() / vista.VOTOS_VALIDOS.sum():.1f} %")
     st.caption("La opción puede ser partido, coalición o candidatura independiente. "
