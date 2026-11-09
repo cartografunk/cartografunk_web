@@ -1,5 +1,6 @@
 """Explorador de boletas locales y federales conservadas por año y cargo."""
 
+import math
 from pathlib import Path
 
 import pandas as pd
@@ -7,6 +8,8 @@ import pydeck as pdk
 import streamlit as st
 
 from electoral.dashboard_casillas import _cargar_puntos
+from electoral.diagnostico_casillas_tab import _cargar_geometria_seccion
+from electoral.reparto_ieeq import COMBINACIONES, INDEPENDIENTES, PROPIOS
 
 
 @st.cache_data(max_entries=1)
@@ -83,6 +86,47 @@ def _otras_boletas_2024(root: Path, partido: str) -> pd.DataFrame:
     return pd.concat(filas, ignore_index=True) if filas else pd.DataFrame()
 
 
+def resumen_marcas_casilla(casillas: pd.DataFrame, opcion: str) -> pd.DataFrame:
+    """Compara la marca elegida con la mayor marca rival en cada casilla.
+
+    Es una comparación descriptiva de opciones impresas en la boleta. No
+    convierte marcas de coalición en votos de candidaturas ni reparte partidos.
+    """
+    opciones = [*PROPIOS[2024], *COMBINACIONES[2024], *INDEPENDIENTES[2024]]
+    if opcion not in opciones or any(col not in casillas for col in opciones):
+        raise ValueError("Faltan opciones de la boleta de Ayuntamiento 2024")
+    votos = casillas[opciones].apply(pd.to_numeric, errors="coerce").fillna(0)
+    rival = votos.drop(columns=opcion)
+    salida = casillas.copy()
+    salida["VOTOS_OPCION"] = votos[opcion].astype(int)
+    salida["RIVAL"] = rival.idxmax(axis=1)
+    salida["VOTOS_RIVAL"] = rival.max(axis=1).astype(int)
+    salida["DIFERENCIA_VOTOS"] = salida.VOTOS_OPCION - salida.VOTOS_RIVAL
+    validos = votos.sum(axis=1)
+    salida["DIFERENCIA_PP"] = (100 * salida.DIFERENCIA_VOTOS /
+                               validos.where(validos.gt(0))).round(1)
+    salida["LECTURA_RESULTADO"] = [
+        ("Sin votos válidos" if total == 0 else
+         f"Ventaja de {abs(int(d))} votos ({abs(pp):.1f} pp)" if d > 0 else
+         f"Desventaja de {abs(int(d))} votos ({abs(pp):.1f} pp)" if d < 0 else
+         "Empate en marcas")
+        for d, pp, total in zip(salida.DIFERENCIA_VOTOS,
+                                salida.DIFERENCIA_PP, validos)
+    ]
+    return salida
+
+
+def zoom_seccion(limites: tuple[float, float, float, float]) -> float:
+    """Encuadra el contorno seccional en un mapa de unos 500 × 420 píxeles."""
+    oeste, sur, este, norte = limites
+    ancho = max(este - oeste, 1e-5)
+    alto = max(norte - sur, 1e-5)
+    return min(16.0, max(8.0, min(
+        math.log2(360 * 240 / (256 * ancho)),
+        math.log2(360 * 200 / (256 * alto)),
+    )))
+
+
 def _casillas_ayuntamiento_2024(root: Path, municipio: int, opcion: str) -> None:
     path = root / "data/electoral/ieeq_local/ayuntamiento_2024_casilla.parquet"
     if not path.exists():
@@ -93,10 +137,14 @@ def _casillas_ayuntamiento_2024(root: Path, municipio: int, opcion: str) -> None
         return
     st.markdown("#### Casillas de Ayuntamiento 2024")
     st.caption("Cada fila es una casilla B/C/E. Su punto es la sede de instalación 2024; "
-               "el CPV pertenece a la sección. Selecciona una fila o un punto.")
-    cas["VOTOS_OPCION"] = pd.to_numeric(cas[opcion], errors="coerce").fillna(0)
+               "el CPV pertenece a la sección. Pulsa una casilla de la lista para centrar el mapa.")
+    cas = resumen_marcas_casilla(cas, opcion)
+    st.caption("La diferencia compara marcas de boleta en esta casilla; no es margen de candidatura.")
     puntos = _cargar_puntos(root / "data/electoral/ieeq_local/casillas_2024_puntos.parquet")
-    mapa = cas[["ID_SECCION", "CASILLA_ETIQUETA", "VOTOS_OPCION"]].merge(
+    mapa = cas[["ID_SECCION", "CASILLA_ETIQUETA", "VOTOS_OPCION", "RIVAL",
+                "VOTOS_RIVAL", "LECTURA_RESULTADO"]].copy()
+    mapa["OPCION"] = opcion
+    mapa = mapa.merge(
         puntos[["ID_SECCION", "CASILLA_ETIQUETA", "LATITUD", "LONGITUD"]],
         on=["ID_SECCION", "CASILLA_ETIQUETA"], how="inner", validate="one_to_one")
     seleccion = st.session_state.get("boletas_casilla_seleccionada")
@@ -106,6 +154,11 @@ def _casillas_ayuntamiento_2024(root: Path, municipio: int, opcion: str) -> None
     punto = mapa.loc[mapa.ID_SECCION.eq(seleccion[0])
                      & mapa.CASILLA_ETIQUETA.eq(seleccion[1])] if seleccion else mapa.iloc[0:0]
     punto = punto.iloc[0] if len(punto) else None
+    geometria = (_cargar_geometria_seccion(
+        root / "data/electoral/secciones_2024_geom.parquet", seleccion[0])
+        if seleccion and punto is None else None)
+    centro_seccion = ((geometria[1][1] + geometria[1][3]) / 2,
+                      (geometria[1][0] + geometria[1][2]) / 2) if geometria else None
     col_mapa, col_tabla = st.columns([1.2, 1], gap="medium")
     with col_mapa:
         if mapa.empty:
@@ -124,39 +177,70 @@ def _casillas_ayuntamiento_2024(root: Path, municipio: int, opcion: str) -> None
                                        get_fill_color=[255, 255, 255, 35],
                                        get_line_color=[255, 255, 255, 255],
                                        line_width_min_pixels=3, stroked=True))
+            elif geometria is not None:
+                capas.append(pdk.Layer("GeoJsonLayer", id="seccion_activa", data=geometria[0],
+                                       pickable=False, filled=True, stroked=True,
+                                       get_fill_color=[248, 170, 74, 38],
+                                       get_line_color=[255, 255, 255, 240],
+                                       get_line_width=3, line_width_min_pixels=2))
             evento_mapa = st.pydeck_chart(
-                pdk.Deck(layers=capas, map_style=None,
+                pdk.Deck(layers=capas, map_style=pdk.map_styles.CARTO_DARK,
                          initial_view_state=pdk.ViewState(
-                             latitude=float(punto.LATITUD) if punto is not None else 20.6,
-                             longitude=float(punto.LONGITUD) if punto is not None else -100.4,
-                             zoom=13.5 if punto is not None else 10),
-                         tooltip={"text": "Sección {ID_SECCION} · casilla {CASILLA_ETIQUETA}\n"
-                                          "Votos de opción: {VOTOS_OPCION}"}),
+                             latitude=float(punto.LATITUD) if punto is not None else
+                             centro_seccion[0] if centro_seccion else 20.6,
+                             longitude=float(punto.LONGITUD) if punto is not None else
+                             centro_seccion[1] if centro_seccion else -100.4,
+                             zoom=13.5 if punto is not None else
+                             zoom_seccion(geometria[1]) if geometria else 10),
+                         tooltip={"html": "<b>Sección {ID_SECCION} · casilla {CASILLA_ETIQUETA}</b><br/>"
+                                          "{OPCION}: {VOTOS_OPCION} votos<br/>"
+                                          "{RIVAL}: {VOTOS_RIVAL} votos<br/>"
+                                          "{LECTURA_RESULTADO}<br/>"
+                                          "<small>Comparación de marcas, no de candidaturas</small>",
+                                  "style": {"backgroundColor": "#151523", "color": "#ffffff",
+                                            "fontSize": "13px", "padding": "10px"}}),
                 height=420, on_select="rerun", selection_mode="single-object",
                 key=f"boletas_mapa_{municipio}_{opcion}_{seleccion}",
                 alt="Casillas de Ayuntamiento 2024; selecciona una para verla en la tabla")
             objetos = evento_mapa.selection.objects.get("casillas", [])
             if objetos:
                 clave = (str(objetos[0]["ID_SECCION"]), str(objetos[0]["CASILLA_ETIQUETA"]))
-                if clave != st.session_state.get("boletas_ultimo_click_mapa"):
-                    st.session_state["boletas_ultimo_click_mapa"] = clave
+                if clave != seleccion:
                     st.session_state["boletas_casilla_seleccionada"] = clave
+                    st.session_state[f"boletas_buscar_{municipio}"] = clave[0]
+                    st.session_state.pop(f"boletas_pagina_{municipio}_{opcion}", None)
                     st.rerun()
     with col_tabla:
-        tabla = cas[["ID_SECCION", "CASILLA_ETIQUETA", "VOTOS_OPCION", "TOTAL_VOTOS",
-                     "LISTA_NOMINAL"]].copy()
-        tabla.insert(0, "", ["●" if seleccion == (s, c) else "" for s, c in
-                              zip(tabla.ID_SECCION, tabla.CASILLA_ETIQUETA)])
-        evento_tabla = st.dataframe(tabla, hide_index=True, width="stretch", height=420,
-                                    on_select="rerun", selection_mode="single-row",
-                                    key=f"boletas_tabla_{municipio}_{opcion}",
-                                    alt="Casillas; selecciona una para centrar el mapa")
-        indices = evento_tabla.selection.rows
-        if indices and 0 <= indices[0] < len(cas):
-            fila = cas.iloc[indices[0]]
+        busqueda = st.text_input("Buscar sección o casilla", key=f"boletas_buscar_{municipio}",
+                                 placeholder="Ej. 22-0269 o B1")
+        visibles = cas.loc[
+            cas.ID_SECCION.astype(str).str.contains(busqueda, case=False, regex=False)
+            | cas.CASILLA_ETIQUETA.astype(str).str.contains(busqueda, case=False, regex=False)
+        ] if busqueda else cas
+        por_pagina = 15
+        paginas = max(1, (len(visibles) + por_pagina - 1) // por_pagina)
+        clave_pagina = f"boletas_pagina_{municipio}_{opcion}"
+        if clave_pagina in st.session_state and int(st.session_state[clave_pagina]) > paginas:
+            del st.session_state[clave_pagina]
+        pagina_seleccionada = 1
+        if seleccion:
+            posiciones = visibles.index[
+                visibles.ID_SECCION.eq(seleccion[0])
+                & visibles.CASILLA_ETIQUETA.eq(seleccion[1])
+            ]
+            if len(posiciones):
+                pagina_seleccionada = visibles.index.get_loc(posiciones[0]) // por_pagina + 1
+        pagina = st.number_input("Página de casillas", min_value=1, max_value=paginas,
+                                 value=pagina_seleccionada, step=1, key=clave_pagina)
+        st.caption(f"{len(visibles):,} casillas · página {pagina}/{paginas} · pulsa una fila")
+        for fila in visibles.iloc[(pagina - 1) * por_pagina:pagina * por_pagina].itertuples():
             clave = (str(fila.ID_SECCION), str(fila.CASILLA_ETIQUETA))
-            if clave != st.session_state.get("boletas_ultimo_click_tabla"):
-                st.session_state["boletas_ultimo_click_tabla"] = clave
+            marca = "● " if clave == seleccion else ""
+            etiqueta = (f"{marca}{fila.ID_SECCION} · {fila.CASILLA_ETIQUETA}   "
+                        f"{fila.VOTOS_OPCION} votos de {opcion}   "
+                        f"{fila.LECTURA_RESULTADO}")
+            if st.button(etiqueta, key=f"boletas_fila_{municipio}_{opcion}_{fila.ID_SECCION}_{fila.CASILLA_ETIQUETA}",
+                         use_container_width=True):
                 st.session_state["boletas_casilla_seleccionada"] = clave
                 st.rerun()
     if seleccion:
@@ -164,9 +248,12 @@ def _casillas_ayuntamiento_2024(root: Path, municipio: int, opcion: str) -> None
                        & cas.CASILLA_ETIQUETA.eq(seleccion[1])]
         if len(fila):
             st.info(f"Sección {seleccion[0]} · casilla {seleccion[1]} · "
-                    f"{int(fila.iloc[0].VOTOS_OPCION)} votos de {opcion}. "
+                    f"{int(fila.iloc[0].VOTOS_OPCION)} votos de {opcion}; "
+                    f"{int(fila.iloc[0].VOTOS_RIVAL)} de {fila.iloc[0].RIVAL}. "
+                    f"{fila.iloc[0].LECTURA_RESULTADO}. "
                     + ("Sede marcada y mapa centrado." if punto is not None
-                       else "Sin sede puntual cotejada; se conserva la clave de sección."))
+                       else "Sin sede puntual cotejada; mapa centrado en la sección." if geometria
+                       else "Sin sede puntual ni geometría disponible."))
 
 
 def _casillas_historicas(root: Path, anio: int, cargo: str,

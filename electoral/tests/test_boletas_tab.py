@@ -1,6 +1,7 @@
 import pandas as pd
 
-from electoral.boletas_tab import apoyo_minimo_directo
+from electoral.boletas_tab import apoyo_minimo_directo, resumen_marcas_casilla, zoom_seccion
+from electoral.reparto_ieeq import COMBINACIONES, INDEPENDIENTES, PROPIOS
 from scripts.build_ieeq_boletas import normalizar_boleta
 
 
@@ -46,3 +47,26 @@ def test_apoyo_minimo_usa_todas_las_boletas_sin_sumarlas():
     piso = apoyo_minimo_directo(b, v, "PAN", 14, extras).iloc[0]
     assert piso.APOYO_MINIMO_DIRECTO_PCT == 25
     assert piso.PCT_DIP_FEDERAL == 55
+
+
+def test_resumen_marcas_muestra_votos_rival_y_diferencia_sin_imputar_coalicion():
+    opciones = [*PROPIOS[2024], *COMBINACIONES[2024], *INDEPENDIENTES[2024]]
+    datos = {opcion: [0, 0, 0] for opcion in opciones}
+    datos.update({"PAN": [40, 25, 10], "MORENA": [30, 50, 10],
+                  "PAN-PRI": [20, 0, 0]})
+    salida = resumen_marcas_casilla(pd.DataFrame(datos), "PAN")
+    assert salida.VOTOS_OPCION.tolist() == [40, 25, 10]
+    assert salida.RIVAL.tolist() == ["MORENA", "MORENA", "MORENA"]
+    assert salida.VOTOS_RIVAL.tolist() == [30, 50, 10]
+    assert salida.DIFERENCIA_VOTOS.tolist() == [10, -25, 0]
+    assert salida.DIFERENCIA_PP.tolist() == [11.1, -33.3, 0.0]
+    assert salida.LECTURA_RESULTADO.tolist() == [
+        "Ventaja de 10 votos (11.1 pp)",
+        "Desventaja de 25 votos (33.3 pp)",
+        "Empate en marcas",
+    ]
+
+
+def test_zoom_seccion_encuadra_secciones_urbanas_y_rurales():
+    assert 15 < zoom_seccion((-100.451, 20.640, -100.444, 20.646)) < 16
+    assert 9 < zoom_seccion((-100.6, 20.5, -100.4, 20.7)) < 13
