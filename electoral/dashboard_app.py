@@ -4,6 +4,7 @@ from pathlib import Path
 
 import streamlit as st
 
+from electoral.boletas_tab import mostrar_explorador_boletas
 from electoral.dashboard_casillas import mostrar_dashboard_casillas
 
 
@@ -18,4 +19,8 @@ st.html("""
 </style>
 <header class="presentacion-header">CARTOGRAFUNK / DIAGNÓSTICO ELECTORAL</header>
 """)
-mostrar_dashboard_casillas(22, ROOT)
+explorador, diagnostico = st.tabs(["Boletas y apoyo mínimo", "Cuatro preguntas · piloto diputaciones"])
+with explorador:
+    mostrar_explorador_boletas(ROOT)
+with diagnostico:
+    mostrar_dashboard_casillas(22, ROOT)

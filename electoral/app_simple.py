@@ -34,6 +34,7 @@ from electoral.exportacion import construir_excel
 from electoral.fidelidad import PARTIDOS, analizar_fidelidad, panel
 from electoral.forecasting_tab import mostrar_diagnostico_forecast
 from electoral.dashboard_casillas import mostrar_dashboard_casillas
+from electoral.boletas_tab import mostrar_explorador_boletas
 from electoral.limites import limites_estado
 from electoral.precalcular_fidelidad import SALIDAS
 from electoral.priorizacion import cubrir_meta, meta_distrital, preparar_priorizacion, presupuestar
@@ -711,4 +712,11 @@ with tab_forecast:
 
 with tab_casillas:
     if tab_casillas.open:
-        mostrar_dashboard_casillas(estado, ROOT)
+        if estado == 22:
+            boletas, cuatro = st.tabs(["Boletas y apoyo mínimo", "Cuatro preguntas · piloto diputaciones"])
+            with boletas:
+                mostrar_explorador_boletas(ROOT)
+            with cuatro:
+                mostrar_dashboard_casillas(estado, ROOT)
+        else:
+            mostrar_dashboard_casillas(estado, ROOT)

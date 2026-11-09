@@ -96,6 +96,13 @@ def _patron(base: pd.DataFrame, puntos: pd.DataFrame) -> None:
     else:
         vista = base.copy()
     sedes = preparar_sedes(vista, puntos)
+    seleccion = st.session_state.get("dashboard_casilla_seleccionada")
+    punto_seleccionado = None
+    if seleccion:
+        coincide = puntos.loc[puntos.ID_SECCION.eq(seleccion[0])
+                              & puntos.CASILLA_ETIQUETA.eq(seleccion[1])]
+        if not coincide.empty:
+            punto_seleccionado = coincide.iloc[0]
     a, b, c = st.columns(3)
     a.metric("Casillas en vista", f"{len(vista):,}")
     b.metric("Secciones en vista", f"{vista.ID_SECCION.nunique():,}")
@@ -115,16 +122,34 @@ def _patron(base: pd.DataFrame, puntos: pd.DataFrame) -> None:
                 radius_min_pixels=5, radius_max_pixels=13,
                 get_fill_color="COLOR", get_line_color=[22, 20, 30, 255],
                 line_width_min_pixels=1, stroked=True, pickable=True)
+            capas = [capa]
+            if punto_seleccionado is not None:
+                capas.append(pdk.Layer(
+                    "ScatterplotLayer", id="seleccion", pickable=False,
+                    data=[{"LONGITUD": float(punto_seleccionado.LONGITUD),
+                           "LATITUD": float(punto_seleccionado.LATITUD)}],
+                    get_position="[LONGITUD, LATITUD]", get_radius=110,
+                    radius_min_pixels=12, radius_max_pixels=20,
+                    get_fill_color=[255, 255, 255, 45],
+                    get_line_color=[255, 255, 255, 255], line_width_min_pixels=3,
+                    stroked=True))
+            lat = float(punto_seleccionado.LATITUD) if punto_seleccionado is not None else 20.64
+            lon = float(punto_seleccionado.LONGITUD) if punto_seleccionado is not None else -100.31
+            zoom = 13.5 if punto_seleccionado is not None else 9.2
             evento_mapa = st.pydeck_chart(
-                pdk.Deck(layers=[capa], map_style=None,
-                         initial_view_state=pdk.ViewState(latitude=20.64, longitude=-100.31, zoom=9.2),
+                pdk.Deck(layers=capas, map_style=None,
+                         initial_view_state=pdk.ViewState(latitude=lat, longitude=lon, zoom=zoom),
                          tooltip={"text": "Sección {ID_SECCION}\nCasillas {CASILLAS}\n{SENAL}"}),
                 height=420, on_select="rerun", selection_mode="single-object",
-                key=f"dashboard_mapa_{modo}",
+                key=f"dashboard_mapa_{modo}_{seleccion}",
                 alt="Sedes de casillas 2024 coloreadas por resultado cercano o ventaja estrecha")
             objetos = evento_mapa.selection.objects.get("sedes", [])
             if objetos:
                 elegido_mapa = (str(objetos[0]["ID_SECCION"]), str(objetos[0]["CASILLA_INICIAL"]))
+            if elegido_mapa and elegido_mapa != st.session_state.get("dashboard_ultimo_click_mapa"):
+                st.session_state["dashboard_ultimo_click_mapa"] = elegido_mapa
+                st.session_state["dashboard_casilla_seleccionada"] = elegido_mapa
+                st.rerun()
     with derecha:
         st.markdown("**Casillas del filtro**")
         tabla = vista[["ID_SECCION", "CASILLA_ETIQUETA", "CLASE", "MARGEN_PP",
@@ -132,6 +157,8 @@ def _patron(base: pd.DataFrame, puntos: pd.DataFrame) -> None:
             "ID_SECCION": "Sección", "CASILLA_ETIQUETA": "Casilla", "CLASE": "Resultado",
             "MARGEN_PP": "Margen (pp)", "VOTOS_PARA_LIDERAR": "Votos para liderar",
         }).reset_index(drop=True)
+        tabla.insert(0, "", ["●" if seleccion == (s, c) else "" for s, c in
+                              zip(tabla["Sección"], tabla["Casilla"])])
         tabla["Resultado"] = tabla["Resultado"].map(NOMBRES_CLASE).fillna("Sin clasificar")
         evento_tabla = st.dataframe(
             tabla, hide_index=True, width="stretch", height=420,
@@ -144,10 +171,14 @@ def _patron(base: pd.DataFrame, puntos: pd.DataFrame) -> None:
     indices = evento_tabla.selection.rows
     if indices and 0 <= indices[0] < len(vista):
         fila = vista.reset_index(drop=True).iloc[indices[0]]
-        _mostrar_ficha_casilla(fila, base)
-    elif elegido_mapa:
-        fila = vista.loc[vista.ID_SECCION.eq(elegido_mapa[0])
-                         & vista.CASILLA_ETIQUETA.eq(elegido_mapa[1])]
+        clave = (str(fila.ID_SECCION), str(fila.CASILLA_ETIQUETA))
+        if clave != st.session_state.get("dashboard_ultimo_click_tabla"):
+            st.session_state["dashboard_ultimo_click_tabla"] = clave
+            st.session_state["dashboard_casilla_seleccionada"] = clave
+            st.rerun()
+    if seleccion:
+        fila = vista.loc[vista.ID_SECCION.eq(seleccion[0])
+                         & vista.CASILLA_ETIQUETA.eq(seleccion[1])]
         if len(fila) == 1:
             _mostrar_ficha_casilla(fila.iloc[0], base)
 
