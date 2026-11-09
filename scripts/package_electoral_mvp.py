@@ -74,6 +74,15 @@ def preparar(destino: Path) -> dict:
         "streamlit==1.66.1\npandas==2.2.3\nnumpy==2.1.1\n"
         "pyarrow==24.0.0\ngeopandas==1.1.4\nshapely==2.1.2\n"
         "pydeck==0.9.3\naltair==6.3.0\n", encoding="utf-8")
+    tema = destino / ".streamlit/config.toml"
+    tema.parent.mkdir(parents=True, exist_ok=True)
+    tema.write_text(
+        '[theme]\nbase = "dark"\nprimaryColor = "#26baff"\n'
+        'backgroundColor = "#031b2c"\nsecondaryBackgroundColor = "#062b45"\n'
+        'textColor = "#eaf5ff"\nlinkColor = "#61d5ff"\n'
+        'borderColor = "#115076"\n'
+        'font = "Noto Sans"\nheadingFont = "Noto Sans"\n',
+        encoding="utf-8")
     (destino / ".python-version").write_text("3.12\n", encoding="utf-8")
     (destino / "README.md").write_text(
         "# Cartografunk · MVP electoral Querétaro\n\n"

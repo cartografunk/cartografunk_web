@@ -36,18 +36,24 @@ def comprobar(paquete: Path) -> dict:
                             default_timeout=180).run()
     if app.exception:
         raise AssertionError(f"Error en portada: {app.exception[0].message}")
-    if not app.button or "22-0269" not in app.button[0].label:
+    if not any("3,081" in x.value for x in app.metric):
+        raise AssertionError("La portada no mostró el inventario medido")
+    app.segmented_control[0].set_value("Boletas y apoyo mínimo").run()
+    if app.exception or not any("22-0269" in x.label for x in app.button):
         raise AssertionError("No se mostró la lista de casillas")
-    app.button[4].click().run()
+    casilla = next((x for x in app.button if "22-0272 · B1" in x.label), None)
+    if casilla is None:
+        raise AssertionError("No se encontró 22-0272 B1 en la lista")
+    casilla.click().run()
     if app.exception or app.session_state["boletas_casilla_seleccionada"] != ("22-0272", "B1"):
         raise AssertionError("La casilla no se enlazó con el mapa")
     if not any("Sede marcada y mapa centrado" in x.value for x in app.info):
         raise AssertionError("La ficha no confirmó el zoom a la sede")
 
     resultados = {}
+    app.segmented_control[0].set_value("Cuatro preguntas").run()
     for pregunta in PREGUNTAS:
-        app.session_state["dashboard_preguntas"] = pregunta
-        app.run()
+        app.segmented_control[1].set_value(pregunta).run()
         if app.exception:
             raise AssertionError(f"Error en {pregunta}: {app.exception[0].message}")
         if "Partido a explorar" not in [x.label for x in app.selectbox]:

@@ -1,5 +1,19 @@
 # Estado actual del módulo electoral
 
+## Diseño de presentación publicado, 2026-11-09
+
+La app electoral pública usa ahora una portada con inventario calculado desde
+los derivados de Ayuntamiento 2024 (953 secciones, 3 081 casillas B/C/E y
+2 614 casillas con punto de sede), navegación a boletas y cuatro preguntas, y
+una capa de secciones en la primera pregunta. Su color resume la mediana del
+margen partidario de las casillas, no una predicción. Elegir una sección en el
+mapa filtra sus casillas; elegir una casilla centra su sede y abre la ficha.
+El paquete desplegado tiene 58 archivos con SHA-256 y pasó su smoke test
+aislado. [Despliegue y límites](DESPLIEGUE_MVP.md#actualización-visual-2026-11-09).
+
+**NO VERIFICADO:** probabilidad de victoria futura, retorno de campaña,
+precisión de cada sede en campo y rendimiento con usuarios simultáneos.
+
 ## MVP en Streamlit Cloud, 2026-11-08
 
 El dashboard de presentación está publicado en [cartografunk-electoral.streamlit.app](https://cartografunk-electoral.streamlit.app/) desde la rama separada `electoral-mvp` de `cartografunk/cartografunk-streamlit`. El explorador público de la rama `main` no se modificó. El paquete incluye derivados de Querétaro, no el Parquet nacional CPV ni ZIP originales. **Medido:** 134 pruebas electorales aprobadas, smoke test aislado de las cuatro preguntas y comprobación en la URL pública del clic casilla→mapa, perfiles CPV, confianza y esfuerzo. **NO VERIFICADO:** disponibilidad continua, carga simultánea y pronóstico futuro. [Detalles y reproducción](DESPLIEGUE_MVP.md).

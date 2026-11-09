@@ -1,5 +1,29 @@
 # Despliegue del MVP electoral
 
+## Actualización visual, 2026-11-09
+
+La rama `electoral-mvp` se actualizó en el commit `eede36f` con una portada
+ejecutiva, navegación directa a las cuatro preguntas y un tema azul propio del
+paquete. La primera pregunta dibuja las secciones 2024 por la **mediana del
+margen partidario de sus casillas**; al seleccionar una sección, la tabla se
+filtra y aparecen sus sedes puntuales. La selección de una casilla centra el
+mapa y abre la ficha existente. Las secciones sin punto conservan su geometría.
+El mapa usa calles de CARTO. Los números de la portada se calculan de los
+Parquet incluidos; no proceden de las maquetas de 12ui.
+
+**Medido:** el paquete aislado contiene 58 archivos cotejados por SHA-256.
+Su smoke test recorrió portada, boletas, enlace de la casilla `22-0272 B1` y
+las cuatro preguntas sin excepciones. En la URL pública se observaron la
+portada con 953 secciones, 3 081 casillas y 2 614 puntos de sede, y la capa
+seccional del mapa. En navegador local, clic en polígono filtró la tabla a
+`22-0987`; clic en `B1` centró la sede y abrió su ficha.
+
+**NO VERIFICADO:** concurrencia, continuidad del servicio, probabilidad
+electoral futura, eficacia de las acciones y precisión de cada sede en campo.
+La suite completa de esta máquina se interrumpió en una prueba preexistente de
+correlaciones (`test_estadisticas_fidelidad.py`) por un fallo nativo de NumPy
+`0xc06d007f`; la prueba aislada de la interfaz y el smoke del paquete pasaron.
+
 **App:** https://cartografunk-electoral.streamlit.app/
 
 **Código y datos derivados:** `cartografunk/cartografunk-streamlit`, rama `electoral-mvp`, commit `0dd9060`.
