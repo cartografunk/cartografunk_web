@@ -1,5 +1,9 @@
 # Estado actual del módulo electoral
 
+## MVP en Streamlit Cloud, 2026-11-08
+
+El dashboard de presentación está publicado en [cartografunk-electoral.streamlit.app](https://cartografunk-electoral.streamlit.app/) desde la rama separada `electoral-mvp` de `cartografunk/cartografunk-streamlit`. El explorador público de la rama `main` no se modificó. El paquete incluye derivados de Querétaro, no el Parquet nacional CPV ni ZIP originales. **Medido:** 134 pruebas electorales aprobadas, smoke test aislado de las cuatro preguntas y comprobación en la URL pública del clic casilla→mapa, perfiles CPV, confianza y esfuerzo. **NO VERIFICADO:** disponibilidad continua, carga simultánea y pronóstico futuro. [Detalles y reproducción](DESPLIEGUE_MVP.md).
+
 ## Panel de boletas por cargo, 2026-11-08
 
 El dashboard de cuatro preguntas creado inicialmente usa **diputaciones locales 2024**, no la boleta presidencial federal. Ese piloto no representa todavía un pronóstico para gubernatura ni presidencia municipal. Se añadió un explorador general de boletas que conserva año, cargo, municipio, sección y opción de voto: ayuntamientos 2018/2021/2024, gubernatura 2021 y Senado 2024. Las fuentes 2021 de [gubernatura](https://ieeq.mx/contenido/elecciones/2020_2021/resultados/2021_Gubernatura.xlsx) y [ayuntamientos](https://ieeq.mx/contenido/elecciones/2020_2021/resultados/2021_Ayuntamiento.xlsx) se descargaron del IEEQ. Los datos locales se generan con `scripts/build_ieeq_boletas.py` en dos Parquet no versionados. El explorador permite filtrar cualquier opción y, en ayuntamientos, municipio; Querétaro capital es la selección inicial, no una restricción del modelo.

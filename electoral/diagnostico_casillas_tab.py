@@ -183,10 +183,11 @@ def mostrar_diagnostico_casillas(estado: int, root: Path) -> None:
         st.info("Selecciona Querétaro en el filtro de muestra para abrir este piloto.")
         return
     carpeta = root / "data/electoral/ieeq_local"
-    necesarios = (carpeta / "dip_local_mr_2024_casilla.parquet",
-                  carpeta / "crosswalk_qro_2018_2021_2024_referencias.parquet",
-                  root / "data/electoral/cpv_2020_seccion.parquet")
-    if not all(p.exists() for p in necesarios):
+    preparado = carpeta / "diagnostico_casillas_cpv_2024.parquet"
+    fuentes = (carpeta / "dip_local_mr_2024_casilla.parquet",
+               carpeta / "crosswalk_qro_2018_2021_2024_referencias.parquet",
+               root / "data/electoral/cpv_2020_seccion.parquet")
+    if not preparado.exists() and not all(p.exists() for p in fuentes):
         st.info("Faltan archivos locales IEEQ, cruce cartográfico o CPV; el diagnóstico se oculta.")
         return
     partido = st.selectbox("Partido", PARTIDOS_COMUNES, index=PARTIDOS_COMUNES.index("MORENA"),

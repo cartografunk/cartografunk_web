@@ -370,10 +370,11 @@ def mostrar_dashboard_casillas(estado: int, root: Path) -> None:
         st.info("Selecciona Querétaro en el filtro de muestra para explorar este piloto.")
         return
     carpeta = root / "data/electoral/ieeq_local"
-    necesarios = (carpeta / "dip_local_mr_2024_casilla.parquet",
-                  carpeta / "crosswalk_qro_2018_2021_2024_referencias.parquet",
-                  root / "data/electoral/cpv_2020_seccion.parquet")
-    if not all(path.exists() for path in necesarios):
+    preparado = carpeta / "diagnostico_casillas_cpv_2024.parquet"
+    fuentes = (carpeta / "dip_local_mr_2024_casilla.parquet",
+               carpeta / "crosswalk_qro_2018_2021_2024_referencias.parquet",
+               root / "data/electoral/cpv_2020_seccion.parquet")
+    if not preparado.exists() and not all(path.exists() for path in fuentes):
         st.info("Faltan datos locales IEEQ, CPV o cruce cartográfico para abrir el dashboard.")
         return
     with filtro:
