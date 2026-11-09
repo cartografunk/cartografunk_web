@@ -72,6 +72,8 @@ def comprobar(paquete: Path) -> dict:
                 raise AssertionError("La leyenda no usa las clases comunes de 10 pp")
         if pregunta == PREGUNTAS[1] and not any("15 rasgos" in x.value for x in app.caption):
             raise AssertionError("El perfil no aclara que compara los 15 rasgos CPV")
+        if pregunta == PREGUNTAS[2] and not any("247 campos" in x.value for x in app.caption):
+            raise AssertionError("No aparece la nueva comparación de ML con CPV ampliado")
         if pregunta == PREGUNTAS[3]:
             mapas = app.get("deck_gl_json_chart")
             if not mapas or not json.loads(mapas[0].proto.json)["layers"]:

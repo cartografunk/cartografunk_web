@@ -1,5 +1,17 @@
 # Estado actual del módulo electoral
 
+## Corrida ML con CPV ampliado, 2026-11-09
+
+Se repitió el ensayo retrospectivo de Querétaro sobre las mismas 788 secciones
+comparables: árbol con 15 tasas CPV, 27 tasas y 247 entradas (27 tasas más 220
+campos censales no geográficos). Sus errores medios de cuota fueron 5.89, 5.97
+y 5.86 pp; Ridge sin CPV conserva 5.37 pp. La pregunta 03 de la app publicada
+muestra la comparación por partido. [Resultados y límites](BENCHMARK_ML_CPV_EXPANDIDO_2024.md).
+
+**NO VERIFICADO:** que cualquiera de esos modelos anticipe 2027 o funcione en
+otras entidades. La mejora de 0.03 pp del árbol con 247 entradas frente al de
+15 no acredita utilidad prospectiva.
+
 ## Diseño de presentación publicado, 2026-11-09
 
 La app electoral pública usa ahora una portada con inventario calculado desde

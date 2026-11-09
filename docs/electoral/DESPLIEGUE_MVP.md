@@ -1,5 +1,11 @@
 # Despliegue del MVP electoral
 
+Actualización ML del 9-nov-2026: el paquete añade el JSON resumido de la
+[corrida CPV ampliada](BENCHMARK_ML_CPV_EXPANDIDO_2024.md) (59 archivos
+verificados por SHA-256, 2 719 108 bytes). La pregunta 03 compara por partido
+Ridge sin CPV con árboles de 15, 27 y 247 entradas censales. No se subieron el
+ECEG completo ni el Parquet de predicciones por sección.
+
 ## Actualización visual, 2026-11-09
 
 La rama `electoral-mvp` se actualizó en el commit `eede36f` con una portada

@@ -29,6 +29,7 @@ LOCALES = (
     "perfilamiento_cpv_2024.json",
     "benchmark_partidos_2024.json",
     "benchmark_ml_cpv_2024.json",
+    "benchmark_ml_cpv_expandido_2024.json",
     "dip_local_mr_2024_seccion_bce.parquet",
 )
 
