@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Taller de Cartografía Creativa · Cartografunk</title>
-<meta name="description" content="Taller práctico para transformar ideas, datos y lugares en mapas visuales.">
+<title>Cursos · Cartografunk</title>
+<meta name="description" content="Cursos de Cartografunk: cartografía creativa y agentes de IA para avanzar tu tesis.">
 <link rel="canonical" href="https://cartografunk.com/cursos.html">
 <link rel="icon" type="image/webp" href="/assets/img/favicon.webp">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@300;400;500&family=Fraunces:ital,wght@0,300;0,700;1,300&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/styles.css?v=pages-repair-2">
+<link rel="stylesheet" href="assets/css/styles.css?v=ai-course-1">
 </head>
 <body class="course-page-theme">
 <nav aria-label="Navegación principal">
@@ -27,6 +27,7 @@
 <main>
 <section id="cursos" class="course-page">
   <p class="s-tag section-kicker">Cursos</p>
+  <nav class="course-jump" aria-label="Cursos disponibles"><a href="#cursos">Cartografía creativa</a><a href="#agentes-ia-tesis">Agentes de IA para mi tesis</a></nav>
   <h1 class="s-title section-title">TALLER DE<br><em>CARTOGRAFÍA</em><br>CREATIVA</h1>
   <div class="curso-wrap"><div>
   <p class="curso-lead text-lead">
@@ -50,11 +51,50 @@
   <h3>Sesión 3 · Narrativa y composición</h3><ul><li>Construcción de narrativas con datos</li><li>Escala, grid y composición</li><li>Presentación de mapas finales</li></ul></div></div></div></div>
   <div class="course-flow"><h3>Flujo de inscripción</h3><div class="course-flow-steps content-grid"><div class="course-flow-step"><span>01</span>Aplica al taller</div><div class="course-flow-step"><span>02</span>Revisamos horarios</div><div class="course-flow-step"><span>03</span>Confirmas tu lugar</div><div class="course-flow-step"><span>04</span>Recibes materiales</div></div></div>
   <form id="courseForm" class="course-form"><h2>Aplica al taller</h2><p>Cuéntanos sobre ti. Los campos con * son obligatorios.</p><div class="form-row"><div class="form-group"><label for="courseName">Nombre *</label><input id="courseName" name="nombre" required></div><div class="form-group"><label for="courseEmail">Email *</label><input id="courseEmail" name="email" type="email" required></div></div><div class="form-row"><div class="form-group"><label for="courseInstagram">Instagram</label><input id="courseInstagram" name="instagram"></div><div class="form-group"><label for="courseWhatsapp">WhatsApp</label><input id="courseWhatsapp" name="whatsapp" required></div></div><div class="form-row"><div class="form-group"><label for="courseExperience">Experiencia con QGIS *</label><select id="courseExperience" name="experiencia_qgis" required><option value="">Selecciona una opción</option><option>Nunca</option><option>Lo abrí una vez</option><option>Nivel básico</option><option>Nivel intermedio</option><option>Nivel avanzado</option></select></div><div class="form-group"><label for="courseSchedule">Horario preferido *</label><select id="courseSchedule" name="horario_preferido" required><option value="">Selecciona una opción</option><option>Entre semana - Matutino</option><option>Entre semana - Vespertino</option><option>Sábado</option><option>Domingo</option></select></div></div><div class="form-group"><label for="courseDiscover">¿Qué te gustaría descubrir?</label><textarea id="courseDiscover" name="que_descubrir"></textarea></div><div class="form-group"><label for="courseWord">Primera palabra que asocias con los mapas</label><input id="courseWord" name="primera_palabra"></div><div class="form-group"><label for="courseBelief">¿Qué creencia te gustaría poner a prueba?</label><textarea id="courseBelief" name="creencia_a_probar"></textarea></div><button type="submit" class="btn btn-primary">Enviar solicitud</button><p id="courseFormStatus" role="status" aria-live="polite"></p></form>
+</section>
+<section id="agentes-ia-tesis" class="course-page course-page--ai" aria-labelledby="aiCourseTitle">
+  <p class="s-tag section-kicker">Nuevo curso</p>
+  <h2 id="aiCourseTitle" class="s-title section-title">AGENTES DE IA<br><em>PARA HACER MI TESIS</em><br>Y TODO LO QUE NO QUIERO HACER</h2>
+  <p class="curso-lead text-lead">Aprende a organizar tareas de investigación y a crear agentes de IA que te ayuden a avanzar. Tú decides qué delegar, revisas los resultados y conservas la autoría de tu trabajo.</p>
+  <div class="curso-meta chip-list"><span class="chip">3 sesiones</span><span class="chip">$1,500 MXN por el curso completo</span></div>
+  <div class="ai-course-intro">
+    <p>¿Te interesa participar? Déjanos tus datos y te contactaremos con los detalles de las sesiones y el pago.</p>
+    <p>Si el costo es una barrera, puedes solicitar una beca y proponernos un acuerdo que funcione para ambas partes.</p>
+  </div>
+  <form id="aiCourseForm" class="course-form" aria-labelledby="aiFormTitle">
+    <h3 id="aiFormTitle">Regístrate al curso</h3>
+    <p>Los campos con * son obligatorios. Enviar el formulario no reserva ni cobra tu lugar.</p>
+    <div class="form-row">
+      <div class="form-group"><label for="aiName">Nombre *</label><input id="aiName" name="nombre" autocomplete="name" required maxlength="120"></div>
+      <div class="form-group"><label for="aiAge">Edad *</label><input id="aiAge" name="edad" type="number" inputmode="numeric" min="1" max="120" required></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label for="aiResidence">Residencia (ciudad y país) *</label><input id="aiResidence" name="residencia" autocomplete="address-level2" required maxlength="160"></div>
+      <div class="form-group"><label for="aiWhatsapp">WhatsApp *</label><input id="aiWhatsapp" name="whatsapp" type="tel" autocomplete="tel" required maxlength="30"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label for="aiInstagram">Instagram (opcional)</label><input id="aiInstagram" name="instagram" autocomplete="off" maxlength="120"></div>
+      <div class="form-group"><label for="aiEmail">Correo electrónico *</label><input id="aiEmail" name="email" type="email" autocomplete="email" required maxlength="254"></div>
+    </div>
+    <fieldset class="scholarship-box">
+      <legend>Elige una opción *</legend>
+      <label class="scholarship-toggle" for="aiFullPrice"><input id="aiFullPrice" name="modalidad_costo" type="radio" value="precio_completo" required> Estoy de acuerdo con el costo de $1,500 MXN por 3 sesiones</label>
+      <label class="scholarship-toggle" for="aiScholarship"><input id="aiScholarship" name="modalidad_costo" type="radio" value="beca" required> Quiero solicitar una beca</label>
+      <div id="aiScholarshipFields" hidden>
+        <p>Cuéntanos qué podrías aportar. Puede ser difusión, documentación, apoyo en una actividad u otra idea. Revisaremos cada propuesta contigo; la beca no se asigna automáticamente.</p>
+        <div class="form-group"><label for="aiContribution">¿Cuánto podrías pagar por las 3 sesiones? (MXN) *</label><input id="aiContribution" name="aporte_mxn" type="number" inputmode="numeric" min="0" max="1499" step="1" placeholder="0" disabled></div>
+        <div class="form-group"><label for="aiExchange">¿Qué propones aportar para que sea un ganar-ganar? *</label><textarea id="aiExchange" name="propuesta_intercambio" maxlength="1500" placeholder="Describe algo concreto que puedas hacer y cuánto tiempo podrías dedicarle." disabled></textarea></div>
+      </div>
+    </fieldset>
+    <p class="course-privacy-note">Usaremos tus datos para responder a tu registro y, si la solicitas, revisar tu propuesta de beca. Consulta nuestra <a href="privacidad.html">política de privacidad</a>.</p>
+    <button type="submit" class="btn btn-primary">Enviar registro</button>
+    <p id="aiCourseFormStatus" role="status" aria-live="polite"></p>
+  </form>
 </section></main>
 <footer>
   <span class="footer-logo">CARTOGRAFUNK</span>
   <span class="footer-copy">© 2022 · MX · MAPAS PA' QUE SE LO GOCEN</span>
   <span class="footer-copy" style="opacity:0.4">20.5888°N 100.3899°W</span>
 </footer>
-<script src="assets/js/supabase-config.js"></script><script src="assets/js/course-form.js"></script>
+<script src="assets/js/supabase-config.js"></script><script src="assets/js/course-form.js"></script><script src="assets/js/ai-course-form.js"></script>
 </body></html>
