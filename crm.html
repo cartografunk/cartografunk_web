@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self' https://ctgphprhfzujdtdipcnr.supabase.co; img-src 'self' data:; base-uri 'none'; form-action 'self'">
+  <title>Inscripciones · Cartografunk</title>
+  <link rel="icon" type="image/webp" href="/assets/img/favicon.webp">
+  <link rel="stylesheet" href="/assets/css/crm.css?v=1">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">CARTOGRAFUNK</a>
+    <span class="topbar-label">Panel privado · Cursos</span>
+    <button id="logoutButton" class="text-button" type="button" hidden>Cerrar sesión</button>
+  </header>
+
+  <main>
+    <section id="loginView" class="login-card" aria-labelledby="loginTitle">
+      <p class="eyebrow">Acceso privado</p>
+      <h1 id="loginTitle">Seguimiento de cursos</h1>
+      <p>Entra con la cuenta autorizada de Cartografunk. Los datos de las personas inscritas solo se cargan después de iniciar sesión.</p>
+      <form id="loginForm">
+        <label for="loginEmail">Correo</label>
+        <input id="loginEmail" type="email" autocomplete="username" value="cartografunk@gmail.com" required>
+        <label for="loginPassword">Contraseña</label>
+        <input id="loginPassword" type="password" autocomplete="current-password" required>
+        <button class="primary-button" type="submit">Entrar al panel</button>
+      </form>
+      <p id="loginStatus" class="message" role="status" aria-live="polite"></p>
+    </section>
+
+    <section id="dashboardView" hidden aria-labelledby="dashboardTitle">
+      <div class="page-heading">
+        <div>
+          <p class="eyebrow">Operación de cursos</p>
+          <h1 id="dashboardTitle">Embudo y seguimiento</h1>
+          <p>Revisa qué personas necesitan respuesta y registra cada siguiente paso.</p>
+        </div>
+        <button id="refreshButton" class="secondary-button" type="button">Actualizar datos</button>
+      </div>
+
+      <div class="scope-note" role="note">Las cifras describen el estado actual de las inscripciones. El historial de actividades empieza desde la puesta en marcha de este panel; no reconstruye contactos anteriores.</div>
+
+      <section class="panel filters-panel" aria-label="Filtros del resumen">
+        <div class="filter-grid">
+          <label>Curso <select id="courseFilter"><option value="">Todos los cursos</option></select></label>
+          <label>Altas desde <input id="dateFrom" type="date"></label>
+          <label>Altas hasta <input id="dateTo" type="date"></label>
+          <button id="applyFilters" class="secondary-button" type="button">Aplicar filtros</button>
+        </div>
+      </section>
+
+      <section class="metrics-grid" aria-label="Indicadores principales">
+        <article class="metric-card"><span>Registros</span><strong id="metricTotal">—</strong><small>En el periodo</small></article>
+        <article class="metric-card"><span>Sin primer contacto</span><strong id="metricUncontacted">—</strong><small>Interesados sin fecha de contacto</small></article>
+        <article class="metric-card metric-alert"><span>Seguimientos vencidos</span><strong id="metricOverdue">—</strong><small>Con fecha ya pasada</small></article>
+        <article class="metric-card"><span>Becas solicitadas</span><strong id="metricScholarships">—</strong><small>Del curso de agentes de IA</small></article>
+      </section>
+
+      <div class="overview-grid">
+        <section class="panel" aria-labelledby="funnelTitle">
+          <div class="panel-heading"><h2 id="funnelTitle">Embudo actual</h2><span>Personas por etapa</span></div>
+          <div id="funnelRows" class="funnel-rows"></div>
+          <div id="conversionRates" class="conversion-rates"></div>
+          <p class="panel-note">Las tasas son aproximadas por etapa actual. Las personas marcadas como perdidas se muestran aparte.</p>
+        </section>
+        <section class="panel" aria-labelledby="priorityTitle">
+          <div class="panel-heading"><h2 id="priorityTitle">Qué atender ahora</h2><span>Cola de trabajo</span></div>
+          <div class="priority-list">
+            <button type="button" class="priority-item" data-queue="uncontacted"><strong id="priorityUncontacted">—</strong><span>Interesados sin primer contacto</span><span aria-hidden="true">→</span></button>
+            <button type="button" class="priority-item" data-queue="overdue"><strong id="priorityOverdue">—</strong><span>Seguimientos vencidos</span><span aria-hidden="true">→</span></button>
+            <button type="button" class="priority-item" data-queue="unscheduled"><strong id="priorityUnscheduled">—</strong><span>Sin siguiente contacto programado</span><span aria-hidden="true">→</span></button>
+          </div>
+        </section>
+      </div>
+
+      <section class="panel trend-panel" aria-labelledby="trendTitle">
+        <div class="panel-heading"><h2 id="trendTitle">Altas recientes</h2><span>Últimos 28 días · semanas de 7 días</span></div>
+        <div id="trendBars" class="trend-bars"></div>
+      </section>
+
+      <section class="panel table-panel" aria-labelledby="leadsTitle">
+        <div class="panel-heading"><div><h2 id="leadsTitle">Inscripciones</h2><p id="resultCount">—</p></div></div>
+        <div class="table-tools">
+          <label>Buscar nombre o correo <input id="searchInput" type="search" placeholder="Buscar persona"></label>
+          <label>Etapa <select id="statusFilter"><option value="">Todas</option><option value="interesado">Interesado</option><option value="contactado">Contactado</option><option value="inscrito">Inscrito</option><option value="pagado">Pagado</option><option value="completado">Completado</option><option value="perdido">Perdido</option></select></label>
+          <label class="check-label"><input id="pendingOnly" type="checkbox"> Solo pendientes</label>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Persona</th><th>Curso</th><th>Etapa</th><th>Próximo contacto</th><th>Alta</th><th></th></tr></thead>
+            <tbody id="leadsBody"></tbody>
+          </table>
+        </div>
+        <div class="pagination"><button id="prevPage" class="text-button" type="button">Anterior</button><span id="pageLabel">—</span><button id="nextPage" class="text-button" type="button">Siguiente</button></div>
+      </section>
+      <p id="dashboardStatus" class="message" role="status" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <dialog id="leadDialog" aria-labelledby="leadTitle">
+    <div class="dialog-header"><div><p class="eyebrow">Ficha de inscripción</p><h2 id="leadTitle"></h2></div><button id="closeDialog" class="text-button" type="button" aria-label="Cerrar ficha">Cerrar ×</button></div>
+    <div class="detail-grid">
+      <div><span>Curso</span><strong id="leadCourse"></strong></div>
+      <div><span>Alta</span><strong id="leadCreated"></strong></div>
+      <div><span>Correo</span><a id="leadEmail"></a></div>
+      <div><span>WhatsApp</span><a id="leadWhatsapp"></a></div>
+      <div><span>Instagram</span><strong id="leadInstagram"></strong></div>
+      <div><span>Último contacto</span><strong id="leadLastContact"></strong></div>
+    </div>
+    <div id="leadAnswers" class="answers"></div>
+    <div class="dialog-columns">
+      <section aria-labelledby="followupTitle">
+        <h3 id="followupTitle">Registrar seguimiento</h3>
+        <form id="followupForm">
+          <label>Etapa <select id="followupStatus" required><option value="interesado">Interesado</option><option value="contactado">Contactado</option><option value="inscrito">Inscrito</option><option value="pagado">Pagado</option><option value="completado">Completado</option><option value="perdido">Perdido</option></select></label>
+          <label>Acción <select id="followupType" required><option value="nota">Nota interna</option><option value="whatsapp">WhatsApp</option><option value="correo">Correo</option><option value="llamada">Llamada</option></select></label>
+          <label>Próximo contacto <input id="followupNext" type="datetime-local"></label>
+          <label>Nota <textarea id="followupNote" required maxlength="2000" placeholder="Qué pasó y cuál es el siguiente paso"></textarea></label>
+          <button class="primary-button" type="submit">Guardar seguimiento</button>
+          <p id="followupMessage" class="message" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+      <section aria-labelledby="historyTitle"><h3 id="historyTitle">Historial</h3><ol id="historyList" class="history-list"></ol></section>
+    </div>
+  </dialog>
+
+  <script src="/assets/js/supabase-config.js"></script>
+  <script src="/assets/js/crm.js?v=1"></script>
+</body>
+</html>

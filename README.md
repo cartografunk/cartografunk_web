@@ -56,6 +56,22 @@ inscripciones en el backend. El frontend no consulta ni modifica las tablas
 directamente y no requiere políticas públicas SELECT/UPDATE; el rol anon debe
 poder ejecutar el RPC. Instagram vacío se envía como null.
 
+## Panel privado de cursos
+
+`/crm` muestra el embudo de inscripciones, las solicitudes de beca y la cola de
+seguimiento. Entra con la cuenta de Supabase Auth `cartografunk@gmail.com` y su
+contraseña. La página usa solo la clave pública; los datos personales se entregan
+mediante RPC protegidas que comprueban el correo confirmado contra
+`private.crm_admin_emails`. Las tablas de inscripciones y actividades no tienen
+lectura pública.
+
+La migración `supabase/migrations/20261125_crm_dashboard.sql` crea los permisos,
+las RPC y el historial de actividades. El historial empieza cuando se registra
+una acción desde el panel; no inventa contactos anteriores. Las cifras del
+embudo son un corte por etapa actual, y las tasas indican la proporción en esa
+etapa o una posterior sobre los registros filtrados. Los filtros de fecha usan
+la fecha de alta en Supabase, que incluye un lote inicial importado.
+
 ## Insights de Instagram para Media kit
 
 Se dejó preparado `supabase/functions/instagram-insights/index.ts` para obtener
