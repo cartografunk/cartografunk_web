@@ -1,1 +1,11 @@
-Hola {{nombre}}, gracias por tu interés en {{curso}}. Son 3 sesiones por $1,500 MXN. ¿Quieres que te comparta cómo apartar tu lugar? Si ahora no te viene bien, me dices y no te insisto.
+Hola {{nombre}} ✋😔
+
+Gracias por tu interés en {{curso}}. Para apartar tu lugar puedes cubrir únicamente el 30% del curso ($450 MXN) vía transferencia a:
+
+{{cuenta_transferencia}}
+
+A nombre de Cartografunk. En el concepto escribe: {{curso}}.
+
+Sube tu comprobante aquí: {{enlace_pago}}
+
+En cuanto verifiquemos la transferencia te confirmamos que tu lugar quedó apartado 🪑. El resto puedes cubrirlo con facilidades antes de la última sesión. Si necesitas otro acuerdo de pago, no dudes en preguntar :)

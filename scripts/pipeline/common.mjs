@@ -69,9 +69,16 @@ export async function loadPeople(args) {
   if (!rows.length) return [];
   const users = await getRows('usuarios', 'id,nombre,email,whatsapp', `&id=in.(${ids.join(',')})`);
   const votes = await getRows('crm_disponibilidad', 'inscripcion_id,opciones,sin_bloques,respondio_at', `&inscripcion_id=in.(${inscriptionIds.join(',')})`);
+  const payments = await getRows('crm_pagos', 'inscripcion_id,monto_mxn,estado', `&inscripcion_id=in.(${inscriptionIds.join(',')})`);
   const byUser = new Map(users.map(user => [user.id, user]));
   const byVote = new Map(votes.map(vote => [vote.inscripcion_id, vote]));
+  const verified = new Map();
+  for (const payment of payments) if (payment.estado === 'verificado')
+    verified.set(payment.inscripcion_id,
+      (verified.get(payment.inscripcion_id) || 0) + Number(payment.monto_mxn));
   return rows.map(row => ({ ...row, ...byUser.get(row.usuario_id), id: row.id,
+    pago_comprobado: (verified.get(row.id) || 0) >= 450,
+    monto_verificado_mxn: verified.get(row.id) || 0,
     disponibilidad: byVote.get(row.id) || null }));
 }
 

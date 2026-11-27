@@ -16,6 +16,7 @@ const rootFiles = [
   "cursos.html",
   "crm.html",
   "horarios.html",
+  "pago.html",
   "servicios.html",
   "proyectos.html",
   "nosotros.html",
@@ -30,6 +31,7 @@ const directories = [
   "assets",
   "cartography",
   "samples",
+  "templates",
 ];
 
 await rm(dist, { recursive: true, force: true });

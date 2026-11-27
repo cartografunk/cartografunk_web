@@ -335,6 +335,8 @@
     message('followupMessage', '');
     $('historyList').replaceChildren(node('li', '', 'Cargando historial…'));
     $('leadDialog').showModal();
+    document.dispatchEvent(new CustomEvent('crm:lead', { detail: { id: lead.id, curso: lead.curso,
+      nombre: lead.nombre, solicitaBeca: lead.respuestas?.solicita_beca === true } }));
     try { await loadHistory(lead.id); }
     catch (error) { $('historyList').replaceChildren(node('li', '', error.message)); }
   }
@@ -438,7 +440,12 @@
   $('followupStatus').addEventListener('change', updateNextContactField);
   $('followupForm').addEventListener('submit', saveFollowup);
 
-  window.CARTOGRAFUNK_CRM = Object.freeze({ rpc });
+  document.addEventListener('crm:payment-updated', () => {
+    if (state.selected) loadHistory(state.selected.id).catch(() => {});
+    refreshAll();
+  });
+
+  window.CARTOGRAFUNK_CRM = Object.freeze({ rpc, accessToken });
 
   try {
     const stored = JSON.parse(sessionStorage.getItem(sessionKey) || 'null');

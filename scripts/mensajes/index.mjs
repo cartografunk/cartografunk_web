@@ -51,6 +51,8 @@ async function main() {
   const args = argsFrom(process.argv.slice(2));
   const kind = args.tipo || 'primer-contacto';
   if (!names[kind]) throw new Error(`--tipo debe ser: ${Object.keys(names).join(', ')}`);
+  if (kind === 'primer-contacto' && !/^\d{18}$/.test(process.env.CARTOFUNK_TRANSFER_ACCOUNT || ''))
+    throw new Error('Configura CARTOFUNK_TRANSFER_ACCOUNT con los 18 dígitos de la cuenta de transferencia.');
   const people = validatePeople(await loadPeople(args));
   const confirmed = args.confirmados ? await readJson(args.confirmados) : {};
   const byId = new Map((confirmed.inscripciones || []).map(row => [row.id, row]));
@@ -71,6 +73,7 @@ async function main() {
     const template = templates[variant === 'B' ? 1 : 0];
     try {
       const text = render(template, { ...person, ...detail, curso: COURSE_TITLE,
+        cuenta_transferencia: process.env.CARTOFUNK_TRANSFER_ACCOUNT,
         plazo: args.plazo, numero_sesion: detail.numero_sesion });
       const phone = String(person.whatsapp || '').replace(/\D/g, '');
       if (!/^\d{10,15}$/.test(phone)) throw new Error('WhatsApp inválido o ausente');

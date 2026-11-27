@@ -7,7 +7,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self' https://ctgphprhfzujdtdipcnr.supabase.co; img-src 'self' data:; base-uri 'none'; form-action 'self'">
   <title>Inscripciones · Cartografunk</title>
   <link rel="icon" type="image/webp" href="/assets/img/favicon.webp">
-  <link rel="stylesheet" href="/assets/css/crm.css?v=2">
+  <link rel="stylesheet" href="/assets/css/crm.css?v=3">
 </head>
 <body>
   <header class="topbar">
@@ -113,7 +113,7 @@
         </div>
         <div class="table-scroll">
           <table>
-            <thead><tr><th>Persona</th><th>Curso</th><th>Pago</th><th>Etapa</th><th>Próximo contacto</th><th>Alta</th><th></th></tr></thead>
+            <thead><tr><th>Persona</th><th>Curso</th><th>Modalidad</th><th>Etapa</th><th>Próximo contacto</th><th>Alta</th><th></th></tr></thead>
             <tbody id="leadsBody"></tbody>
           </table>
         </div>
@@ -134,6 +134,13 @@
       <div><span>Último contacto</span><strong id="leadLastContact"></strong></div>
     </div>
     <div id="leadAnswers" class="answers"></div>
+    <section class="lead-payments" aria-labelledby="paymentsTitle">
+      <h3 id="paymentsTitle">Pagos y comprobantes</h3>
+      <p id="paymentSummary">Cargando pagos…</p>
+      <button id="copyPaymentLink" class="secondary-button" type="button">Copiar mensaje de anticipo</button>
+      <p id="paymentActionStatus" class="message" role="status" aria-live="polite"></p>
+      <div id="paymentEntries"></div>
+    </section>
     <div class="dialog-columns">
       <section aria-labelledby="followupTitle">
         <h3 id="followupTitle">Registrar seguimiento</h3>
@@ -151,7 +158,8 @@
   </dialog>
 
   <script src="/assets/js/supabase-config.js"></script>
-  <script src="/assets/js/crm.js?v=2"></script>
+  <script src="/assets/js/crm.js?v=3"></script>
   <script src="/assets/js/crm-schedule.js?v=2"></script>
+  <script src="/assets/js/crm-payments.js?v=1"></script>
 </body>
 </html>

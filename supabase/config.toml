@@ -1,0 +1,2 @@
+[functions.comprobante-curso]
+verify_jwt = false

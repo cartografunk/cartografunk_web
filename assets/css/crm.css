@@ -124,6 +124,16 @@ dialog::backdrop{background:rgba(7,20,36,.67)}
 .answers dl{display:grid;grid-template-columns:minmax(110px,1fr) 2fr;gap:.4rem .8rem;margin:0;font-size:.88rem}
 .answers dt{color:var(--muted)}
 .answers dd{margin:0;overflow-wrap:anywhere}
+.lead-payments{padding:1rem;margin-bottom:1.25rem;border:1px solid var(--line);border-radius:8px;background:#fafbfd}
+.lead-payments h3{margin-bottom:.4rem}
+.lead-payments>p{color:var(--muted);font-size:.88rem}
+#paymentEntries{display:grid;gap:.65rem;margin-top:.9rem}
+.payment-entry{padding:.8rem;background:#fff;border:1px solid var(--line);border-radius:8px}
+.payment-entry strong,.payment-entry small{display:block}
+.payment-entry small{color:var(--muted)}
+.payment-entry p{margin:.4rem 0;color:var(--muted);font-size:.85rem}
+.payment-actions{display:flex;flex-wrap:wrap;align-items:end;gap:.55rem;margin-top:.6rem}
+.payment-actions textarea{width:min(100%,320px);min-height:70px}
 .dialog-columns{display:grid;grid-template-columns:1fr 1fr;gap:1.6rem}
 .dialog-columns form{display:grid;gap:.85rem}
 .history-list{list-style:none;padding:0;margin:0;display:grid;gap:.7rem;max-height:430px;overflow:auto}

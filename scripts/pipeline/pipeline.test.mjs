@@ -55,13 +55,18 @@ test('mensajes locales alternan A/B y generan enlaces sin enviar', async () => {
   try {
     await fs.cp(path.join(root, 'templates'), path.join(temp, 'templates'), { recursive: true });
     const input = path.join(temp, 'input.json');
+    const links = path.join(temp, 'links.json');
     const records = [0, 1].map(index => ({ id: `p${index}`, estatus: 'interesado',
       created_at: `2026-11-27T12:0${index}:00Z`, nombre: `Persona ${index}`,
       whatsapp: '5'.repeat(10), respuestas: { solicita_beca: false } }));
     await fs.writeFile(input, JSON.stringify({ inscripciones: records }));
+    await fs.writeFile(links, JSON.stringify({ inscripciones: records.map(row => ({ id: row.id,
+      enlace_pago: `https://example.invalid/pago#${row.id}` })) }));
     const command = spawnSync(process.execPath, [path.join(root, 'scripts/mensajes/index.mjs'),
-      '--input', input, '--tipo', 'primer-contacto', '--plazo', '1 de diciembre', '--apply'],
-    { cwd: temp, encoding: 'utf8' });
+      '--input', input, '--confirmados', links, '--tipo', 'primer-contacto',
+      '--plazo', '1 de diciembre', '--apply'],
+    { cwd: temp, encoding: 'utf8', env: { ...process.env,
+      CARTOFUNK_TRANSFER_ACCOUNT: '0'.repeat(18) } });
     assert.equal(command.status, 0, command.stderr);
     const output = JSON.parse(await fs.readFile(path.join(temp, 'out', 'mensajes-primer-contacto.json'), 'utf8'));
     assert.deepEqual(output.mensajes.map(row => row.variante), ['A', 'B']);
