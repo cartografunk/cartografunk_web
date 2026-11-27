@@ -1,0 +1,11 @@
+{
+  "grupos": [
+    {
+      "grupo": "grupo-sabado-manana",
+      "bloque": "6-09",
+      "fechas": ["2026-12-12", "2026-12-19", "2026-12-26"],
+      "ids": ["p01", "p03"],
+      "confirmado": false
+    }
+  ]
+}

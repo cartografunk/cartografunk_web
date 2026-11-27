@@ -1,0 +1,1 @@
+Hola {{nombre}}, gracias por tu interés en {{curso}}. Son 3 sesiones por $1,500 MXN. ¿Quieres que te comparta cómo apartar tu lugar? Si te sirve, apartamos lugar hasta el {{plazo}}; si ahora no te viene bien, me dices y no te insisto.

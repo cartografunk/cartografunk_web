@@ -18,16 +18,25 @@
   }
 
   async function rpc(name, payload) {
-    const response = await fetch(`${config.url}/rest/v1/rpc/${name}`, {
-      method: 'POST',
-      headers: { apikey: config.publishableKey, 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-      cache: 'no-store',
-    });
+    let response;
+    try {
+      response = await fetch(`${config.url}/rest/v1/rpc/${name}`, {
+        method: 'POST',
+        headers: { apikey: config.publishableKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        cache: 'no-store',
+      });
+    } catch {
+      throw new Error('Sin conexión. Revisa tu internet e intenta de nuevo.');
+    }
     const data = await response.json().catch(() => null);
-    if (!response.ok) throw new Error(name === 'ver_horarios'
-      ? 'Este enlace no está disponible. Solicita uno nuevo a Cartografunk.'
-      : 'No se pudo guardar tu disponibilidad. Intenta de nuevo.');
+    if (!response.ok) {
+      if (data?.message === 'La votación está cerrada')
+        throw new Error('La votación ya cerró. Te escribiremos con tu grupo.');
+      if (data?.message === 'Enlace inválido o vencido' || name === 'ver_horarios')
+        throw new Error('Este enlace no está disponible. Solicita uno nuevo a Cartografunk.');
+      throw new Error('No se pudo guardar tu disponibilidad. Intenta de nuevo.');
+    }
     return data;
   }
 

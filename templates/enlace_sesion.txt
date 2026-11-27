@@ -1,0 +1,1 @@
+Hola {{nombre}}, tu sesión {{numero_sesion}} de {{curso}} será el {{inicio}} (hora de Ciudad de México). Este es tu enlace de Google Meet: {{meet_url}}. Si tienes algún problema, responde a este mensaje.

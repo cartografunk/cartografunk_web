@@ -1,0 +1,1 @@
+Hola {{nombre}}, te proponemos el grupo {{grupo}} de {{curso}}, los {{dia_hora}} (hora de Ciudad de México). ¿Nos confirmas si podrías asistir? Todavía no queda reservado el lugar hasta que lo confirmemos contigo.

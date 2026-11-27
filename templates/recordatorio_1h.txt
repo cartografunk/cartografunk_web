@@ -1,0 +1,1 @@
+Hola {{nombre}}, la sesión {{numero_sesion}} de {{curso}} comienza en aproximadamente una hora, a las {{inicio}} (hora de Ciudad de México). Enlace: {{meet_url}}.
