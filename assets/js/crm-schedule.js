@@ -146,7 +146,7 @@
         const digits = (person.whatsapp || '').replace(/\D/g, '');
         if (digits) {
           const link = node('a', 'Abrir WhatsApp');
-          const message = `Hola, te compartimos una votación rápida para organizar las 3 sesiones de ${state.courseName}. Marca todos los horarios en los que podrías asistir: ${pollUrl(person.token)}`;
+          const message = `Hola, te compartimos una votación rápida para organizar las 3 sesiones de ${state.courseName}. Marca todos los horarios en los que podrías asistir. Ayúdanos respondiendo antes del 29 de noviembre a las 20:00 (hora CDMX): ${pollUrl(person.token)}`;
           link.href = `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
           link.target = '_blank';
           link.rel = 'noopener noreferrer';

@@ -8,7 +8,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self' https://ctgphprhfzujdtdipcnr.supabase.co; img-src 'self' data:; base-uri 'none'; form-action 'self'">
   <title>Votación de horarios · Cartografunk</title>
   <link rel="icon" type="image/webp" href="/assets/img/favicon.webp">
-  <link rel="stylesheet" href="/assets/css/horarios.css?v=1">
+  <link rel="stylesheet" href="/assets/css/horarios.css?v=2">
 </head>
 <body>
   <header><a href="/">CARTOGRAFUNK</a><span>Cursos · Disponibilidad</span></header>
@@ -17,11 +17,13 @@
       <p class="eyebrow">Votación de horarios</p>
       <h1 id="title">¿Cuándo puedes tomar el curso?</h1>
       <p id="courseName" class="course-name">Cargando curso…</p>
-      <p>Marca <strong>todos los bloques</strong> en los que podrías asistir durante tres semanas seguidas. Los horarios están en <strong>hora de Ciudad de México</strong>. Confirmaremos las fechas exactas antes de crear las reuniones.</p>
+      <p>Marca <strong>todos los bloques</strong> en los que podrías asistir el mismo día de la semana durante tres semanas seguidas. Cada sesión dura <strong>aproximadamente 2 horas</strong> y a veces se alarga. Confirmaremos las fechas exactas antes de crear las reuniones. Todos los horarios están en <strong>hora de Ciudad de México (UTC−6)</strong>.</p>
+      <p id="voteDeadline">Ayúdanos a cerrar los grupos: responde <strong>antes del 29 de noviembre a las 20:00</strong>. Si necesitas más tiempo, el enlace seguirá abierto hasta el <strong>6 de diciembre a las 20:00</strong> (hora de Ciudad de México). Después te escribiremos con tu grupo.</p>
       <form id="availabilityForm" hidden>
         <div id="days"></div>
+        <label class="no-slots"><input id="noSlots" type="checkbox"> Ninguno de estos horarios me sirve</label>
         <label class="comment-label" for="availabilityComment">¿Otro horario o alguna restricción?</label>
-        <textarea id="availabilityComment" maxlength="500" placeholder="Si ningún bloque te sirve, cuéntanos qué días y horas sí puedes."></textarea>
+        <textarea id="availabilityComment" maxlength="500" placeholder="Si puedes, dinos qué días y horas te funcionarían. Evita incluir datos personales."></textarea>
         <button type="submit">Guardar mi disponibilidad</button>
       </form>
       <p id="availabilityStatus" role="status" aria-live="polite"></p>
@@ -29,6 +31,6 @@
     </section>
   </main>
   <script src="/assets/js/supabase-config.js"></script>
-  <script src="/assets/js/horarios.js?v=1"></script>
+  <script src="/assets/js/horarios.js?v=2"></script>
 </body>
 </html>

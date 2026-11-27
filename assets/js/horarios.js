@@ -8,6 +8,9 @@
     ['09', '09:00–11:00'], ['12', '12:00–14:00'],
     ['16', '16:00–18:00'], ['19', '19:00–21:00'],
   ];
+  const noSlots = document.getElementById('noSlots');
+  const recommended = (day, hour) => day <= 5 ? hour === '19' : ['09', '12', '16'].includes(hour);
+  const closingTime = Date.parse('2026-12-07T02:00:00Z');
 
   function setStatus(text, state = '') {
     status.textContent = text;
@@ -28,16 +31,17 @@
     return data;
   }
 
-  function draw(saved) {
-    const container = document.getElementById('days');
+  function drawGroup(container, saved, showRecommended) {
     for (let index = 0; index < days.length; index++) {
+      const dayBlocks = blocks.filter(([hour]) => recommended(index + 1, hour) === showRecommended);
+      if (!dayBlocks.length) continue;
       const fieldset = document.createElement('fieldset');
       const legend = document.createElement('legend');
       legend.textContent = days[index];
       fieldset.append(legend);
       const grid = document.createElement('div');
       grid.className = 'slot-grid';
-      for (const [hour, label] of blocks) {
+      for (const [hour, label] of dayBlocks) {
         const option = document.createElement('label');
         option.className = 'slot';
         const checkbox = document.createElement('input');
@@ -53,6 +57,25 @@
     }
   }
 
+  function draw(saved) {
+    const container = document.getElementById('days');
+    const intro = document.createElement('p');
+    intro.className = 'schedule-section-title';
+    intro.textContent = 'Horarios sugeridos';
+    container.append(intro);
+    drawGroup(container, saved, true);
+    const more = document.createElement('details');
+    const summary = document.createElement('summary');
+    summary.textContent = 'Ver más horarios';
+    more.append(summary);
+    drawGroup(more, saved, false);
+    more.open = saved.some(value => {
+      const [day, hour] = value.split('-');
+      return !recommended(Number(day), hour);
+    });
+    container.append(more);
+  }
+
   async function load() {
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(token)) {
       setStatus('Este enlace de votación no es válido. Solicita uno nuevo a Cartografunk.', 'error');
@@ -63,24 +86,43 @@
       document.getElementById('courseName').textContent = data.curso;
       document.getElementById('availabilityComment').value = data.comentario || '';
       draw(data.opciones || []);
-      form.hidden = false;
+      noSlots.checked = Boolean(data.sin_bloques);
+      form.hidden = Date.now() >= closingTime;
+      if (form.hidden) {
+        setStatus('La votación ya cerró. Te escribiremos con tu grupo.', 'success');
+        return;
+      }
       if (data.respondio_at) setStatus('Ya recibimos una respuesta. Puedes actualizarla si cambió tu disponibilidad.', 'success');
     } catch (error) { setStatus(error.message, 'error'); }
   }
 
+  form.addEventListener('change', event => {
+    if (event.target === noSlots && noSlots.checked) {
+      form.querySelectorAll('input[name="horario"]').forEach(input => { input.checked = false; });
+    } else if (event.target.matches('input[name="horario"]') && event.target.checked) {
+      noSlots.checked = false;
+    }
+  });
+
   form.addEventListener('submit', async event => {
     event.preventDefault();
+    if (Date.now() >= closingTime) {
+      form.hidden = true;
+      setStatus('La votación ya cerró. Te escribiremos con tu grupo.', 'error');
+      return;
+    }
     const options = [...form.querySelectorAll('input[name="horario"]:checked')].map(input => input.value);
     const comment = document.getElementById('availabilityComment').value.trim();
-    if (!options.length && !comment) {
-      setStatus('Marca al menos un horario o escribe cuándo sí puedes.', 'error');
+    if (!options.length && !noSlots.checked && !comment) {
+      setStatus('Marca al menos un horario, indica que ninguno te sirve o escribe cuándo sí puedes.', 'error');
       return;
     }
     const button = form.querySelector('button[type="submit"]');
     button.disabled = true;
     setStatus('Guardando…');
     try {
-      await rpc('guardar_horarios', { p_token: token, p_opciones: options, p_comentario: comment || null });
+      await rpc('guardar_horarios_v2', { p_token: token, p_opciones: options,
+        p_sin_bloques: noSlots.checked, p_comentario: comment || null });
       setStatus('¡Gracias! Guardamos tu disponibilidad. Te avisaremos antes de confirmar fechas y reuniones.', 'success');
     } catch (error) { setStatus(error.message, 'error'); }
     finally { button.disabled = false; }

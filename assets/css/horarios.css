@@ -9,12 +9,19 @@ main{max-width:850px;margin:clamp(1rem,5vw,3rem) auto;padding:0 1rem}
 h1{font-size:clamp(2rem,5vw,3rem);line-height:1.12;letter-spacing:-.04em;margin:.2rem 0 .7rem}
 p{margin:.65rem 0;color:var(--muted)}
 .course-name{color:var(--ink);font-weight:750}
+.schedule-section-title{margin:1.5rem 0 .3rem;color:var(--ink);font-weight:750}
+details{margin:1.5rem 0}
+summary{color:var(--brand);font-weight:750;cursor:pointer}
+details fieldset{margin:1rem 0}
 fieldset{margin:1.2rem 0;padding:1rem;border:1px solid var(--line);border-radius:10px}
 legend{padding:0 .4rem;font-weight:750;color:var(--ink)}
 .slot-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.55rem}
 .slot{display:flex;align-items:center;gap:.45rem;padding:.65rem;border:1px solid var(--line);border-radius:7px;cursor:pointer;color:var(--ink);font-size:.86rem}
 .slot:has(input:checked){background:#e9f2fc;border-color:#4b82bd}
 .slot input{width:1rem;height:1rem;accent-color:var(--brand)}
+.no-slots{display:flex;align-items:center;gap:.65rem;margin:1.4rem 0;padding:1rem;border:1px solid var(--line);border-radius:10px;color:var(--ink);font-weight:700;cursor:pointer}
+.no-slots:has(input:checked){background:#e9f2fc;border-color:#4b82bd}
+.no-slots input{width:1.1rem;height:1.1rem;accent-color:var(--brand)}
 .comment-label{display:block;margin:1.4rem 0 .4rem;font-weight:700}
 textarea{display:block;width:100%;min-height:100px;padding:.7rem;border:1px solid #aec0d4;border-radius:7px;font:inherit;resize:vertical}
 button{margin-top:1rem;padding:.75rem 1rem;background:var(--brand);border:1px solid var(--brand);border-radius:7px;color:#fff;font:inherit;font-weight:750;cursor:pointer}
