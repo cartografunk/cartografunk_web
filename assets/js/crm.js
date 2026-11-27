@@ -119,6 +119,12 @@
     for (const course of data.cursos) courseSelect.add(new Option(course.nombre, course.id));
     courseSelect.value = current;
 
+    const scheduleSelect = $('scheduleCourse');
+    const scheduleCurrent = scheduleSelect.value;
+    scheduleSelect.replaceChildren(new Option('Selecciona un curso', ''));
+    for (const course of data.cursos) scheduleSelect.add(new Option(course.nombre, course.id));
+    scheduleSelect.value = scheduleCurrent || data.cursos.find(course => course.nombre.startsWith('Agentes de IA'))?.id || '';
+
     const container = $('funnelRows');
     container.replaceChildren();
     const max = Math.max(1, ...stages.map(([key]) => Number(summary[key]) || 0));
@@ -186,12 +192,14 @@
     if (!state.rows.length) {
       const row = node('tr');
       const cell = node('td', '', 'No hay inscripciones con estos filtros.');
-      cell.colSpan = 6;
+      cell.colSpan = 7;
       row.append(cell);
       body.append(row);
     }
     for (const lead of state.rows) {
       const row = node('tr');
+      const paymentChoice = lead.respuestas?.solicita_beca;
+      if (paymentChoice === false) row.className = 'lead-priority';
       const person = node('td');
       person.append(node('strong', '', lead.nombre), node('small', '', lead.email));
       const status = node('span', 'status-pill', stageNames[lead.estatus] || lead.estatus);
@@ -206,13 +214,18 @@
       action.type = 'button';
       action.addEventListener('click', () => openLead(lead));
       actionCell.append(action);
-      row.append(person, node('td', '', lead.curso), statusCell, due,
+      const payment = node('span', 'payment-label', paymentChoice === false ? 'Precio completo' :
+        paymentChoice === true ? 'Solicita beca' : 'Sin dato');
+      payment.dataset.choice = paymentChoice === false ? 'full' : paymentChoice === true ? 'beca' : 'unknown';
+      const paymentCell = node('td');
+      paymentCell.append(payment);
+      row.append(person, node('td', '', lead.curso), paymentCell, statusCell, due,
         node('td', '', formatDate(lead.created_at)), actionCell);
       body.append(row);
     }
     const first = state.totalRows ? state.offset + 1 : 0;
     const last = Math.min(state.offset + state.limit, state.totalRows);
-    const queueNames = { sin_contacto: 'sin primer contacto', vencidos: 'vencidos', sin_programar: 'sin programar' };
+    const queueNames = { precio_completo: 'precio completo', sin_contacto: 'sin primer contacto', vencidos: 'vencidos', sin_programar: 'sin programar' };
     $('resultCount').textContent = `${number(state.totalRows)} resultados${state.queue ? ` · ${queueNames[state.queue]}` : ''}`;
     $('pageLabel').textContent = `${first}–${last} de ${number(state.totalRows)}`;
     $('prevPage').disabled = state.offset === 0;
@@ -221,21 +234,32 @@
 
   async function loadRows() {
     const request = ++state.listRequest;
-    const data = await rpc('crm_listar_inscripciones', {
+    const base = {
       ...filters(),
       p_estatus: $('statusFilter').value || null,
       p_busqueda: $('searchInput').value.trim() || null,
-      p_cola: state.queue || ($('pendingOnly').checked ? 'pendientes' : null),
       p_limit: state.limit,
       p_offset: state.offset,
-    });
+    };
+    const data = state.queue === 'precio_completo'
+      ? await rpc('crm_prioridad_precio', base)
+      : await rpc('crm_listar_inscripciones', {
+        ...base, p_cola: state.queue || ($('pendingOnly').checked ? 'pendientes' : null),
+      });
     if (request === state.listRequest) renderRows(data);
+  }
+
+  async function loadPriorityCount() {
+    const data = await rpc('crm_prioridad_precio', {
+      ...filters(), p_estatus: null, p_busqueda: null, p_limit: 1, p_offset: 0,
+    });
+    $('priorityFullPrice').textContent = number(data.total);
   }
 
   async function refreshAll() {
     message('dashboardStatus', 'Cargando datos…');
     try {
-      await Promise.all([loadSummary(), loadRows()]);
+      await Promise.all([loadSummary(), loadRows(), loadPriorityCount()]);
       message('dashboardStatus', 'Datos actualizados.', 'success');
     } catch (error) {
       message('dashboardStatus', error.message, 'error');
@@ -401,7 +425,8 @@
   $('prevPage').addEventListener('click', () => { state.offset = Math.max(0, state.offset - state.limit); loadRows().catch(error => message('dashboardStatus', error.message, 'error')); });
   $('nextPage').addEventListener('click', () => { state.offset += state.limit; loadRows().catch(error => message('dashboardStatus', error.message, 'error')); });
   document.querySelectorAll('[data-queue]').forEach(button => button.addEventListener('click', () => {
-    state.queue = button.dataset.queue === 'uncontacted' ? 'sin_contacto' :
+    state.queue = button.dataset.queue === 'fullprice' ? 'precio_completo' :
+      button.dataset.queue === 'uncontacted' ? 'sin_contacto' :
       button.dataset.queue === 'overdue' ? 'vencidos' : 'sin_programar';
     $('pendingOnly').checked = false;
     $('statusFilter').value = '';
@@ -412,6 +437,8 @@
   $('closeDialog').addEventListener('click', () => $('leadDialog').close());
   $('followupStatus').addEventListener('change', updateNextContactField);
   $('followupForm').addEventListener('submit', saveFollowup);
+
+  window.CARTOGRAFUNK_CRM = Object.freeze({ rpc });
 
   try {
     const stored = JSON.parse(sessionStorage.getItem(sessionKey) || 'null');

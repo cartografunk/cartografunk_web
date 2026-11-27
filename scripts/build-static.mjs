@@ -15,6 +15,7 @@ const rootFiles = [
   "daft-metro.html",
   "cursos.html",
   "crm.html",
+  "horarios.html",
   "servicios.html",
   "proyectos.html",
   "nosotros.html",

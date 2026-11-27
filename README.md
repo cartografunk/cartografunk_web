@@ -72,6 +72,21 @@ embudo son un corte por etapa actual, y las tasas indican la proporción en esa
 etapa o una posterior sobre los registros filtrados. Los filtros de fecha usan
 la fecha de alta en Supabase, que incluye un lote inicial importado.
 
+La cola “Precio completo” muestra únicamente personas que aceptaron expresamente
+la tarifa y siguen en una etapa abierta; los registros antiguos sin esa pregunta
+no se infieren como precio completo. El prompt de revisión comercial está en
+`docs/funnel_review_prompt.md`.
+
+Desde el panel privado se pueden generar enlaces individuales de votación de
+horarios para un curso. Cada persona marca bloques semanales en `/horarios`; el
+enlace lleva un token en el fragmento de URL y no revela contacto ni identidad.
+El panel propone primero el menor número de días distintos que cubra todas las
+respuestas con bloques, y luego asigna grupos por horario dentro de esos días.
+La propuesta es preliminar hasta que respondan todas las personas activas. Al
+cerrar la votación, se puede copiar la agenda de tres sesiones por grupo para
+crearlas en Google Calendar con un Meet distinto por sesión. El panel no envía
+invitaciones automáticamente.
+
 ## Insights de Instagram para Media kit
 
 Se dejó preparado `supabase/functions/instagram-insights/index.ts` para obtener

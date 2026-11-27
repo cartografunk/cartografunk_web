@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self' https://ctgphprhfzujdtdipcnr.supabase.co; img-src 'self' data:; base-uri 'none'; form-action 'self'">
+  <title>Votación de horarios · Cartografunk</title>
+  <link rel="icon" type="image/webp" href="/assets/img/favicon.webp">
+  <link rel="stylesheet" href="/assets/css/horarios.css?v=1">
+</head>
+<body>
+  <header><a href="/">CARTOGRAFUNK</a><span>Cursos · Disponibilidad</span></header>
+  <main>
+    <section class="card" aria-labelledby="title">
+      <p class="eyebrow">Votación de horarios</p>
+      <h1 id="title">¿Cuándo puedes tomar el curso?</h1>
+      <p id="courseName" class="course-name">Cargando curso…</p>
+      <p>Marca <strong>todos los bloques</strong> en los que podrías asistir durante tres semanas seguidas. Los horarios están en <strong>hora de Ciudad de México</strong>. Confirmaremos las fechas exactas antes de crear las reuniones.</p>
+      <form id="availabilityForm" hidden>
+        <div id="days"></div>
+        <label class="comment-label" for="availabilityComment">¿Otro horario o alguna restricción?</label>
+        <textarea id="availabilityComment" maxlength="500" placeholder="Si ningún bloque te sirve, cuéntanos qué días y horas sí puedes."></textarea>
+        <button type="submit">Guardar mi disponibilidad</button>
+      </form>
+      <p id="availabilityStatus" role="status" aria-live="polite"></p>
+      <p class="privacy-note">Solo usaremos tu respuesta para organizar los grupos del curso. <a href="/privacidad" rel="noreferrer">Política de privacidad</a>.</p>
+    </section>
+  </main>
+  <script src="/assets/js/supabase-config.js"></script>
+  <script src="/assets/js/horarios.js?v=1"></script>
+</body>
+</html>
