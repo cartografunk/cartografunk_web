@@ -80,9 +80,6 @@
   }
 
   const number = value => new Intl.NumberFormat('es-MX').format(Number(value) || 0);
-  const formatDate = value => value ? new Intl.DateTimeFormat('es-MX', {
-    day: 'numeric', month: 'short', year: 'numeric', timeZone: 'America/Mexico_City',
-  }).format(new Date(value)) : '—';
   const formatDateTime = value => value ? new Intl.DateTimeFormat('es-MX', {
     dateStyle: 'medium', timeStyle: 'short', timeZone: 'America/Mexico_City',
   }).format(new Date(value)) : 'Sin programar';
@@ -179,9 +176,38 @@
     }
   }
 
+  function renderHours(rows) {
+    const totals = Array.from({ length: 24 }, () => 0);
+    for (const row of rows || []) {
+      const hour = Number(row.hora);
+      if (Number.isInteger(hour) && hour >= 0 && hour < 24) totals[hour] = Math.max(0, Number(row.total) || 0);
+    }
+    const peak = Math.max(...totals);
+    const peakHours = totals.flatMap((count, hour) => count === peak && peak > 0 ? [hour] : []);
+    const hourLabel = hour => `${String(hour).padStart(2, '0')}:00`;
+    $('hourPeak').textContent = peak
+      ? `Horas con más registros: ${peakHours.slice(0, 3).map(hourLabel).join(', ')}${peakHours.length > 3 ? ' y otras horas' : ''} · ${number(peak)} por hora · ${number(totals.reduce((sum, count) => sum + count, 0))} en el periodo`
+      : 'Aún no hay inscripciones en este periodo.';
+    const chart = $('hourChart');
+    chart.replaceChildren();
+    totals.forEach((count, hour) => {
+      const item = node('li', 'hour-slot');
+      item.setAttribute('aria-label', `${hourLabel(hour)} a ${String(hour).padStart(2, '0')}:59: ${count} inscripciones`);
+      if (count === peak && peak > 0) item.classList.add('hour-slot-peak');
+      const bar = node('span', 'hour-bar');
+      bar.style.height = `${count ? Math.max(8, count / peak * 112) : 2}px`;
+      item.append(node('strong', '', count ? number(count) : ''), bar,
+        node('span', 'hour-label', hourLabel(hour)));
+      chart.append(item);
+    });
+  }
+
   async function loadSummary() {
-    const data = await rpc('crm_resumen', filters());
+    const [data, hours] = await Promise.all([
+      rpc('crm_resumen', filters()), rpc('crm_horas_inscripcion', filters()),
+    ]);
     renderSummary(data);
+    renderHours(hours);
   }
 
   function renderRows(data) {
@@ -220,7 +246,7 @@
       const paymentCell = node('td');
       paymentCell.append(payment);
       row.append(person, node('td', '', lead.curso), paymentCell, statusCell, due,
-        node('td', '', formatDate(lead.created_at)), actionCell);
+        node('td', '', formatDateTime(lead.created_at)), actionCell);
       body.append(row);
     }
     const first = state.totalRows ? state.offset + 1 : 0;
@@ -320,7 +346,7 @@
     state.selected = lead;
     $('leadTitle').textContent = lead.nombre;
     $('leadCourse').textContent = lead.curso;
-    $('leadCreated').textContent = formatDate(lead.created_at);
+    $('leadCreated').textContent = formatDateTime(lead.created_at);
     $('leadInstagram').textContent = lead.instagram || '—';
     $('leadLastContact').textContent = lead.ultimo_contacto || 'No registrado';
     setLink('leadEmail', lead.email, `mailto:${lead.email}`);

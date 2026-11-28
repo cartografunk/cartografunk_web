@@ -7,7 +7,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self' https://ctgphprhfzujdtdipcnr.supabase.co; img-src 'self' data:; base-uri 'none'; form-action 'self'">
   <title>Inscripciones · Cartografunk</title>
   <link rel="icon" type="image/webp" href="/assets/img/favicon.webp">
-  <link rel="stylesheet" href="/assets/css/crm.css?v=3">
+  <link rel="stylesheet" href="/assets/css/crm.css?v=4">
 </head>
 <body>
   <header class="topbar">
@@ -82,6 +82,12 @@
         <div id="trendBars" class="trend-bars"></div>
       </section>
 
+      <section class="panel hour-panel" aria-labelledby="hourTitle">
+        <div class="panel-heading"><div><h2 id="hourTitle">¿A qué hora se inscriben?</h2><p>Hora de Ciudad de México · respeta los filtros de curso y fecha</p></div></div>
+        <p id="hourPeak" class="hour-peak" role="status">Cargando horarios…</p>
+        <div class="hour-scroll"><ol id="hourChart" class="hour-chart" aria-label="Inscripciones por hora del día"></ol></div>
+      </section>
+
       <section id="agenda" class="panel schedule-panel" aria-labelledby="scheduleTitle">
         <div class="panel-heading"><div><h2 id="scheduleTitle">Votación y grupos</h2><p>Concentra el curso en el menor número de días; puede haber varios grupos en distintos horarios del mismo día.</p></div></div>
         <div class="schedule-controls">
@@ -113,7 +119,7 @@
         </div>
         <div class="table-scroll">
           <table>
-            <thead><tr><th>Persona</th><th>Curso</th><th>Modalidad</th><th>Etapa</th><th>Próximo contacto</th><th>Alta</th><th></th></tr></thead>
+            <thead><tr><th>Persona</th><th>Curso</th><th>Modalidad</th><th>Etapa</th><th>Próximo contacto</th><th>Alta · CDMX</th><th></th></tr></thead>
             <tbody id="leadsBody"></tbody>
           </table>
         </div>
@@ -127,7 +133,7 @@
     <div class="dialog-header"><div><p class="eyebrow">Ficha de inscripción</p><h2 id="leadTitle"></h2></div><button id="closeDialog" class="text-button" type="button" aria-label="Cerrar ficha">Cerrar ×</button></div>
     <div class="detail-grid">
       <div><span>Curso</span><strong id="leadCourse"></strong></div>
-      <div><span>Alta</span><strong id="leadCreated"></strong></div>
+      <div><span>Alta · CDMX</span><strong id="leadCreated"></strong></div>
       <div><span>Correo</span><a id="leadEmail"></a></div>
       <div><span>WhatsApp</span><a id="leadWhatsapp"></a></div>
       <div><span>Instagram</span><strong id="leadInstagram"></strong></div>
@@ -164,7 +170,7 @@
   </dialog>
 
   <script src="/assets/js/supabase-config.js"></script>
-  <script src="/assets/js/crm.js?v=4"></script>
+  <script src="/assets/js/crm.js?v=5"></script>
   <script src="/assets/js/crm-schedule.js?v=3"></script>
   <script src="/assets/js/crm-payments.js?v=2"></script>
 </body>

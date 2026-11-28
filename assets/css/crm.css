@@ -70,6 +70,15 @@ textarea{min-height:105px;resize:vertical}
 .trend-week{display:flex;flex-direction:column;align-items:center;justify-content:end;gap:.35rem;height:165px;text-align:center;font-size:.78rem;color:var(--muted)}
 .trend-week strong{color:var(--ink)}
 .trend-week .bar{display:block;width:min(100%,90px);min-height:3px;background:#3977b8;border-radius:3px 3px 0 0}
+.hour-panel{margin-bottom:1.25rem}
+.hour-peak{margin:.2rem 0 1rem;color:var(--brand-dark);font-weight:700}
+.hour-scroll{overflow-x:auto;padding-bottom:.35rem}
+.hour-chart{display:grid;grid-template-columns:repeat(24,minmax(0,1fr));align-items:end;gap:.25rem;min-width:900px;height:160px;margin:0;padding:0;list-style:none}
+.hour-slot{display:flex;flex-direction:column;align-items:center;justify-content:end;gap:.2rem;height:100%;color:var(--muted);font-size:.7rem}
+.hour-slot strong{min-height:1rem;color:var(--ink);font-size:.78rem}
+.hour-bar{display:block;width:100%;max-width:26px;min-height:2px;border-radius:3px 3px 0 0;background:#3977b8}
+.hour-slot-peak .hour-bar{background:#174d80}
+.hour-label{white-space:nowrap}
 .schedule-panel{margin-bottom:1.25rem;scroll-margin-top:1rem}
 .schedule-controls,.schedule-plan-controls{display:flex;flex-wrap:wrap;align-items:end;gap:.7rem;margin:1rem 0}
 .schedule-controls label,.schedule-plan-controls label{display:flex;flex-direction:column;gap:.35rem;color:var(--muted);font-size:.85rem;font-weight:650;min-width:190px}
