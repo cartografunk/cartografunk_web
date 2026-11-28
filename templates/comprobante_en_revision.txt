@@ -1,0 +1,3 @@
+Hola {{nombre}}
+
+Recibí tu comprobante para {{curso}}. Estoy revisando la transferencia y te confirmaré en cuanto quede verificada. Por ahora no necesitas hacer otro pago.

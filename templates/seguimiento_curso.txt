@@ -1,0 +1,3 @@
+Hola {{nombre}}
+
+Te escribo para dar seguimiento a {{curso}}. Si tienes alguna duda, cuéntame y la revisamos.

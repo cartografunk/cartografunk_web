@@ -11,7 +11,8 @@
   ];
   const stageNames = Object.fromEntries(stages);
   const state = { session: null, summary: null, rows: [], totalRows: 0, offset: 0,
-    limit: 50, queue: null, selected: null, listRequest: 0 };
+    limit: 50, queue: null, selected: null, listRequest: 0, contactStates: {},
+    contactDrafts: new Map(), savingContacts: new Set() };
 
   function message(id, text, kind = '') {
     const node = $(id);
@@ -222,12 +223,13 @@
     if (!state.rows.length) {
       const row = node('tr');
       const cell = node('td', '', 'No hay inscripciones con estos filtros.');
-      cell.colSpan = 7;
+      cell.colSpan = 8;
       row.append(cell);
       body.append(row);
     }
     for (const lead of state.rows) {
       const row = node('tr');
+      row.dataset.leadId = lead.id;
       const paymentChoice = lead.respuestas?.solicita_beca;
       if (paymentChoice === false) row.className = 'lead-priority';
       const person = node('td');
@@ -236,6 +238,12 @@
       status.dataset.status = lead.estatus;
       const statusCell = node('td');
       statusCell.append(status);
+      const contactCell = node('td', 'contact-status');
+      const contacts = state.contactStates[lead.id] || {};
+      contactCell.append(node('span', '', contacts.whatsapp_at
+        ? `WhatsApp: ${formatDateTime(contacts.whatsapp_at)}` : 'WhatsApp: sin registrar'));
+      contactCell.append(node('span', '', contacts.correo_at
+        ? `Correo: ${formatDateTime(contacts.correo_at)}` : 'Correo: sin registrar'));
       const closed = lead.estatus === 'completado' || lead.estatus === 'perdido';
       const due = node('td', !closed && lead.proximo_contacto_at && new Date(lead.proximo_contacto_at) < new Date()
         ? 'due-overdue' : 'due-unscheduled', closed ? 'Cerrado' : formatDateTime(lead.proximo_contacto_at));
@@ -247,19 +255,33 @@
       actionCell.append(action);
       const digits = whatsappDigits(lead.whatsapp);
       if (/^\d{10,15}$/.test(digits)) {
-        const whatsapp = node('a', 'text-button', 'WhatsApp ↗');
-        whatsapp.href = `https://wa.me/${digits}`;
-        whatsapp.target = '_blank';
-        whatsapp.rel = 'noopener noreferrer';
-        whatsapp.setAttribute('aria-label', `Abrir WhatsApp con ${lead.nombre}`);
+        const whatsapp = node('button', 'text-button', 'WhatsApp con mensaje ↗');
+        whatsapp.type = 'button';
+        whatsapp.setAttribute('aria-label', `Preparar mensaje de WhatsApp para ${lead.nombre}`);
+        whatsapp.addEventListener('click', () => document.dispatchEvent(new CustomEvent('crm:whatsapp', {
+          detail: { lead, button: whatsapp },
+        })));
         actionCell.append(whatsapp);
+        const draft = node('div', 'whatsapp-confirm');
+        draft.hidden = !state.contactDrafts.has(lead.id);
+        const label = node('label', 'check-label');
+        const checkbox = node('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = state.contactDrafts.get(lead.id) === true;
+        checkbox.addEventListener('change', () => state.contactDrafts.set(lead.id, checkbox.checked));
+        label.append(checkbox, document.createTextNode(' Sí lo envié'));
+        const save = node('button', 'secondary-button', 'Guardar estado');
+        save.type = 'button';
+        save.addEventListener('click', () => saveWhatsappConfirmation(lead, checkbox, save, draft));
+        draft.append(label, save);
+        actionCell.append(draft);
       }
       const payment = node('span', 'payment-label', paymentChoice === false ? 'Precio completo' :
         paymentChoice === true ? 'Solicita beca' : 'Sin dato');
       payment.dataset.choice = paymentChoice === false ? 'full' : paymentChoice === true ? 'beca' : 'unknown';
       const paymentCell = node('td');
       paymentCell.append(payment);
-      row.append(person, node('td', '', lead.curso), paymentCell, statusCell, due,
+      row.append(person, node('td', '', lead.curso), paymentCell, statusCell, contactCell, due,
         node('td', '', formatDateTime(lead.created_at)), actionCell);
       body.append(row);
     }
@@ -286,7 +308,46 @@
       : await rpc('crm_listar_inscripciones', {
         ...base, p_cola: state.queue || ($('pendingOnly').checked ? 'pendientes' : null),
       });
-    if (request === state.listRequest) renderRows(data);
+    if (request !== state.listRequest) return;
+    const ids = data.filas.map(lead => lead.id);
+    const contacts = ids.length ? await rpc('crm_contacto_estados', { p_inscripcion_ids: ids }) : [];
+    if (request !== state.listRequest) return;
+    state.contactStates = Object.fromEntries(contacts.map(item => [item.inscripcion_id, item]));
+    renderRows(data);
+  }
+
+  async function saveWhatsappConfirmation(lead, checkbox, button, draft) {
+    if (state.savingContacts.has(lead.id)) return;
+    if (!checkbox.checked) {
+      state.contactDrafts.delete(lead.id);
+      draft.hidden = true;
+      message('dashboardStatus', `No se registró un WhatsApp enviado a ${lead.nombre}.`);
+      if (state.selected?.id === lead.id) message('paymentActionStatus', 'No se registró el envío.');
+      return;
+    }
+    state.savingContacts.add(lead.id);
+    button.disabled = true;
+    message('dashboardStatus', `Guardando el envío a ${lead.nombre}…`);
+    try {
+      const nextContact = lead.proximo_contacto_at || null;
+      await rpc('crm_guardar_seguimiento', {
+        p_inscripcion_id: lead.id,
+        p_estatus: lead.estatus === 'interesado' ? 'contactado' : lead.estatus,
+        p_tipo: 'whatsapp',
+        p_nota: 'WhatsApp enviado desde el panel de inscripciones.',
+        p_proximo_contacto_at: nextContact,
+      });
+      if (lead.estatus === 'interesado') lead.estatus = 'contactado';
+      state.contactDrafts.delete(lead.id);
+      await refreshAll();
+      if (state.selected?.id === lead.id) await loadHistory(lead.id);
+      $('paymentWhatsappConfirm').hidden = true;
+      message('dashboardStatus', `WhatsApp enviado a ${lead.nombre} registrado en el historial.`, 'success');
+      message('paymentActionStatus', 'WhatsApp enviado registrado en el historial.', 'success');
+    } catch (error) {
+      message('dashboardStatus', error.message, 'error');
+      button.disabled = false;
+    } finally { state.savingContacts.delete(lead.id); }
   }
 
   async function loadPriorityCount() {
@@ -373,6 +434,8 @@
     updateNextContactField();
     $('followupNote').value = '';
     message('followupMessage', '');
+    $('paymentWhatsappConfirm').hidden = !state.contactDrafts.has(lead.id);
+    $('paymentWhatsappSent').checked = state.contactDrafts.get(lead.id) === true;
     $('historyList').replaceChildren(node('li', '', 'Cargando historial…'));
     $('leadDialog').showModal();
     document.dispatchEvent(new CustomEvent('crm:lead', { detail: { id: lead.id, curso: lead.curso,
@@ -455,6 +518,7 @@
   async function signOut() {
     const token = state.session?.accessToken;
     saveSession(null);
+    state.contactDrafts.clear();
     showDashboard(false);
     if (token) authRequest('logout', {}, token).catch(() => {});
   }
@@ -478,7 +542,35 @@
     $('leadsTitle').scrollIntoView({ behavior: 'smooth' });
     loadRows().catch(error => message('dashboardStatus', error.message, 'error'));
   }));
+  document.addEventListener('crm:whatsapp-opened', event => {
+    const id = event.detail.id;
+    state.contactDrafts.set(id, true);
+    const row = [...$('leadsBody').querySelectorAll('tr')].find(item => item.dataset.leadId === id);
+    if (row) {
+      const draft = row.querySelector('.whatsapp-confirm');
+      draft.hidden = false;
+      draft.querySelector('input').checked = true;
+    }
+    if (state.selected?.id === id) {
+      $('paymentWhatsappConfirm').hidden = false;
+      $('paymentWhatsappSent').checked = true;
+    }
+  });
+  $('paymentWhatsappSent').addEventListener('change', () => {
+    if (state.selected) state.contactDrafts.set(state.selected.id, $('paymentWhatsappSent').checked);
+  });
+  $('savePaymentWhatsapp').addEventListener('click', () => {
+    if (state.selected) saveWhatsappConfirmation(state.selected, $('paymentWhatsappSent'),
+      $('savePaymentWhatsapp'), $('paymentWhatsappConfirm'));
+  });
   $('closeDialog').addEventListener('click', () => $('leadDialog').close());
+  $('leadWhatsapp').addEventListener('click', event => {
+    if (!state.selected || !$('leadWhatsapp').getAttribute('href')) return;
+    event.preventDefault();
+    document.dispatchEvent(new CustomEvent('crm:whatsapp', {
+      detail: { lead: state.selected, button: $('leadWhatsapp') },
+    }));
+  });
   $('followupStatus').addEventListener('change', updateNextContactField);
   $('followupForm').addEventListener('submit', saveFollowup);
 

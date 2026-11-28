@@ -17,6 +17,15 @@
     return element;
   }
 
+  async function template(name, values) {
+    const response = await fetch(`/templates/${name}.txt`);
+    if (!response.ok) throw new Error('No se pudo cargar la plantilla de mensaje.');
+    return (await response.text()).replace(/{{([a-z_]+)}}/g, (_, key) => {
+      if (!values[key]) throw new Error(`Falta ${key} en la plantilla.`);
+      return values[key];
+    }).trim();
+  }
+
   async function preview(id) {
     const tab = window.open('about:blank', '_blank');
     if (tab) tab.opener = null;
@@ -151,18 +160,74 @@
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.error || 'No se pudo preparar el mensaje.');
-    const templateResponse = await fetch(person.solicitaBeca
-      ? '/templates/beca_aprobada.txt' : '/templates/primer_contacto_a.txt');
-    if (!templateResponse.ok) throw new Error('No se pudo cargar la plantilla de mensaje.');
     const values = { nombre: person.nombre, curso: person.curso,
       aporte_mxn: String(person.aporteMxn),
       cuenta_transferencia: data.cuenta_transferencia, enlace_pago: link };
-    const template = await templateResponse.text();
-    return template.replace(/{{([a-z_]+)}}/g, (_, key) => {
-      if (!values[key]) throw new Error(`Falta ${key} en la plantilla.`);
-      return values[key];
-    }).trim();
+    return template(person.solicitaBeca ? 'beca_aprobada' : 'primer_contacto_a', values);
   }
+
+  async function prepareStageMessage(lead) {
+    const values = { nombre: lead.nombre, curso: lead.curso };
+    if (!lead.curso.startsWith('Agentes de IA') || ['completado', 'perdido'].includes(lead.estatus))
+      return template('seguimiento_curso', values);
+
+    const data = await crm.rpc('crm_pagos_detalle', { p_inscripcion_id: lead.id });
+    const paid = Number(data.verificado_mxn) || 0;
+    const minimum = Number(data.anticipo_minimo_mxn) || 450;
+    if (paid >= minimum) {
+      if (Date.now() >= Date.parse('2026-12-07T02:00:00Z'))
+        return template('seguimiento_curso', values);
+      const invitations = await crm.rpc('crm_invitaciones_horario', {
+        p_curso_id: lead.curso_id, p_generar: true,
+      });
+      const invitation = invitations.find(row => row.inscripcion_id === lead.id);
+      if (invitation?.respondio_at) return template('voto_recibido', values);
+      if (!invitation?.token) throw new Error('No se pudo preparar el enlace de votación.');
+      return template('votacion_horarios', {
+        ...values, enlace_personal: `${location.origin}/horarios#${invitation.token}`,
+      });
+    }
+    if (data.pagos.some(payment => payment.estado === 'pendiente'))
+      return template('comprobante_en_revision', values);
+    if (data.solicita_beca && !data.beca_aprobada)
+      return template('acuse_beca', values);
+    if (data.pagos[0]?.estado === 'rechazado') {
+      const token = await crm.rpc('crm_enlace_pago', { p_inscripcion_id: lead.id });
+      return template('comprobante_rechazado', {
+        ...values, enlace_pago: `${location.origin}/pago#${token}`,
+      });
+    }
+    return preparePaymentMessage({ ...values, id: lead.id,
+      solicitaBeca: data.solicita_beca, aporteMxn: data.aporte_mxn });
+  }
+
+  function tableStatus(text, kind = '') {
+    $('dashboardStatus').textContent = text;
+    $('dashboardStatus').dataset.state = kind;
+  }
+
+  document.addEventListener('crm:whatsapp', async event => {
+    const { lead, button } = event.detail;
+    const rawDigits = String(lead.whatsapp || '').replace(/\D/g, '');
+    const digits = rawDigits.length === 10 ? `52${rawDigits}` : rawDigits;
+    if (!/^\d{10,15}$/.test(digits)) {
+      tableStatus('Esta persona no tiene un WhatsApp válido.', 'error'); return;
+    }
+    const tab = window.open('about:blank', '_blank');
+    if (!tab) { tableStatus('Permite ventanas emergentes para abrir WhatsApp.', 'error'); return; }
+    tab.opener = null;
+    button.disabled = true;
+    tableStatus(`Preparando el mensaje para ${lead.nombre}…`);
+    try {
+      const message = await prepareStageMessage(lead);
+      tab.location.href = `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
+      document.dispatchEvent(new CustomEvent('crm:whatsapp-opened', { detail: { id: lead.id } }));
+      tableStatus(`Borrador abierto para ${lead.nombre}. Si lo enviaste, deja la palomita y pulsa «Guardar estado».`, 'success');
+    } catch (error) {
+      tab.close();
+      tableStatus(error.message, 'error');
+    } finally { button.disabled = false; }
+  });
 
   async function usePaymentMessage(openWhatsapp) {
     if (!selected) return;
@@ -184,7 +249,8 @@
       const text = await preparePaymentMessage(person);
       if (tab) {
         tab.location.href = `https://wa.me/${digits}?text=${encodeURIComponent(text)}`;
-        status('WhatsApp abierto con el mensaje listo. Revísalo antes de enviarlo.', 'success');
+        document.dispatchEvent(new CustomEvent('crm:whatsapp-opened', { detail: { id: person.id } }));
+        status('WhatsApp abierto con el mensaje listo. Si lo enviaste, guarda el estado.', 'success');
       } else {
         await navigator.clipboard.writeText(text);
         status('Mensaje personalizado copiado. Revísalo antes de enviarlo.', 'success');

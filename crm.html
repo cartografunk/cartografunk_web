@@ -7,7 +7,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self' https://ctgphprhfzujdtdipcnr.supabase.co; img-src 'self' data:; base-uri 'none'; form-action 'self'">
   <title>Inscripciones · Cartografunk</title>
   <link rel="icon" type="image/webp" href="/assets/img/favicon.webp">
-  <link rel="stylesheet" href="/assets/css/crm.css?v=5">
+  <link rel="stylesheet" href="/assets/css/crm.css?v=6">
 </head>
 <body>
   <header class="topbar">
@@ -117,9 +117,10 @@
           <label>Etapa <select id="statusFilter"><option value="">Todas</option><option value="interesado">Interesado</option><option value="contactado">Contactado</option><option value="inscrito">Inscrito</option><option value="pagado">Pagado</option><option value="completado">Completado</option><option value="perdido">Perdido</option></select></label>
           <label class="check-label"><input id="pendingOnly" type="checkbox"> Solo pendientes</label>
         </div>
+        <p class="contact-help">Tras enviar el mensaje en WhatsApp, deja marcada «Sí lo envié» y guarda. Puedes desmarcarla si no lo enviaste.</p>
         <div class="table-scroll">
           <table>
-            <thead><tr><th>Persona</th><th>Curso</th><th>Modalidad</th><th>Etapa</th><th>Próximo contacto</th><th>Alta · CDMX</th><th></th></tr></thead>
+            <thead><tr><th>Persona</th><th>Curso</th><th>Modalidad</th><th>Etapa</th><th>Contacto registrado</th><th>Próximo contacto</th><th>Alta · CDMX</th><th></th></tr></thead>
             <tbody id="leadsBody"></tbody>
           </table>
         </div>
@@ -153,6 +154,10 @@
         <button id="openPaymentWhatsapp" class="primary-button" type="button">Abrir WhatsApp con mensaje</button>
         <button id="copyPaymentLink" class="secondary-button" type="button">Copiar mensaje de anticipo</button>
       </div>
+      <div id="paymentWhatsappConfirm" class="whatsapp-confirm" hidden>
+        <label class="check-label"><input id="paymentWhatsappSent" type="checkbox"> Sí lo envié</label>
+        <button id="savePaymentWhatsapp" class="secondary-button" type="button">Guardar estado</button>
+      </div>
       <p id="paymentActionStatus" class="message" role="status" aria-live="polite"></p>
       <div id="paymentEntries"></div>
     </section>
@@ -173,8 +178,8 @@
   </dialog>
 
   <script src="/assets/js/supabase-config.js"></script>
-  <script src="/assets/js/crm.js?v=6"></script>
+  <script src="/assets/js/crm.js?v=8"></script>
   <script src="/assets/js/crm-schedule.js?v=4"></script>
-  <script src="/assets/js/crm-payments.js?v=3"></script>
+  <script src="/assets/js/crm-payments.js?v=5"></script>
 </body>
 </html>

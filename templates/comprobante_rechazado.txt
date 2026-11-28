@@ -1,0 +1,7 @@
+Hola {{nombre}}
+
+No pude verificar el último comprobante de {{curso}}. ¿Me ayudas a revisar la transferencia o a subir un comprobante nuevo aquí?
+
+{{enlace_pago}}
+
+Si prefieres, escríbeme y lo vemos juntos.

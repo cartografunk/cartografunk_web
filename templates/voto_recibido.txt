@@ -1,0 +1,3 @@
+Hola {{nombre}}
+
+Gracias por responder la votación de horarios de {{curso}}. Te escribiré cuando confirme tu grupo y las fechas de las tres sesiones.

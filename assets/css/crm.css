@@ -102,6 +102,13 @@ textarea{min-height:105px;resize:vertical}
 .table-tools label:nth-child(2){min-width:150px}
 .table-tools .check-label{flex-direction:row;align-items:center;min-height:42px;color:var(--ink)}
 .check-label input{width:auto;min-height:auto}
+.contact-help{margin:0 0 .8rem;color:var(--muted);font-size:.82rem}
+.contact-status span{display:block;white-space:nowrap;font-size:.8rem}
+.contact-status span:first-child{font-weight:700}
+.whatsapp-confirm{display:grid;gap:.3rem;margin-top:.4rem;padding:.55rem;background:#eaf1f8;border-radius:6px;white-space:normal}
+.whatsapp-confirm .check-label{display:flex;align-items:center;gap:.3rem;font-size:.8rem}
+.whatsapp-confirm input{width:auto;min-height:auto}
+.whatsapp-confirm .secondary-button{min-height:32px;padding:.3rem .5rem;font-size:.8rem}
 .table-scroll{overflow-x:auto}
 table{width:100%;border-collapse:collapse;text-align:left;font-size:.88rem}
 th{color:var(--muted);font-size:.75rem;letter-spacing:.07em;text-transform:uppercase}
