@@ -1,0 +1,9 @@
+Hola {{nombre}}
+
+Gracias por tu pago. Te comparto una votación rápida para organizar las 3 sesiones de {{curso}}.
+
+Marca todos los horarios en los que podrías asistir 📝
+
+Ayúdame respondiendo antes del 29 de noviembre a las 20:00 (hora CDMX):
+
+{{enlace_personal}}

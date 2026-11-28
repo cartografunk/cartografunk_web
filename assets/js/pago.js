@@ -26,13 +26,16 @@
     }
     try {
       const data = await request(JSON.stringify({ action: 'status', token }));
+      $('paymentIntro').textContent = data.beca_aprobada
+        ? `Aprobé tu beca por ${money(data.costo_mxn)}. Cubre ese monto y sube tu comprobante para apartar tu lugar.`
+        : `El curso cuesta ${money(data.costo_mxn)}. Puedes apartar tu lugar con ${money(data.anticipo_sugerido_mxn)}. El resto puedes cubrirlo con facilidades antes de la última sesión; si necesitas otro acuerdo, escríbeme.`;
       $('paymentAccount').textContent = data.cuenta_transferencia;
       $('paymentVerified').textContent = money(data.verificado_mxn);
       $('paymentBalance').textContent = money(data.saldo_mxn);
       $('paymentAmount').max = data.saldo_mxn;
-      $('paymentAmount').value = Math.min(450, data.saldo_mxn);
+      $('paymentAmount').value = Math.min(data.anticipo_sugerido_mxn, data.saldo_mxn);
       $('pendingNote').textContent = data.comprobantes_en_revision
-        ? `${data.comprobantes_en_revision} comprobante(s) en revisión. Te avisaremos al verificar la transferencia.` : '';
+        ? `${data.comprobantes_en_revision} comprobante(s) en revisión. Te avisaré al verificar la transferencia.` : '';
       $('paymentForm').hidden = data.saldo_mxn === 0 || data.comprobantes_en_revision >= 3 || data.comprobantes_totales >= 10;
       $('paymentInfo').hidden = false;
       status('Puedes enviar tu comprobante de forma segura.', 'success');

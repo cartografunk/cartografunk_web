@@ -4,7 +4,8 @@ import { argsFrom, COURSE_TITLE, loadPeople, readJson, validatePeople, writeOut 
 
 const names = {
   'primer-contacto': ['primer_contacto_a', 'primer_contacto_b'],
-  beca: ['acuse_beca'], grupo: ['grupo_propuesto'], sesion: ['enlace_sesion'],
+  beca: ['acuse_beca'], 'beca-aprobada': ['beca_aprobada'],
+  votacion: ['votacion_horarios'], grupo: ['grupo_propuesto'], sesion: ['enlace_sesion'],
   'recordatorio-24h': ['recordatorio_24h'], 'recordatorio-1h': ['recordatorio_1h'],
 };
 
@@ -51,7 +52,7 @@ async function main() {
   const args = argsFrom(process.argv.slice(2));
   const kind = args.tipo || 'primer-contacto';
   if (!names[kind]) throw new Error(`--tipo debe ser: ${Object.keys(names).join(', ')}`);
-  if (kind === 'primer-contacto' && !/^\d{18}$/.test(process.env.CARTOFUNK_TRANSFER_ACCOUNT || ''))
+  if (['primer-contacto', 'beca-aprobada'].includes(kind) && !/^\d{18}$/.test(process.env.CARTOFUNK_TRANSFER_ACCOUNT || ''))
     throw new Error('Configura CARTOFUNK_TRANSFER_ACCOUNT con los 18 dígitos de la cuenta de transferencia.');
   const people = validatePeople(await loadPeople(args));
   const confirmed = args.confirmados ? await readJson(args.confirmados) : {};
@@ -65,7 +66,11 @@ async function main() {
   let variantIndex = 0;
   for (const person of ordered) {
     if (kind === 'primer-contacto' && person.respuestas?.solicita_beca !== false) continue;
-    if (kind === 'beca' && person.respuestas?.solicita_beca !== true) continue;
+    if (kind === 'beca' && (person.respuestas?.solicita_beca !== true || person.beca_aprobada)) continue;
+    if (kind === 'beca-aprobada' && (person.respuestas?.solicita_beca !== true || !person.beca_aprobada
+      || !Number.isInteger(Number(person.respuestas?.aporte_mxn))
+      || Number(person.respuestas?.aporte_mxn) < 1 || Number(person.respuestas?.aporte_mxn) >= 1500)) continue;
+    if (kind === 'votacion' && !person.pago_comprobado) continue;
     const detail = byId.get(person.id) || {};
     const expectedVariant = kind === 'primer-contacto' ? (variantIndex++ % 2 ? 'B' : 'A') : null;
     const variant = kind === 'primer-contacto' ? (person.mensaje_variante || expectedVariant) : null;
@@ -74,6 +79,7 @@ async function main() {
     try {
       const text = render(template, { ...person, ...detail, curso: COURSE_TITLE,
         cuenta_transferencia: process.env.CARTOFUNK_TRANSFER_ACCOUNT,
+        aporte_mxn: person.respuestas?.aporte_mxn,
         plazo: args.plazo, numero_sesion: detail.numero_sesion });
       const phone = String(person.whatsapp || '').replace(/\D/g, '');
       if (!/^\d{10,15}$/.test(phone)) throw new Error('WhatsApp inválido o ausente');

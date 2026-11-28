@@ -40,8 +40,8 @@ export function planInvitations(people, confirmed, duration = 120) {
       seen.add(id);
       const person = byId.get(id);
       if (!person) { omitted.push({ id, motivo: 'inscripción ausente' }); continue; }
-      if (!person.pago_comprobado && !person.beca_aprobada) {
-        omitted.push({ id, motivo: 'sin pago comprobado ni beca aprobada' }); continue;
+      if (!person.pago_comprobado) {
+        omitted.push({ id, motivo: 'sin pago comprobado' }); continue;
       }
       if (!person.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(person.email)) {
         omitted.push({ id, motivo: 'correo inválido' }); continue;

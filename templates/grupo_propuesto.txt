@@ -1,1 +1,1 @@
-Hola {{nombre}}, te proponemos el grupo {{grupo}} de {{curso}}, los {{dia_hora}} (hora de Ciudad de México). ¿Nos confirmas si podrías asistir? Todavía no queda reservado el lugar hasta que lo confirmemos contigo.
+Hola {{nombre}}. Con las respuestas de disponibilidad armé una propuesta para {{curso}}: grupo {{grupo}}, los {{dia_hora}} (hora de Ciudad de México). ¿Me confirmas si ese horario te funciona? Tu lugar ya está apartado; quiero cerrar el horario contigo.

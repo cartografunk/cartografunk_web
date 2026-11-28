@@ -74,14 +74,46 @@ test('mensajes locales alternan A/B y generan enlaces sin enviar', async () => {
   } finally { await fs.rm(temp, { recursive: true, force: true }); }
 });
 
+test('beca aprobada pide su aporte y la votación espera pago verificado', async () => {
+  const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+  const temp = await fs.mkdtemp(path.join(os.tmpdir(), 'cartofunk-beca-'));
+  try {
+    await fs.cp(path.join(root, 'templates'), path.join(temp, 'templates'), { recursive: true });
+    const input = path.join(temp, 'input.json');
+    const details = path.join(temp, 'details.json');
+    const people = [
+      { id: 'paid', nombre: 'Ana', whatsapp: '5'.repeat(10), created_at: '2026-11-27T12:00:00Z',
+        respuestas: { solicita_beca: true, aporte_mxn: 600 }, beca_aprobada: true, pago_comprobado: true },
+      { id: 'unpaid', nombre: 'Luis', whatsapp: '5'.repeat(10), created_at: '2026-11-27T12:01:00Z',
+        respuestas: { solicita_beca: true, aporte_mxn: 300 }, beca_aprobada: true, pago_comprobado: false },
+    ];
+    await fs.writeFile(input, JSON.stringify({ inscripciones: people }));
+    await fs.writeFile(details, JSON.stringify({ inscripciones: people.map(row => ({ id: row.id,
+      enlace_pago: `https://example.invalid/pago#${row.id}`,
+      enlace_personal: `https://example.invalid/horarios#${row.id}` })) }));
+    for (const kind of ['beca-aprobada', 'votacion']) {
+      const command = spawnSync(process.execPath, [path.join(root, 'scripts/mensajes/index.mjs'),
+        '--input', input, '--confirmados', details, '--tipo', kind, '--apply'],
+      { cwd: temp, encoding: 'utf8', env: { ...process.env,
+        CARTOFUNK_TRANSFER_ACCOUNT: '0'.repeat(18) } });
+      assert.equal(command.status, 0, command.stderr);
+    }
+    const scholarship = JSON.parse(await fs.readFile(path.join(temp, 'out', 'mensajes-beca-aprobada.json')));
+    assert.deepEqual(scholarship.mensajes.map(row => row.id), ['paid', 'unpaid']);
+    assert.match(scholarship.mensajes[0].texto, /\$600 MXN/);
+    const vote = JSON.parse(await fs.readFile(path.join(temp, 'out', 'mensajes-votacion.json')));
+    assert.deepEqual(vote.mensajes.map(row => row.id), ['paid']);
+  } finally { await fs.rm(temp, { recursive: true, force: true }); }
+});
+
 test('invitaciones omiten impagos y usan fechas explícitas', () => {
   const people = fixture.map(p => ({ ...p, email: `${p.id}@${'example.invalid'}` }));
   const confirmed = { grupos: [{ grupo: 'g1', bloque: '6-09', confirmado: false,
     fechas: ['2026-12-12', '2026-12-19', '2026-12-26'], ids: ['p01', 'p03', 'p04'] }] };
   const plan = planInvitations(people, confirmed);
   assert.equal(plan.events.length, 3);
-  assert.equal(plan.events[0].attendees.length, 2);
-  assert.equal(plan.omitted[0].id, 'p04');
+  assert.equal(plan.events[0].attendees.length, 1);
+  assert.deepEqual(plan.omitted.map(row => row.id), ['p03', 'p04']);
   assert.match(plan.events[0].calendarBody.summary, /^Pendiente/);
   assert.match(eventId('g1', 1), /^[a-v0-9]+$/);
   assert.throws(() => planInvitations(people, { grupos: [{ ...confirmed.grupos[0], fechas: ['2026-12-12', '2026-12-20', '2026-12-26'] }] }), /coincide|consecutivas/);

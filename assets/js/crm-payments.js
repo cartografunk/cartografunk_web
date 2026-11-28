@@ -50,8 +50,17 @@
   function render(data) {
     const paid = Number(data.verificado_mxn) || 0;
     const cost = Number(data.costo_mxn) || 1500;
-    $('paymentSummary').textContent = `Verificado: ${money(paid)} · Saldo al precio publicado: ${money(Math.max(0, cost - paid))}` +
-      (paid >= 450 ? ' · Anticipo cubierto' : ' · Anticipo aún no cubierto');
+    const minimum = Number(data.anticipo_minimo_mxn) || 450;
+    const pendingScholarship = data.solicita_beca && !data.beca_aprobada;
+    $('paymentSummary').textContent = pendingScholarship
+      ? `Beca pendiente · Aporte propuesto: ${money(data.aporte_mxn)}`
+      : `Costo acordado: ${money(cost)} · Verificado: ${money(paid)} · Saldo: ${money(Math.max(0, cost - paid))}` +
+        (paid >= minimum ? ' · Lugar apartado' : ' · Pago por verificar');
+    $('scholarshipApproval').hidden = !pendingScholarship;
+    $('scholarshipAmount').textContent = pendingScholarship
+      ? `La persona propuso pagar ${money(data.aporte_mxn)}. Aprueba la beca antes de enviar el enlace de pago.` : '';
+    $('copyPaymentLink').hidden = pendingScholarship || paid >= minimum;
+    $('copyPaymentLink').textContent = data.solicita_beca ? 'Copiar mensaje de beca aprobada' : 'Copiar mensaje de anticipo';
     const container = $('paymentEntries');
     container.replaceChildren();
     if (!data.pagos.length) { container.append(node('p', 'Aún no hay comprobantes.')); return; }
@@ -101,16 +110,32 @@
     if (!selected.curso.startsWith('Agentes de IA')) {
       $('paymentSummary').textContent = 'El registro de anticipos está disponible para el curso de agentes de IA.';
       $('copyPaymentLink').hidden = true;
+      $('scholarshipApproval').hidden = true;
       return;
     }
-    if (selected.solicitaBeca) {
-      $('paymentSummary').textContent = 'Esta persona solicitó beca. Acuerda el importe antes de enviar instrucciones de pago.';
-      $('copyPaymentLink').hidden = true;
-      return;
-    }
-    $('copyPaymentLink').hidden = false;
+    $('copyPaymentLink').hidden = true;
+    $('scholarshipApproval').hidden = true;
     try { await load(selected.id); }
     catch (error) { status(error.message, 'error'); }
+  });
+
+  $('approveScholarship').addEventListener('click', async () => {
+    if (!selected || !selected.solicitaBeca || !Number.isInteger(selected.aporteMxn)
+      || selected.aporteMxn < 1 || selected.aporteMxn >= 1500) {
+      status('Revisa el monto propuesto antes de aprobar.', 'error'); return;
+    }
+    const note = $('scholarshipNote').value.trim();
+    if (!note) { status('Escribe una nota para registrar el acuerdo.', 'error'); return; }
+    const button = $('approveScholarship');
+    button.disabled = true;
+    try {
+      await crm.rpc('crm_marcar_pago_beca', { p_inscripcion_id: selected.id,
+        p_pago_comprobado: null, p_beca_aprobada: true, p_nota: note });
+      await load(selected.id);
+      status('Beca aprobada. Ya puedes copiar el mensaje de pago.', 'success');
+      document.dispatchEvent(new Event('crm:payment-updated'));
+    } catch (error) { status(error.message, 'error'); }
+    finally { button.disabled = false; }
   });
 
   $('copyPaymentLink').addEventListener('click', async () => {
@@ -127,9 +152,11 @@
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error || 'No se pudo preparar el mensaje.');
-      const templateResponse = await fetch('/templates/primer_contacto_a.txt');
+      const templateResponse = await fetch(selected.solicitaBeca
+        ? '/templates/beca_aprobada.txt' : '/templates/primer_contacto_a.txt');
       if (!templateResponse.ok) throw new Error('No se pudo cargar la plantilla de mensaje.');
       const values = { nombre: selected.nombre, curso: selected.curso,
+        aporte_mxn: String(selected.aporteMxn),
         cuenta_transferencia: data.cuenta_transferencia, enlace_pago: link };
       const template = await templateResponse.text();
       const text = template.replace(/{{([a-z_]+)}}/g, (_, key) => {

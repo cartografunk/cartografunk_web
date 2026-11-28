@@ -1,1 +1,1 @@
-Hola {{nombre}}, recibimos tu solicitud de beca para {{curso}}. La revisaremos y te escribiremos con una respuesta. Esta confirmación no significa que la beca ni el lugar estén aprobados.
+Hola {{nombre}}. Recibí tu solicitud de beca para {{curso}}. Voy a revisarla y te escribiré con una respuesta. Por ahora, tu beca y tu lugar siguen pendientes de confirmación.

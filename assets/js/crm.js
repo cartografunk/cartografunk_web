@@ -336,7 +336,8 @@
     $('historyList').replaceChildren(node('li', '', 'Cargando historial…'));
     $('leadDialog').showModal();
     document.dispatchEvent(new CustomEvent('crm:lead', { detail: { id: lead.id, curso: lead.curso,
-      nombre: lead.nombre, solicitaBeca: lead.respuestas?.solicita_beca === true } }));
+      nombre: lead.nombre, solicitaBeca: lead.respuestas?.solicita_beca === true,
+      aporteMxn: Number(lead.respuestas?.aporte_mxn) } }));
     try { await loadHistory(lead.id); }
     catch (error) { $('historyList').replaceChildren(node('li', '', error.message)); }
   }

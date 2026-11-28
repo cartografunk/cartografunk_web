@@ -16,30 +16,30 @@
     <section class="card" aria-labelledby="title">
       <p class="eyebrow">Aparta tu lugar</p>
       <h1 id="title">Anticipo y comprobante</h1>
-      <p>El curso de agentes de IA cuesta <strong>$1,500 MXN</strong>. Puedes apartar tu lugar con el <strong>30% ($450 MXN)</strong>. Hay facilidades para cubrir el resto antes de la última sesión; si necesitas un acuerdo distinto, escríbenos.</p>
+      <p id="paymentIntro">Estoy preparando los datos de tu pago…</p>
       <div id="paymentInfo" hidden>
         <dl class="payment-details">
           <div><dt>Cuenta para transferencia</dt><dd id="paymentAccount"></dd><button id="copyAccount" class="copy-account" type="button">Copiar cuenta</button></div>
           <div><dt>Pago verificado</dt><dd id="paymentVerified"></dd></div>
-          <div><dt>Saldo al precio publicado</dt><dd id="paymentBalance"></dd></div>
+          <div><dt>Saldo por cubrir</dt><dd id="paymentBalance"></dd></div>
         </dl>
         <p>Beneficiario: <strong>Cartografunk</strong>. En el concepto de la transferencia escribe el nombre del curso: <strong>Agentes de IA para hacer mi tesis y todo lo que no quiero hacer</strong>.</p>
         <p id="pendingNote"></p>
         <form id="paymentForm">
           <label for="paymentAmount">¿Cuánto transferiste? (MXN)</label>
-          <input id="paymentAmount" name="monto_mxn" type="number" min="1" max="1500" step="1" value="450" required>
+          <input id="paymentAmount" name="monto_mxn" type="number" min="1" step="1" required>
           <label for="paymentFile">Sube tu comprobante</label>
           <input id="paymentFile" name="comprobante" type="file" accept="image/jpeg,image/png,application/pdf" required>
           <small>JPG, PNG o PDF, máximo 5 MB. No incluyas contraseñas ni otros documentos.</small>
           <button type="submit">Enviar comprobante</button>
         </form>
-        <p>Recibir el comprobante no confirma el pago automáticamente. Revisaremos la transferencia y te avisaremos cuando tu lugar esté apartado.</p>
+        <p>Revisaré la transferencia y te avisaré cuando tu lugar esté apartado.</p>
       </div>
       <p id="paymentStatus" role="status" aria-live="polite">Cargando tu enlace…</p>
       <p class="privacy-note">Tu comprobante se almacena de forma privada para revisar el pago. <a href="/privacidad" rel="noreferrer">Política de privacidad</a>.</p>
     </section>
   </main>
   <script src="/assets/js/supabase-config.js"></script>
-  <script src="/assets/js/pago.js?v=1"></script>
+  <script src="/assets/js/pago.js?v=2"></script>
 </body>
 </html>

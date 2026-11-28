@@ -4,7 +4,7 @@
   const rpc = (name, body) => window.CARTOGRAFUNK_CRM.rpc(name, body);
   const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
   const blocks = { '09': '09:00–11:00', '12': '12:00–14:00', '16': '16:00–18:00', '19': '19:00–21:00' };
-  const state = { invitations: [], groups: [], courseName: '' };
+  const state = { invitations: [], groups: [], courseName: '', voteTemplate: '' };
   const today = new Intl.DateTimeFormat('sv-SE', { year: 'numeric', month: '2-digit',
     day: '2-digit', timeZone: 'America/Mexico_City' }).format(new Date());
   $('scheduleStart').min = today;
@@ -79,7 +79,7 @@
   }
 
   function renderGroups() {
-    const invitations = state.invitations;
+    const invitations = state.invitations.filter(person => person.pago_habilitado !== false);
     const responded = invitations.filter(person => person.respondio_at);
     const withSlots = responded.filter(person => person.opciones.length);
     const pending = invitations.length - responded.length;
@@ -87,7 +87,9 @@
     const proposal = proposeGroups(invitations);
     state.groups = proposal.groups;
 
-    $('scheduleOverview').textContent = `${invitations.length} personas · ${responded.length} respondieron · ${pending} pendientes` +
+    const awaitingPayment = state.invitations.length - invitations.length;
+    $('scheduleOverview').textContent = `${invitations.length} personas con acceso · ${responded.length} respondieron · ${pending} pendientes` +
+      (awaitingPayment ? ` · ${awaitingPayment} esperan pago` : '') +
       (withoutSlots ? ` · ${withoutSlots} sin bloque compatible` : '') +
       (proposal.days.length ? ` · ${proposal.days.length} día(s) de la semana propuestos` : '');
 
@@ -135,7 +137,9 @@
         ? person.opciones.length ? `Respondió · ${person.opciones.length} bloques` : 'Respondió sin bloques'
         : 'Pendiente de respuesta';
       row.append(identity, node('span', answer));
-      if (person.token) {
+      if (person.pago_habilitado === false) {
+        row.append(node('span', 'Espera pago verificado'));
+      } else if (person.token) {
         const copy = node('button', 'Copiar enlace', 'secondary-button');
         copy.type = 'button';
         copy.addEventListener('click', async () => {
@@ -146,7 +150,9 @@
         const digits = (person.whatsapp || '').replace(/\D/g, '');
         if (digits) {
           const link = node('a', 'Abrir WhatsApp');
-          const message = `Hola, te compartimos una votación rápida para organizar las 3 sesiones de ${state.courseName}. Marca todos los horarios en los que podrías asistir. Ayúdanos respondiendo antes del 29 de noviembre a las 20:00 (hora CDMX): ${pollUrl(person.token)}`;
+          const values = { nombre: person.nombre, curso: state.courseName,
+            enlace_personal: pollUrl(person.token) };
+          const message = state.voteTemplate.replace(/{{([a-z_]+)}}/g, (_, key) => values[key] || '');
           link.href = `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
           link.target = '_blank';
           link.rel = 'noopener noreferrer';
@@ -165,6 +171,9 @@
     status(generate ? 'Generando enlaces…' : 'Cargando respuestas…');
     try {
       state.courseName = $('scheduleCourse').selectedOptions[0].textContent;
+      const template = await fetch('/templates/votacion_horarios.txt');
+      if (!template.ok) throw new Error('No se pudo cargar el mensaje de votación.');
+      state.voteTemplate = await template.text();
       state.invitations = await rpc('crm_invitaciones_horario', {
         p_curso_id: courseId, p_generar: generate,
       });

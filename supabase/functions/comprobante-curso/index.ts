@@ -18,24 +18,29 @@ async function rest<T>(route: string, method = 'GET', body?: BodyInit, contentTy
   return (text ? JSON.parse(text) : null) as T
 }
 
-async function enrollment(token: string): Promise<string | null> {
+type Enrollment = { id: string; cost: number; minimum: number; scholarship: boolean }
+
+async function enrollment(token: string): Promise<Enrollment | null> {
   if (!ID.test(token)) return null
   const access = await rest<Array<{ inscripcion_id: string }>>(
     `/rest/v1/crm_enlaces_pago?select=inscripcion_id&token=eq.${token}&limit=1`)
   const id = access[0]?.inscripcion_id
   if (!id) return null
-  const rows = await rest<Array<{ estatus: string; curso_id: string }>>(
-    `/rest/v1/inscripciones?select=estatus,curso_id&id=eq.${id}&limit=1`)
+  const rows = await rest<Array<{ estatus: string; curso_id: string; respuestas: { solicita_beca?: boolean; aporte_mxn?: number }; beca_aprobada: boolean }>>(
+    `/rest/v1/inscripciones?select=estatus,curso_id,respuestas,beca_aprobada&id=eq.${id}&limit=1`)
   if (rows[0]?.curso_id !== COURSE || !['interesado', 'contactado', 'inscrito', 'pagado'].includes(rows[0]?.estatus)) return null
-  return id
+  const scholarship = rows[0].respuestas?.solicita_beca === true
+  const contribution = Number(rows[0].respuestas?.aporte_mxn)
+  if (scholarship && (!rows[0].beca_aprobada || !Number.isInteger(contribution) || contribution < 1 || contribution >= 1500)) return null
+  return { id, cost: scholarship ? contribution : 1500, minimum: scholarship ? contribution : 450, scholarship }
 }
 
-async function paymentStatus(id: string) {
+async function paymentStatus(id: string, cost: number) {
   const rows = await rest<Array<{ monto_mxn: number; estado: string }>>(
     `/rest/v1/crm_pagos?select=monto_mxn,estado&inscripcion_id=eq.${id}`)
   const verified = rows.filter(row => row.estado === 'verificado')
     .reduce((sum, row) => sum + row.monto_mxn, 0)
-  return { verificado_mxn: verified, saldo_mxn: Math.max(0, 1500 - verified),
+  return { verificado_mxn: verified, saldo_mxn: Math.max(0, cost - verified),
     comprobantes_en_revision: rows.filter(row => row.estado === 'pendiente').length,
     comprobantes_totales: rows.length }
 }
@@ -84,12 +89,13 @@ Deno.serve(async (request) => {
         return json(request, { url: signedUrl.toString() })
       }
       if (body.action === 'status') {
-        const id = await enrollment(body.token ?? '')
-        if (!id) return json(request, { error: 'Enlace no disponible.' }, 404)
+        const entry = await enrollment(body.token ?? '')
+        if (!entry) return json(request, { error: 'Enlace no disponible.' }, 404)
         const account = Deno.env.get('CARTOFUNK_TRANSFER_ACCOUNT')
         if (!account || !/^\d{18}$/.test(account)) throw new Error('Cuenta de transferencia no configurada')
-        return json(request, { cuenta_transferencia: account, costo_mxn: 1500,
-          anticipo_sugerido_mxn: 450, ...(await paymentStatus(id)) })
+        return json(request, { cuenta_transferencia: account, costo_mxn: entry.cost,
+          anticipo_sugerido_mxn: entry.minimum, beca_aprobada: entry.scholarship,
+          ...(await paymentStatus(entry.id, entry.cost)) })
       }
       return json(request, { error: 'Acción inválida.' }, 400)
     }
@@ -97,17 +103,17 @@ Deno.serve(async (request) => {
     if (Number(request.headers.get('content-length') || 0) > 6 * 1024 * 1024)
       return json(request, { error: 'El archivo supera el límite de 5 MB.' }, 413)
     const form = await request.formData()
-    const id = await enrollment(String(form.get('token') ?? ''))
-    if (!id) return json(request, { error: 'Enlace no disponible.' }, 404)
+    const entry = await enrollment(String(form.get('token') ?? ''))
+    if (!entry) return json(request, { error: 'Enlace no disponible.' }, 404)
     const amount = Number(form.get('monto_mxn'))
     const file = form.get('comprobante')
-    if (!(file instanceof File) || !validAmount(amount, 1500) || !await validReceipt(file))
+    if (!(file instanceof File) || !validAmount(amount, entry.cost) || !await validReceipt(file))
       return json(request, { error: 'Monto o archivo inválido. Usa JPG, PNG o PDF de hasta 5 MB.' }, 400)
-    const current = await paymentStatus(id)
+    const current = await paymentStatus(entry.id, entry.cost)
     if (current.comprobantes_en_revision >= 3 || current.comprobantes_totales >= 10 || !validAmount(amount, current.saldo_mxn))
       return json(request, { error: 'Ya hay comprobantes en revisión o el monto excede el saldo.' }, 400)
     const { url, key } = serviceConfig()
-    const path = `${id}/${crypto.randomUUID()}.${MIME[file.type]}`
+    const path = `${entry.id}/${crypto.randomUUID()}.${MIME[file.type]}`
     const uploaded = await fetch(`${url}/storage/v1/object/${BUCKET}/${path}`, {
       method: 'POST', headers: { ...serviceHeaders(key), 'Content-Type': file.type,
         'x-upsert': 'false' }, body: file,
@@ -115,7 +121,7 @@ Deno.serve(async (request) => {
     if (!uploaded.ok) throw new Error(`Carga HTTP ${uploaded.status}`)
     try {
       await rest('/rest/v1/crm_pagos', 'POST', JSON.stringify({
-        inscripcion_id: id, monto_mxn: amount, comprobante_path: path,
+        inscripcion_id: entry.id, monto_mxn: amount, comprobante_path: path,
       }), 'application/json')
     } catch (error) {
       await fetch(`${url}/storage/v1/object/${BUCKET}/${path}`, {
@@ -124,7 +130,7 @@ Deno.serve(async (request) => {
       throw error
     }
     return json(request, { recibido: true,
-      mensaje: 'Recibimos tu comprobante. Revisaremos la transferencia antes de confirmar tu lugar.' })
+      mensaje: 'Recibí tu comprobante. Revisaré la transferencia antes de confirmar tu lugar.' })
   } catch (error) {
     console.error('Error en comprobante-curso', error)
     return json(request, { error: 'No pudimos completar la solicitud. Intenta más tarde.' }, 503)

@@ -1,0 +1,19 @@
+Hola {{nombre}}
+
+Recibí tu solicitud de beca para {{curso}}. Después de revisarla, decidí aceptarla :)
+
+Te comparto la información para el pago:
+
+Cubre los ${{aporte_mxn}} MXN que indicaste vía transferencia a:
+
+{{cuenta_transferencia}}
+
+A nombre de Cartografunk. En el concepto escribe: {{curso}}.
+
+Sube tu comprobante aquí: {{enlace_pago}}
+
+En cuanto verifique la transferencia te confirmaré que tu lugar quedó apartado 🪑.
+
+Después te enviaré un enlace para que elijamos horario según tu disponibilidad y la de las demás personas inscritas.
+
+Nos vemos ✌🏾

@@ -56,7 +56,7 @@
     const age = Number(value('edad'));
     const amount = scholarship.checked ? Number(value('aporte_mxn')) : null;
     if (!Number.isInteger(age) || age < 1 || age > 120 ||
-        (scholarship.checked && (!Number.isInteger(amount) || amount < 0 || amount > 1499 || !value('propuesta_intercambio')))) {
+        (scholarship.checked && (!Number.isInteger(amount) || amount < 1 || amount > 1499 || !value('propuesta_intercambio')))) {
       status.textContent = 'Revisa tu edad y, si solicitas beca, el monto y tu propuesta.';
       status.dataset.state = 'error';
       return;

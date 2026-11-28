@@ -8,4 +8,8 @@ A nombre de Cartografunk. En el concepto escribe: {{curso}}.
 
 Sube tu comprobante aquí: {{enlace_pago}}
 
-En cuanto verifiquemos la transferencia te confirmamos que tu lugar quedó apartado 🪑. El resto puedes cubrirlo con facilidades antes de la última sesión. Si te sirve, avísame antes del {{plazo}} para organizar los lugares. Si necesitas otro acuerdo de pago, no dudes en preguntar :)
+En cuanto verifique la transferencia te confirmaré que tu lugar quedó apartado 🪑. El resto puedes cubrirlo con facilidades antes de la última sesión. Si te sirve, avísame antes del {{plazo}} para organizar los lugares. Si necesitas otro acuerdo de pago, no dudes en preguntarme :)
+
+Después te enviaré un enlace para que elijamos horario según tu disponibilidad y la de las demás personas inscritas.
+
+Nos vemos ✌🏾

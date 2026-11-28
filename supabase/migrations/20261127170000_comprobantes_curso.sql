@@ -46,7 +46,9 @@ begin
     select 1 from public.inscripciones i
     where i.id = p_inscripcion_id
       and i.curso_id = 'a77e51c2-441a-4bac-9a25-922aa99ab323'::uuid
-      and i.respuestas->>'solicita_beca' = 'false'
+      and (i.respuestas->>'solicita_beca' = 'false'
+        or (i.respuestas->>'solicita_beca' = 'true' and i.beca_aprobada
+          and (i.respuestas->>'aporte_mxn')::integer between 1 and 1499))
       and i.estatus in ('interesado','contactado','inscrito','pagado')
   ) then raise exception 'Inscripción no disponible'; end if;
   insert into public.crm_enlaces_pago(inscripcion_id) values (p_inscripcion_id)
@@ -67,7 +69,14 @@ declare v_result jsonb;
 begin
   perform private.crm_exigir_admin();
   select jsonb_build_object(
-    'costo_mxn', c.costo_mxn,
+    'costo_mxn', case when i.respuestas->>'solicita_beca' = 'true' and i.beca_aprobada
+      then (i.respuestas->>'aporte_mxn')::integer else c.costo_mxn end,
+    'anticipo_minimo_mxn', case when i.respuestas->>'solicita_beca' = 'true' and i.beca_aprobada
+      then (i.respuestas->>'aporte_mxn')::integer else 450 end,
+    'beca_aprobada', i.beca_aprobada,
+    'solicita_beca', i.respuestas->>'solicita_beca' = 'true',
+    'aporte_mxn', case when i.respuestas->>'solicita_beca' = 'true'
+      then (i.respuestas->>'aporte_mxn')::integer else null end,
     'verificado_mxn', coalesce((select sum(p.monto_mxn) from public.crm_pagos p
       where p.inscripcion_id = i.id and p.estado = 'verificado'), 0),
     'pagos', coalesce((select jsonb_agg(jsonb_build_object(
@@ -97,6 +106,7 @@ declare
   v_estatus text;
   v_total integer;
   v_costo integer;
+  v_anticipo integer;
 begin
   perform private.crm_exigir_admin();
   if p_aprobar is null or p_nota is null or length(trim(p_nota)) not between 1 and 1500 then
@@ -104,7 +114,12 @@ begin
   end if;
   select * into v_pago from public.crm_pagos where id = p_pago_id for update;
   if not found or v_pago.estado <> 'pendiente' then raise exception 'Pago no disponible'; end if;
-  select i.estatus, c.costo_mxn into v_estatus, v_costo
+  select i.estatus,
+    case when i.respuestas->>'solicita_beca' = 'true' and i.beca_aprobada
+      then (i.respuestas->>'aporte_mxn')::integer else c.costo_mxn end,
+    case when i.respuestas->>'solicita_beca' = 'true' and i.beca_aprobada
+      then (i.respuestas->>'aporte_mxn')::integer else 450 end
+    into v_estatus, v_costo, v_anticipo
     from public.inscripciones i join public.cursos c on c.id = i.curso_id
     where i.id = v_pago.inscripcion_id for update of i;
   update public.crm_pagos set estado = case when p_aprobar then 'verificado' else 'rechazado' end,
@@ -114,10 +129,10 @@ begin
     where inscripcion_id = v_pago.inscripcion_id and estado = 'verificado';
   if v_total > v_costo then raise exception 'El total verificado excede el costo del curso'; end if;
   update public.inscripciones set
-    pago_comprobado = v_total >= 450,
+    pago_comprobado = v_total >= v_anticipo,
     estatus = case
       when v_total >= v_costo and estatus in ('interesado','contactado','inscrito') then 'pagado'
-      when v_total >= 450 and estatus in ('interesado','contactado') then 'inscrito'
+      when v_total >= v_anticipo and estatus in ('interesado','contactado') then 'inscrito'
       else estatus end
     where id = v_pago.inscripcion_id;
   insert into public.crm_actividades

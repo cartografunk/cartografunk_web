@@ -77,7 +77,9 @@ export async function loadPeople(args) {
     verified.set(payment.inscripcion_id,
       (verified.get(payment.inscripcion_id) || 0) + Number(payment.monto_mxn));
   return rows.map(row => ({ ...row, ...byUser.get(row.usuario_id), id: row.id,
-    pago_comprobado: (verified.get(row.id) || 0) >= 450,
+    pago_comprobado: (verified.get(row.id) || 0) >=
+      (row.respuestas?.solicita_beca === true && row.beca_aprobada
+        ? Number(row.respuestas.aporte_mxn) || Infinity : 450),
     monto_verificado_mxn: verified.get(row.id) || 0,
     disponibilidad: byVote.get(row.id) || null }));
 }

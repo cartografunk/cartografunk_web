@@ -32,7 +32,7 @@ begin
     or p_whatsapp is null or length(trim(p_whatsapp)) not between 1 and 30
     or (p_instagram is not null and length(trim(p_instagram)) > 120)
     or p_solicita_beca is null
-    or (p_solicita_beca and (p_aporte_mxn is null or p_aporte_mxn not between 0 and 1499
+    or (p_solicita_beca and (p_aporte_mxn is null or p_aporte_mxn not between 1 and 1499
         or p_propuesta_intercambio is null or length(trim(p_propuesta_intercambio)) not between 1 and 1500))
     or (not p_solicita_beca and (p_aporte_mxn is not null or p_propuesta_intercambio is not null))
   then

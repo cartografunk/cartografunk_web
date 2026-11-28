@@ -44,6 +44,23 @@ begin
   from public.inscripciones where id = p_inscripcion_id for update;
   if not found then raise exception 'Inscripción no encontrada'; end if;
 
+  if p_pago_comprobado is not null and exists (
+    select 1 from public.inscripciones
+    where id = p_inscripcion_id
+      and curso_id = 'a77e51c2-441a-4bac-9a25-922aa99ab323'::uuid
+  ) then
+    raise exception 'El pago del curso de IA se verifica desde comprobantes';
+  end if;
+  if p_beca_aprobada = true and exists (
+    select 1 from public.inscripciones
+    where id = p_inscripcion_id and curso_id = 'a77e51c2-441a-4bac-9a25-922aa99ab323'::uuid
+      and (respuestas->>'solicita_beca' <> 'true'
+        or coalesce(respuestas->>'aporte_mxn', '') !~ '^[1-9][0-9]{0,3}$'
+        or (respuestas->>'aporte_mxn')::integer not between 1 and 1499)
+  ) then
+    raise exception 'La beca requiere un aporte propuesto entre $1 y $1,499';
+  end if;
+
   update public.inscripciones
   set pago_comprobado = coalesce(p_pago_comprobado, pago_comprobado),
       beca_aprobada = coalesce(p_beca_aprobada, beca_aprobada)
