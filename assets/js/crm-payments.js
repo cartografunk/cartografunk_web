@@ -60,6 +60,7 @@
     $('scholarshipAmount').textContent = pendingScholarship
       ? `La persona propuso pagar ${money(data.aporte_mxn)}. Aprueba la beca antes de enviar el enlace de pago.` : '';
     $('copyPaymentLink').hidden = pendingScholarship || paid >= minimum;
+    $('openPaymentWhatsapp').hidden = pendingScholarship || paid >= minimum;
     $('copyPaymentLink').textContent = data.solicita_beca ? 'Copiar mensaje de beca aprobada' : 'Copiar mensaje de anticipo';
     const container = $('paymentEntries');
     container.replaceChildren();
@@ -110,10 +111,12 @@
     if (!selected.curso.startsWith('Agentes de IA')) {
       $('paymentSummary').textContent = 'El registro de anticipos está disponible para el curso de agentes de IA.';
       $('copyPaymentLink').hidden = true;
+      $('openPaymentWhatsapp').hidden = true;
       $('scholarshipApproval').hidden = true;
       return;
     }
     $('copyPaymentLink').hidden = true;
+    $('openPaymentWhatsapp').hidden = true;
     $('scholarshipApproval').hidden = true;
     try { await load(selected.id); }
     catch (error) { status(error.message, 'error'); }
@@ -132,40 +135,66 @@
       await crm.rpc('crm_marcar_pago_beca', { p_inscripcion_id: selected.id,
         p_pago_comprobado: null, p_beca_aprobada: true, p_nota: note });
       await load(selected.id);
-      status('Beca aprobada. Ya puedes copiar el mensaje de pago.', 'success');
+      status('Beca aprobada. Ya puedes abrir WhatsApp con el mensaje de pago.', 'success');
       document.dispatchEvent(new Event('crm:payment-updated'));
     } catch (error) { status(error.message, 'error'); }
     finally { button.disabled = false; }
   });
 
-  $('copyPaymentLink').addEventListener('click', async () => {
+  async function preparePaymentMessage(person) {
+    const token = await crm.rpc('crm_enlace_pago', { p_inscripcion_id: person.id });
+    const link = `${location.origin}/pago#${token}`;
+    const response = await fetch(`${config.url}/functions/v1/comprobante-curso`, {
+      method: 'POST', headers: { apikey: config.publishableKey,
+        'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'status', token }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || 'No se pudo preparar el mensaje.');
+    const templateResponse = await fetch(person.solicitaBeca
+      ? '/templates/beca_aprobada.txt' : '/templates/primer_contacto_a.txt');
+    if (!templateResponse.ok) throw new Error('No se pudo cargar la plantilla de mensaje.');
+    const values = { nombre: person.nombre, curso: person.curso,
+      aporte_mxn: String(person.aporteMxn),
+      cuenta_transferencia: data.cuenta_transferencia, enlace_pago: link };
+    const template = await templateResponse.text();
+    return template.replace(/{{([a-z_]+)}}/g, (_, key) => {
+      if (!values[key]) throw new Error(`Falta ${key} en la plantilla.`);
+      return values[key];
+    }).trim();
+  }
+
+  async function usePaymentMessage(openWhatsapp) {
     if (!selected) return;
-    const button = $('copyPaymentLink');
-    button.disabled = true;
+    const person = { ...selected };
+    const rawDigits = String(person.whatsapp || '').replace(/\D/g, '');
+    const digits = rawDigits.length === 10 ? `52${rawDigits}` : rawDigits;
+    if (openWhatsapp && !/^\d{10,15}$/.test(digits)) {
+      status('Esta persona no tiene un WhatsApp válido.', 'error'); return;
+    }
+    const tab = openWhatsapp ? window.open('about:blank', '_blank') : null;
+    if (openWhatsapp && !tab) {
+      status('Permite ventanas emergentes para abrir WhatsApp.', 'error'); return;
+    }
+    if (tab) tab.opener = null;
+    const buttons = [$('copyPaymentLink'), $('openPaymentWhatsapp')];
+    buttons.forEach(button => { button.disabled = true; });
+    status('Preparando mensaje…');
     try {
-      const token = await crm.rpc('crm_enlace_pago', { p_inscripcion_id: selected.id });
-      const link = `${location.origin}/pago#${token}`;
-      const response = await fetch(`${config.url}/functions/v1/comprobante-curso`, {
-        method: 'POST', headers: { apikey: config.publishableKey,
-          'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'status', token }),
-      });
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data.error || 'No se pudo preparar el mensaje.');
-      const templateResponse = await fetch(selected.solicitaBeca
-        ? '/templates/beca_aprobada.txt' : '/templates/primer_contacto_a.txt');
-      if (!templateResponse.ok) throw new Error('No se pudo cargar la plantilla de mensaje.');
-      const values = { nombre: selected.nombre, curso: selected.curso,
-        aporte_mxn: String(selected.aporteMxn),
-        cuenta_transferencia: data.cuenta_transferencia, enlace_pago: link };
-      const template = await templateResponse.text();
-      const text = template.replace(/{{([a-z_]+)}}/g, (_, key) => {
-        if (!values[key]) throw new Error(`Falta ${key} en la plantilla.`);
-        return values[key];
-      }).trim();
-      await navigator.clipboard.writeText(text);
-      status('Mensaje personalizado copiado. Revísalo antes de enviarlo.', 'success');
-    } catch (error) { status(error.message, 'error'); }
-    finally { button.disabled = false; }
-  });
+      const text = await preparePaymentMessage(person);
+      if (tab) {
+        tab.location.href = `https://wa.me/${digits}?text=${encodeURIComponent(text)}`;
+        status('WhatsApp abierto con el mensaje listo. Revísalo antes de enviarlo.', 'success');
+      } else {
+        await navigator.clipboard.writeText(text);
+        status('Mensaje personalizado copiado. Revísalo antes de enviarlo.', 'success');
+      }
+    } catch (error) {
+      if (tab) tab.close();
+      status(error.message, 'error');
+    } finally { buttons.forEach(button => { button.disabled = false; }); }
+  }
+
+  $('copyPaymentLink').addEventListener('click', () => usePaymentMessage(false));
+  $('openPaymentWhatsapp').addEventListener('click', () => usePaymentMessage(true));
 })();

@@ -81,7 +81,8 @@ async function main() {
         cuenta_transferencia: process.env.CARTOFUNK_TRANSFER_ACCOUNT,
         aporte_mxn: person.respuestas?.aporte_mxn,
         plazo: args.plazo, numero_sesion: detail.numero_sesion });
-      const phone = String(person.whatsapp || '').replace(/\D/g, '');
+      const rawPhone = String(person.whatsapp || '').replace(/\D/g, '');
+      const phone = rawPhone.length === 10 ? `52${rawPhone}` : rawPhone;
       if (!/^\d{10,15}$/.test(phone)) throw new Error('WhatsApp inválido o ausente');
       result.push({ id: person.id, variante: variant, texto: text,
         enlace: `https://wa.me/${phone}?text=${encodeURIComponent(text)}` });

@@ -143,6 +143,9 @@ dialog::backdrop{background:rgba(7,20,36,.67)}
 .payment-entry p{margin:.4rem 0;color:var(--muted);font-size:.85rem}
 .payment-actions{display:flex;flex-wrap:wrap;align-items:end;gap:.55rem;margin-top:.6rem}
 .payment-actions textarea{width:min(100%,320px);min-height:70px}
+.payment-message-actions{display:flex;flex-wrap:wrap;gap:.55rem}
+.lead-actions{white-space:nowrap}
+.lead-actions .text-button{display:inline-block;margin-right:.55rem}
 .dialog-columns{display:grid;grid-template-columns:1fr 1fr;gap:1.6rem}
 .dialog-columns form{display:grid;gap:.85rem}
 .history-list{list-style:none;padding:0;margin:0;display:grid;gap:.7rem;max-height:430px;overflow:auto}

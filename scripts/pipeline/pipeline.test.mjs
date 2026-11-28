@@ -71,6 +71,7 @@ test('mensajes locales alternan A/B y generan enlaces sin enviar', async () => {
     const output = JSON.parse(await fs.readFile(path.join(temp, 'out', 'mensajes-primer-contacto.json'), 'utf8'));
     assert.deepEqual(output.mensajes.map(row => row.variante), ['A', 'B']);
     assert.ok(output.mensajes.every(row => row.enlace.startsWith('https://wa.me/')));
+    assert.ok(output.mensajes.every(row => row.enlace.startsWith('https://wa.me/52')));
   } finally { await fs.rm(temp, { recursive: true, force: true }); }
 });
 

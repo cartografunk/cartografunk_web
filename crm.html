@@ -7,7 +7,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self' https://ctgphprhfzujdtdipcnr.supabase.co; img-src 'self' data:; base-uri 'none'; form-action 'self'">
   <title>Inscripciones · Cartografunk</title>
   <link rel="icon" type="image/webp" href="/assets/img/favicon.webp">
-  <link rel="stylesheet" href="/assets/css/crm.css?v=4">
+  <link rel="stylesheet" href="/assets/css/crm.css?v=5">
 </head>
 <body>
   <header class="topbar">
@@ -149,7 +149,10 @@
         <textarea id="scholarshipNote" maxlength="1500" placeholder="Motivo o acuerdo alcanzado"></textarea>
         <button id="approveScholarship" class="secondary-button" type="button">Aprobar beca propuesta</button>
       </div>
-      <button id="copyPaymentLink" class="secondary-button" type="button">Copiar mensaje de anticipo</button>
+      <div class="payment-message-actions">
+        <button id="openPaymentWhatsapp" class="primary-button" type="button">Abrir WhatsApp con mensaje</button>
+        <button id="copyPaymentLink" class="secondary-button" type="button">Copiar mensaje de anticipo</button>
+      </div>
       <p id="paymentActionStatus" class="message" role="status" aria-live="polite"></p>
       <div id="paymentEntries"></div>
     </section>
@@ -170,8 +173,8 @@
   </dialog>
 
   <script src="/assets/js/supabase-config.js"></script>
-  <script src="/assets/js/crm.js?v=5"></script>
-  <script src="/assets/js/crm-schedule.js?v=3"></script>
-  <script src="/assets/js/crm-payments.js?v=2"></script>
+  <script src="/assets/js/crm.js?v=6"></script>
+  <script src="/assets/js/crm-schedule.js?v=4"></script>
+  <script src="/assets/js/crm-payments.js?v=3"></script>
 </body>
 </html>

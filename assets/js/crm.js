@@ -80,6 +80,10 @@
   }
 
   const number = value => new Intl.NumberFormat('es-MX').format(Number(value) || 0);
+  const whatsappDigits = value => {
+    const digits = String(value || '').replace(/\D/g, '');
+    return digits.length === 10 ? `52${digits}` : digits;
+  };
   const formatDateTime = value => value ? new Intl.DateTimeFormat('es-MX', {
     dateStyle: 'medium', timeStyle: 'short', timeZone: 'America/Mexico_City',
   }).format(new Date(value)) : 'Sin programar';
@@ -236,10 +240,20 @@
       const due = node('td', !closed && lead.proximo_contacto_at && new Date(lead.proximo_contacto_at) < new Date()
         ? 'due-overdue' : 'due-unscheduled', closed ? 'Cerrado' : formatDateTime(lead.proximo_contacto_at));
       const actionCell = node('td');
+      actionCell.className = 'lead-actions';
       const action = node('button', 'text-button', 'Abrir ficha');
       action.type = 'button';
       action.addEventListener('click', () => openLead(lead));
       actionCell.append(action);
+      const digits = whatsappDigits(lead.whatsapp);
+      if (/^\d{10,15}$/.test(digits)) {
+        const whatsapp = node('a', 'text-button', 'WhatsApp ↗');
+        whatsapp.href = `https://wa.me/${digits}`;
+        whatsapp.target = '_blank';
+        whatsapp.rel = 'noopener noreferrer';
+        whatsapp.setAttribute('aria-label', `Abrir WhatsApp con ${lead.nombre}`);
+        actionCell.append(whatsapp);
+      }
       const payment = node('span', 'payment-label', paymentChoice === false ? 'Precio completo' :
         paymentChoice === true ? 'Solicita beca' : 'Sin dato');
       payment.dataset.choice = paymentChoice === false ? 'full' : paymentChoice === true ? 'beca' : 'unknown';
@@ -350,8 +364,8 @@
     $('leadInstagram').textContent = lead.instagram || '—';
     $('leadLastContact').textContent = lead.ultimo_contacto || 'No registrado';
     setLink('leadEmail', lead.email, `mailto:${lead.email}`);
-    const digits = (lead.whatsapp || '').replace(/\D/g, '');
-    setLink('leadWhatsapp', lead.whatsapp, digits ? `https://wa.me/${digits}` : null);
+    const digits = whatsappDigits(lead.whatsapp);
+    setLink('leadWhatsapp', lead.whatsapp, /^\d{10,15}$/.test(digits) ? `https://wa.me/${digits}` : null);
     renderAnswers(lead.respuestas);
     $('followupStatus').value = lead.estatus;
     $('followupType').value = 'nota';
@@ -362,7 +376,8 @@
     $('historyList').replaceChildren(node('li', '', 'Cargando historial…'));
     $('leadDialog').showModal();
     document.dispatchEvent(new CustomEvent('crm:lead', { detail: { id: lead.id, curso: lead.curso,
-      nombre: lead.nombre, solicitaBeca: lead.respuestas?.solicita_beca === true,
+      nombre: lead.nombre, whatsapp: lead.whatsapp,
+      solicitaBeca: lead.respuestas?.solicita_beca === true,
       aporteMxn: Number(lead.respuestas?.aporte_mxn) } }));
     try { await loadHistory(lead.id); }
     catch (error) { $('historyList').replaceChildren(node('li', '', error.message)); }

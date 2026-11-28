@@ -147,8 +147,9 @@
           catch { status('No se pudo copiar. Intenta desde un navegador con acceso al portapapeles.', 'error'); }
         });
         row.append(copy);
-        const digits = (person.whatsapp || '').replace(/\D/g, '');
-        if (digits) {
+        const rawDigits = String(person.whatsapp || '').replace(/\D/g, '');
+        const digits = rawDigits.length === 10 ? `52${rawDigits}` : rawDigits;
+        if (/^\d{10,15}$/.test(digits)) {
           const link = node('a', 'Abrir WhatsApp');
           const values = { nombre: person.nombre, curso: state.courseName,
             enlace_personal: pollUrl(person.token) };
